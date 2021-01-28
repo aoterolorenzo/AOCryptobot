@@ -1,13 +1,13 @@
-##AOCryptobot
+## AOCryptobot
 
-###What is this
+### What is this
 
 AOCryptobot is a simple (and in an early development, almost scripting) Market Maker strategy bot which tries to get 
 profit from the oscilations and the spread between the bids and the asks of a trading pair.
 
 A bot... and a Go learning experience for myself.
 
-###Current development
+### Current development
 
 This is currently something between a meme and a frankenstein. The bot was develop in just a couple of days,
 and it has some meme workarounds and bugs. 
@@ -30,13 +30,13 @@ Also support for other exchanges is enabled, and a binance-paper service is some
 project due it's poor implementation.
 
 
-###Behaviour
+### Behaviour
 
 
-####Market monitor
+#### Market monitor
 The bot monitors the market during `monitorWindow` seconds with a `monitorFrequency` also in seconds.
 
-####Buy
+#### Buy
 The signal it uses to do a buy is calculated through the percentil in which the current center price is, and
 a strategy-given variables `topPercentileToTrade` and `lowPercentileToTrade`. This means that if the current center
 price is on a percentil between that values, the buy is triggered.
@@ -51,7 +51,7 @@ The buy will be triggered when the current center price be from 1000 and 1000.
 The amount and the value of the buy will be defined in the strategy (`strategy.env`)
 as `pctAmountToTrade` (over your wallet total) and `buyMargin` (pct below the center price)
 
-####Sell
+#### Sell
 At the moment that a buy is successful, a OCO sell order is triggered.
 
 An OCO order is a One-Cancel-Other order, so it implies the creation or 2 mutually exclusive order:
@@ -60,28 +60,28 @@ An OCO order is a One-Cancel-Other order, so it implies the creation or 2 mutual
  
 That implies that the sell order will be complete or taking the benefit or by the stop-loss percentage
 
-#####This buy-sell process will be infinite repeated
+##### This buy-sell process will be infinite repeated
  
 
 
-###Usage
+### Usage
 
 
 1. Install dependencies with
-```go get ./..```
+`go get ./..`
 
 2. Test with
-```go test ./..```
+`go test ./..`
 
 2. Run with
-```go run main.go```
+`go run main.go`
 
 
-###Strategy file
+### Strategy file
 
 The strategy file is `marketmaker/strategy.env`
 
-###Open Source
+### Open Source
 
 The development is open to everyone and everything, to new market strategies such as arbitrage,
 perpetual market making... Just use as you need.
