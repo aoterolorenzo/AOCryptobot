@@ -19,10 +19,6 @@ The original one ("github.com/eranyanay/binance-api") being used to get the mark
 change to a completely new one implied a full refactor of the bot, and I hadn't the necessary amount of time to do that,
 so I'm using the new one ("github.com/adshao/go-binance/v2") to make the OCO offers.
 
-I also had some troubles trying to generate multiple threads because of the binance API rate limits, so I intend to do
-a full refactor with the new library and use a binance websocket subscription in a future, final deprecating the
-original one and avoiding that TOC that produces me seeing "binance" and "binance2" variables.
-
 Get the output properly treated is also important, but as I said, this was a time trial to me on the correction 
 (crypto bubble) formed each year in christmas and january.
 
