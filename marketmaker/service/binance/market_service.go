@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/adshao/go-binance/v2"
-	binance2 "github.com/eranyanay/binance-api"
 	"github.com/joho/godotenv"
 	"log"
 	"math"
@@ -15,7 +14,6 @@ import (
 
 type MarketService struct {
 	binanceClient    *binance.Client
-	binance2         *binance2.BinanceClient
 	apiKey           string
 	apiSecret        string
 	pair             string
@@ -40,7 +38,6 @@ func (marketService *MarketService) ConfigureClient() {
 	marketService.apiKey = os.Getenv("apiKey")
 	marketService.apiSecret = os.Getenv("apiSecret")
 	marketService.binanceClient = binance.NewClient(marketService.apiKey, marketService.apiSecret)
-	marketService.binance2 = binance2.NewBinanceClient(marketService.apiKey, marketService.apiSecret)
 }
 
 func (marketService *MarketService) StartMonitor() {
@@ -139,13 +136,14 @@ func (marketService *MarketService) CancelOrder(orderId int64) error {
 	return nil
 }
 
-func (marketService *MarketService) GetOrderStatus(orderId int64) (binance2.OrderStatus, error) {
-	query, err := marketService.binance2.QueryOrder(&binance2.QueryOrderOpts{Symbol: marketService.pair, OrderID: int(orderId)})
+func (marketService *MarketService) GetOrderStatus(orderId int64) (*binance.Order, error) {
+	order, err := marketService.binanceClient.NewGetOrderService().OrderID(orderId).
+		Symbol(marketService.pair).Do(context.Background())
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return query.Status, nil
+	return order, nil
 }
 
 func (marketService *MarketService) monitor() {

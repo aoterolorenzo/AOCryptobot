@@ -13,40 +13,39 @@ import (
 	"time"
 )
 
-
-const(
+const (
 	MONITOR = "MONITOR"
-	BUYING = "BUYING"
+	BUYING  = "BUYING"
 	HOLDING = "HOLDING"
 )
 
-const(
-	FILLED = "FILLED"
+const (
+	FILLED   = "FILLED"
 	CANCELED = "CANCELED"
-	NEXT = "NEXT"
+	NEXT     = "NEXT"
 )
 
 type MMStrategy struct {
-	MarketService       *service.MarketService
-	state               helpers.STATE
-	startEURAmout       float64
-	monitorWindow       int
-	pctAmountToTrade    float64
-	buyMargin           float64
-	sellMargin          float64
-	stopLossPct         float64
-	trailingStopLossPct float64
-	topPercentileToTrade   float64
-	lowPercentileToTrade   float64
-	panicModeMargin     float64
-	monitorFrequency    int
-	buyingTimeout       int
-	sellingTimeout 		int
+	MarketService        *service.MarketService
+	state                helpers.STATE
+	startEURAmout        float64
+	monitorWindow        int
+	pctAmountToTrade     float64
+	buyMargin            float64
+	sellMargin           float64
+	stopLossPct          float64
+	trailingStopLossPct  float64
+	topPercentileToTrade float64
+	lowPercentileToTrade float64
+	panicModeMargin      float64
+	monitorFrequency     int
+	buyingTimeout        int
+	sellingTimeout       int
 
 	// Execution time variables
-	buyRate 			float64
-	buyAmount 			float64
-	buyOrderId 			int64
+	buyRate    float64
+	buyAmount  float64
+	buyOrderId int64
 
 	sellRate       float64
 	sellAmount     float64
@@ -63,10 +62,10 @@ func init() {
 	}
 }
 
-func (m *MMStrategy) SetMarketService(marketService *service.MarketService)  {
+func (m *MMStrategy) SetMarketService(marketService *service.MarketService) {
 	m.MarketService = marketService
 }
-func (m *MMStrategy) Execute()  {
+func (m *MMStrategy) Execute() {
 
 	// Get .env file strategy variables
 	m.monitorWindow, _ = strconv.Atoi(os.Getenv("monitorWindow"))
@@ -84,10 +83,8 @@ func (m *MMStrategy) Execute()  {
 	m.startEURAmout, _ = m.MarketService.GetTotalBalance("EUR")
 	m.startEURAmout *= 1 - 0.016
 
-
 	// Set initial state to MONITOR and start MarketService monitor
 	m.state.Current = MONITOR
-
 
 	// Wait window iterations until monitor loads
 	fmt.Println("Loading window data...")
@@ -105,12 +102,12 @@ func (m *MMStrategy) Execute()  {
 		tm.Clear()
 		m.printInfo()
 		switch m.state.Current {
-			case MONITOR:
-				m.monitor()
-			case BUYING:
-				m.buying()
-			case HOLDING:
-				m.holding()
+		case MONITOR:
+			m.monitor()
+		case BUYING:
+			m.buying()
+		case HOLDING:
+			m.holding()
 		}
 
 		// Wait frequency to repeat
@@ -119,7 +116,7 @@ func (m *MMStrategy) Execute()  {
 
 }
 
-func (m *MMStrategy) monitor()  {
+func (m *MMStrategy) monitor() {
 
 	lastPricePercentile, _ := m.MarketService.Analytics.CurrentPricePercentile(m.monitorWindow, &m.MarketService.MarketStatusList)
 	pctVariation, _ := m.MarketService.Analytics.PctVariation(m.monitorWindow, &m.MarketService.MarketStatusList)
@@ -136,12 +133,11 @@ func (m *MMStrategy) monitor()  {
 
 	fmt.Println("Momento de comprar!!!!!")
 
-
 	m.buyRate = m.MarketService.Analytics.CurrentPrice(&m.MarketService.MarketStatusList) * (1 - m.buyMargin)
 	balanceA, _ := m.MarketService.GetTotalBalance("EUR")
-	m.buyAmount =  balanceA * m.pctAmountToTrade / 100
+	m.buyAmount = balanceA * m.pctAmountToTrade / 100
 
-	if m.startEURAmout > balanceA{
+	if m.startEURAmout > balanceA {
 		fmt.Println("SALIENDO!!! DETECTADAS PERDIDAS!!")
 		os.Exit(1)
 	}
@@ -162,7 +158,7 @@ func (m *MMStrategy) monitor()  {
 
 }
 
-func (m *MMStrategy) buying()  {
+func (m *MMStrategy) buying() {
 
 	orderStatus, err := m.MarketService.GetOrderStatus(m.buyOrderId)
 	if err != nil {
@@ -170,7 +166,7 @@ func (m *MMStrategy) buying()  {
 		fmt.Println(err)
 	}
 
-	if orderStatus == "FILLED" {
+	if orderStatus.Status == binance.OrderStatusTypeFilled {
 
 		fmt.Print("Precio alcanzado. Compra realizada.")
 		balanceA, err := m.MarketService.GetTotalBalance("ETH")
@@ -193,7 +189,7 @@ func (m *MMStrategy) buying()  {
 		m.sellRate = m.buyRate * (1 + m.buyMargin) * (1 + m.sellMargin)
 		m.sellAmount = m.buyAmount / m.buyRate
 		m.stopPrice = m.sellRate * (1 - m.stopLossPct)
-		m.stopLimitPrice = m.stopPrice * (1 + m.trailingStopLossPct) * (1-0.0004)
+		m.stopLimitPrice = m.stopPrice * (1 + m.trailingStopLossPct) * (1 - 0.0004)
 
 		m.sellOCOOrder, err = m.MarketService.MakeOCOOrder(m.sellAmount, m.sellRate, m.stopPrice, m.stopLimitPrice, binance.SideTypeSell)
 		if err != nil {
@@ -205,11 +201,10 @@ func (m *MMStrategy) buying()  {
 			m.sellRate, m.sellAmount, m.stopPrice)
 		fmt.Println("\nEsperando venta...")
 
-
 		m.state.Current = HOLDING
 		m.state.Time = int(time.Now().Unix())
 
-	} else if m.state.Time + m.buyingTimeout < int(time.Now().Unix()) {
+	} else if m.state.Time+m.buyingTimeout < int(time.Now().Unix()) {
 
 		fmt.Println("Buy timeout. Canceling...")
 		err = m.MarketService.CancelOrder(m.buyOrderId)
@@ -225,8 +220,7 @@ func (m *MMStrategy) buying()  {
 
 }
 
-func (m *MMStrategy) holding()  {
-
+func (m *MMStrategy) holding() {
 
 	for _, order := range m.sellOCOOrder.Orders {
 		// GET FIRST ORDER
@@ -252,11 +246,8 @@ func (m *MMStrategy) holding()  {
 
 	}
 
-	// CHECK SELL IS NOT TIMEOUT
-	/*if m.sellingTimeout == 0 || m.state.Time + m.sellingTimeout > int(time.Now().Unix()){
-
-
-	} else if false{
+	// CHECK SELL IS NOT TIMEOUT init + 2 dias = ahora
+	if m.sellingTimeout != 0 && m.state.Time+m.sellingTimeout < int(time.Now().Unix()) {
 		fmt.Println("Sell timeout.")
 
 		orderA, err := m.MarketService.GetOrder(m.sellOCOOrder.Orders[0].OrderID)
@@ -265,16 +256,15 @@ func (m *MMStrategy) holding()  {
 			fmt.Println(err)
 		}
 
-		orderB, err := m.MarketService.GetOrder(m.sellOCOOrder.Orders[0].OrderID)
+		orderB, err := m.MarketService.GetOrder(m.sellOCOOrder.Orders[1].OrderID)
 		if err != nil {
 			println(8)
 			fmt.Println(err)
 		}
 
 		if !(orderA.Status == binance.OrderStatusTypePartiallyFilled) &&
-			!(orderB.Status == binance.OrderStatusTypePartiallyFilled){
+			!(orderB.Status == binance.OrderStatusTypePartiallyFilled) {
 			_ = m.MarketService.CancelOrder(orderA.OrderID)
-			_ = m.MarketService.CancelOrder(orderB.OrderID)
 
 			fmt.Println("Sell orders have been canceled")
 			fmt.Print("Selling at market price ")
@@ -288,7 +278,7 @@ func (m *MMStrategy) holding()  {
 
 			fmt.Print("and waiting to fill...")
 			for {
-				timeoutSellORder , err := m.MarketService.GetOrder(orderId)
+				timeoutSellORder, err := m.MarketService.GetOrder(orderId)
 				if err != nil {
 					println(12)
 					fmt.Println(err)
@@ -305,7 +295,7 @@ func (m *MMStrategy) holding()  {
 				time.Sleep(1 * time.Second)
 			}
 		}
-	}*/
+	}
 
 }
 
@@ -321,9 +311,8 @@ func (m MMStrategy) printInfo() {
 	fmt.Println(m.MarketService.Analytics.MinPrice(m.monitorWindow, &m.MarketService.MarketStatusList))
 
 	fmt.Print("El mercado ha variado en un :")
-	fmt.Print( m.MarketService.Analytics.PctVariation(m.monitorWindow, &m.MarketService.MarketStatusList))
+	fmt.Print(m.MarketService.Analytics.PctVariation(m.monitorWindow, &m.MarketService.MarketStatusList))
 	fmt.Println(" %")
-
 
 	fmt.Print("LowerAskPrice:")
 	fmt.Println(m.MarketService.MarketStatusList[0].LowerAskPrice)
@@ -334,13 +323,10 @@ func (m MMStrategy) printInfo() {
 	fmt.Print("Spread:")
 	fmt.Println(m.MarketService.MarketStatusList[0].Spread)
 	fmt.Print("El precio actual está en el percentil:")
-	fmt.Print( m.MarketService.Analytics.CurrentPricePercentile(m.monitorWindow, &m.MarketService.MarketStatusList))
+	fmt.Print(m.MarketService.Analytics.CurrentPricePercentile(m.monitorWindow, &m.MarketService.MarketStatusList))
 	fmt.Println(" de las variaciones del período de monitorización")
 	fmt.Print("Saldo EUR:")
 	fmt.Println(m.MarketService.GetTotalBalance("EUR"))
 	fmt.Print("Saldo ETH:")
 	fmt.Println(m.MarketService.GetTotalBalance("ETH"))
 }
-
-
-
