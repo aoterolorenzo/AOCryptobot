@@ -11,17 +11,16 @@ import (
 	"math"
 	"os"
 	"strconv"
-	"time"
 )
 
 type MarketService struct {
-	binanceClient       *binance.Client
-	binance2       		*binance2.BinanceClient
-	apiKey              string
-	apiSecret           string
-	pair           		string
-	MarketStatusList    []model.MarketStatus
-	Analytics 			MarketAnalytics
+	binanceClient    *binance.Client
+	binance2         *binance2.BinanceClient
+	apiKey           string
+	apiSecret        string
+	pair             string
+	MarketStatusList []model.MarketStatus
+	Analytics        MarketAnalytics
 }
 
 func init() {
@@ -32,7 +31,7 @@ func init() {
 	}
 }
 
-func (marketService *MarketService) SetPair(pair string)  {
+func (marketService *MarketService) SetPair(pair string) {
 	marketService.pair = pair
 }
 
@@ -44,7 +43,7 @@ func (marketService *MarketService) ConfigureClient() {
 	marketService.binance2 = binance2.NewBinanceClient(marketService.apiKey, marketService.apiSecret)
 }
 
-func (marketService *MarketService) StartMonitor()  {
+func (marketService *MarketService) StartMonitor() {
 	go marketService.monitor()
 }
 
@@ -73,14 +72,14 @@ func (marketService *MarketService) GetTotalBalance(asset string) (float64, erro
 				return 0, nil
 			}
 
-			return  free + locked , nil
+			return free + locked, nil
 		}
 	}
 
 	return -1.0, fmt.Errorf("error: unknown error getting through the balances")
 }
 
-func (marketService *MarketService) MakeOrder(quantity  float64, rate float64,
+func (marketService *MarketService) MakeOrder(quantity float64, rate float64,
 	sideType binance.SideType) (int64, error) {
 
 	if sideType == binance.SideTypeBuy {
@@ -89,8 +88,8 @@ func (marketService *MarketService) MakeOrder(quantity  float64, rate float64,
 
 	order, err := marketService.binanceClient.NewCreateOrderService().Symbol(marketService.pair).
 		Side(sideType).Type(binance.OrderTypeLimit).
-		TimeInForce(binance.TimeInForceTypeGTC).Quantity(fmt.Sprintf("%.2f", math.Floor(quantity * 100) / 100)).
-		Price(fmt.Sprintf("%.2f", math.Floor(rate * 100) / 100)).Do(context.Background())
+		TimeInForce(binance.TimeInForceTypeGTC).Quantity(fmt.Sprintf("%.2f", math.Floor(quantity*100)/100)).
+		Price(fmt.Sprintf("%.2f", math.Floor(rate*100)/100)).Do(context.Background())
 
 	if err != nil {
 		return 0, err
@@ -99,7 +98,7 @@ func (marketService *MarketService) MakeOrder(quantity  float64, rate float64,
 	return order.OrderID, nil
 }
 
-func (marketService *MarketService) MakeOCOOrder(quantity  float64, rate float64, stopPrice  float64, stopLimitPrice float64,
+func (marketService *MarketService) MakeOCOOrder(quantity float64, rate float64, stopPrice float64, stopLimitPrice float64,
 	sideType binance.SideType) (*binance.CreateOCOResponse, error) {
 
 	if sideType == binance.SideTypeBuy {
@@ -107,10 +106,10 @@ func (marketService *MarketService) MakeOCOOrder(quantity  float64, rate float64
 	}
 
 	order, err := marketService.binanceClient.NewCreateOCOService().Symbol(marketService.pair).Side(sideType).
-		Price(fmt.Sprintf("%.2f", math.Floor(rate * 100) / 100)).
-		StopPrice(fmt.Sprintf("%.2f", math.Floor(stopPrice * 100) / 100)).
-		StopLimitPrice(fmt.Sprintf("%.2f", math.Floor(stopLimitPrice * 100) / 100)).
-		Quantity(fmt.Sprintf("%.2f", math.Floor(quantity * 100) / 100)).
+		Price(fmt.Sprintf("%.2f", math.Floor(rate*100)/100)).
+		StopPrice(fmt.Sprintf("%.2f", math.Floor(stopPrice*100)/100)).
+		StopLimitPrice(fmt.Sprintf("%.2f", math.Floor(stopLimitPrice*100)/100)).
+		Quantity(fmt.Sprintf("%.2f", math.Floor(quantity*100)/100)).
 		StopLimitTimeInForce("GTC").Do(context.Background())
 
 	if err != nil {
@@ -149,29 +148,29 @@ func (marketService *MarketService) GetOrderStatus(orderId int64) (binance2.Orde
 	return query.Status, nil
 }
 
-func (marketService *MarketService) monitor()  {
-	for true {
-		err := marketService.update()
-		if err != nil {
-			fmt.Println(err)
-		}
-		time.Sleep(1 * time.Second)
+func (marketService *MarketService) monitor() {
+
+	doneC, _, err := binance.WsDepthServe(marketService.pair, marketService.wsDepthHandler,
+		marketService.errHandler)
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
+	<-doneC
 }
 
-func (marketService *MarketService) update() error {
-	depth, err := marketService.binance2.Depth(&binance2.DepthOpts{Symbol: marketService.pair})
-	if err != nil {
-		return err
-	}
-
-
+func (marketService *MarketService) wsDepthHandler(event *binance.WsDepthEvent) {
 	marketStatus := model.MarketStatus{}
-	err = marketStatus.Set(depth)
+	err := marketStatus.Set(event)
 	if err != nil {
-		return err
+		marketService.errHandler(err)
+		return
 	}
 
 	marketService.AppendStatus(&marketStatus)
-	return nil
+
+}
+
+func (marketService *MarketService) errHandler(err error) {
+	fmt.Println(err)
 }
