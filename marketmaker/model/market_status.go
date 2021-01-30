@@ -15,8 +15,11 @@ type MarketStatus struct {
 }
 
 func (s *MarketStatus) Set(depthEvent *binance.WsDepthEvent) error {
-	s.WsDepthEvent = depthEvent
-	return s.generateParameters()
+	if len(depthEvent.Asks) > 0 && len(depthEvent.Bids) > 0 {
+		s.WsDepthEvent = depthEvent
+		return s.generateParameters()
+	}
+	return nil
 }
 
 func (s *MarketStatus) generateParameters() error {
