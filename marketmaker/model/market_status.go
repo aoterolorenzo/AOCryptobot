@@ -1,12 +1,12 @@
 package model
 
 import (
-	"github.com/eranyanay/binance-api"
+	"github.com/adshao/go-binance/v2"
 	"strconv"
 )
 
 type MarketStatus struct {
-	depth          *binance.Depth
+	WsDepthEvent   *binance.WsDepthEvent
 	LowerAskPrice  float64
 	HigherBidPrice float64
 	Spread         float64
@@ -14,27 +14,27 @@ type MarketStatus struct {
 	CenterPrice    float64
 }
 
-func (s *MarketStatus) Set(d *binance.Depth) error {
-	s.depth = d
+func (s *MarketStatus) Set(depthEvent *binance.WsDepthEvent) error {
+	s.WsDepthEvent = depthEvent
 	return s.generateParameters()
 }
 
 func (s *MarketStatus) generateParameters() error {
-	lowerAskPrice, err := strconv.ParseFloat(s.depth.Asks[0].Price, 64)
+	lowerAskPrice, err := strconv.ParseFloat(s.WsDepthEvent.Asks[0].Price, 64)
 	if err != nil {
 		return err
 	}
 	s.LowerAskPrice = lowerAskPrice
 
-	higherBidPrice, err := strconv.ParseFloat(s.depth.Bids[0].Price, 64)
+	higherBidPrice, err := strconv.ParseFloat(s.WsDepthEvent.Bids[0].Price, 64)
 	if err != nil {
 		return err
 	}
 	s.HigherBidPrice = higherBidPrice
+
 	s.Spread = lowerAskPrice - higherBidPrice
-	s.CenterPrice = lowerAskPrice - (s.Spread/2)
-	s.SpreadPct = s.Spread * 100  / s.CenterPrice
+	s.CenterPrice = lowerAskPrice - (s.Spread / 2)
+	s.SpreadPct = s.Spread * 100 / s.CenterPrice
 
 	return nil
 }
-
