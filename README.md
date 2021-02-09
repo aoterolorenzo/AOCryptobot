@@ -1,31 +1,24 @@
 ## AOCryptobot
 
-### What is this
+### Current development
 
 AOCryptobot is a simple (and in an early development, almost scripting) Market Maker strategy bot which tries to get 
 profit from the oscilations and the spread between the bids and the asks of a trading pair.
 
 A bot... and a Go learning experience for myself.
 
-### Current development
+![](./images/screenshot.png)
 
-This is currently something between a meme and a frankenstein. The bot was develop in just a couple of days,
-and it has some meme workarounds and bugs. 
+### Changelog
 
-Firstable, it endless print to stdout announcing the status of the market
+The initial development was made in about a couple of days. 
 
-It uses 2 different go binance libraries, the original one, and a new one with the ability to make OCO market orders.
-The original one ("github.com/eranyanay/binance-api") being used to get the market status each time period, so the
-change to a completely new one implied a full refactor of the bot, and I hadn't the necessary amount of time to do that,
-so I'm using the new one ("github.com/adshao/go-binance/v2") to make the OCO offers.
-
-Get the output properly treated is also important, but as I said, this was a time trial to me on the correction 
-(crypto bubble) formed each year in christmas and january.
-
-Also support for other exchanges is enabled, and a binance-paper service is something that I did but not commit to this
-project due it's poor implementation.
-
-
+[09 FEB 2020]
+- **Add user interface**: A graphic interface has been integrated. Still some bugs to make it stable, but milestone is not so far away.
+- Fix order cancel and get sellingTimeout correctly working
+- Resolve "Refactor binance monitor replacing REST with websocket calls"
+- Update conf.env
+- Add CODEOWNERS file
 ### Behaviour
 
 
