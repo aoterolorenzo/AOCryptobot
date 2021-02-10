@@ -16,7 +16,7 @@ func main() {
 
 	coin1 := strings.Split(os.Getenv("pair"), "-")[0]
 	coin2 := strings.Split(os.Getenv("pair"), "-")[1]
-	pair := strings.Replace("-", "", os.Getenv("pair"), 1)
+	pair := strings.ReplaceAll(os.Getenv("pair"), "-", "")
 	binanceService.SetPair(pair)
 	binanceService.ConfigureClient()
 
