@@ -20,12 +20,6 @@ const (
 	HOLDING = "HOLDING"
 )
 
-const (
-	FILLED   = "FILLED"
-	CANCELED = "CANCELED"
-	NEXT     = "NEXT"
-)
-
 type MMStrategy struct {
 	BinanceService       *exchangeService.BinanceService
 	MarketService        *common.MarketService
@@ -131,8 +125,16 @@ func (m *MMStrategy) Execute() {
 
 func (m *MMStrategy) monitor() {
 
-	lastPricePercentile, _ := m.MarketService.CurrentPricePercentile(m.monitorWindow, &m.MarketService.MarketSnapshotsRecord)
-	pctVariation, _ := m.MarketService.PctVariation(m.monitorWindow, &m.MarketService.MarketSnapshotsRecord)
+	lastPricePercentile, err := m.MarketService.CurrentPricePercentile(m.monitorWindow, &m.MarketService.MarketSnapshotsRecord)
+	if err != nil {
+		*m.logList = append(*m.logList, "e1:"+err.Error())
+		return
+	}
+	pctVariation, err := m.MarketService.PctVariation(m.monitorWindow, &m.MarketService.MarketSnapshotsRecord)
+	if err != nil {
+		*m.logList = append(*m.logList, "e2:"+err.Error())
+		return
+	}
 
 	if lastPricePercentile < m.topPercentileToTrade && lastPricePercentile > m.topPercentileToTrade {
 		//fmt.Printf("Mercado fuera de percentil recomendado para iniciar compra %.2f", lastPricePercentile)
@@ -140,25 +142,39 @@ func (m *MMStrategy) monitor() {
 	}
 
 	if pctVariation < m.panicModeMargin {
-		*m.logList = append(*m.logList, "Panic mode: Market going down.")
+		*m.logList = append(*m.logList, "Strategy: Panic mode: Market going down")
+		*m.logList = append(*m.logList, "Strategy: Waiting for market...")
+
+		for {
+			lastPricePercentile, err = m.MarketService.CurrentPricePercentile(m.monitorWindow, &m.MarketService.MarketSnapshotsRecord)
+			if err != nil {
+				*m.logList = append(*m.logList, "e1: "+err.Error())
+				return
+			}
+			pctVariation, err = m.MarketService.PctVariation(m.monitorWindow, &m.MarketService.MarketSnapshotsRecord)
+			if err != nil {
+				*m.logList = append(*m.logList, "e2: "+err.Error())
+				return
+			}
+
+			time.Sleep(1 * time.Second)
+
+			if pctVariation < m.panicModeMargin {
+				break
+			}
+		}
 		return
 	}
 
-	*m.logList = append(*m.logList, "Strategy: Time to buy.")
+	*m.logList = append(*m.logList, "Strategy: Time to buy")
 
 	m.buyRate = m.MarketService.CurrentPrice(&m.MarketService.MarketSnapshotsRecord) * (1 - m.buyMargin)
 	balanceA, _ := m.BinanceService.GetTotalBalance(m.WalletService.Coin2)
 	m.buyAmount = balanceA * m.pctAmountToTrade / 100
 
-	//if m.startCoin1Amout > balanceA {
-	//	*m.logList = append(*m.logList, "SALIENDO!!! DETECTADAS PERDIDAS!!")
-	//	os.Exit(1)
-	//}
-
 	buyOrder, err := m.BinanceService.MakeOrder(m.buyAmount, m.buyRate, binance.SideTypeBuy)
 	if err != nil {
-		println(1)
-		*m.logList = append(*m.logList, "e3:"+err.Error())
+		*m.logList = append(*m.logList, "e3: "+err.Error())
 		return
 	}
 	m.buyOrder = buyOrder
@@ -178,6 +194,7 @@ func (m *MMStrategy) buying() {
 
 	orderStatus, err := m.BinanceService.GetOrderStatus(m.buyOrder.OrderID)
 	if err != nil {
+		*m.logList = append(*m.logList, "e4: "+err.Error())
 		return
 	}
 
@@ -194,8 +211,8 @@ func (m *MMStrategy) buying() {
 
 		m.sellOCOOrder, err = m.BinanceService.MakeOCOOrder(m.sellAmount, m.sellRate, m.stopPrice, m.stopLimitPrice, binance.SideTypeSell)
 		if err != nil {
-			println(5)
-			*m.logList = append(*m.logList, err.Error())
+			*m.logList = append(*m.logList, "e5: "+err.Error())
+			return
 		}
 
 		*m.logList = append(*m.logList, fmt.Sprintf("Strategy:  Sell OCO order emmitted: rate %f %s, "+
@@ -209,7 +226,7 @@ func (m *MMStrategy) buying() {
 		*m.logList = append(*m.logList, "Strategy: Buy timeout. Order canceled")
 		err = m.BinanceService.CancelOrder(m.buyOrder.OrderID)
 		if err != nil {
-			*m.logList = append(*m.logList, "cancel order"+err.Error())
+			*m.logList = append(*m.logList, "e6: "+err.Error())
 			return
 		}
 
@@ -255,21 +272,22 @@ func (m *MMStrategy) holding() {
 
 		orderA, err := m.BinanceService.GetOrder(m.sellOCOOrder.Orders[0].OrderID)
 		if err != nil {
-			println(7)
-			*m.logList = append(*m.logList, "e1: "+err.Error())
+			*m.logList = append(*m.logList, "e7: "+err.Error())
+			return
 		}
 
 		orderB, err := m.BinanceService.GetOrder(m.sellOCOOrder.Orders[1].OrderID)
 		if err != nil {
-			*m.logList = append(*m.logList, "get order: "+err.Error())
-			m.holding()
+			*m.logList = append(*m.logList, "e8: "+err.Error())
+			return
 		}
 
 		if !(orderA.Status == binance.OrderStatusTypePartiallyFilled) &&
 			!(orderB.Status == binance.OrderStatusTypePartiallyFilled) {
 			err = m.BinanceService.CancelOrder(orderA.OrderID)
 			if err != nil {
-				*m.logList = append(*m.logList, "cancel order:"+err.Error())
+				*m.logList = append(*m.logList, "e9: "+err.Error())
+				return
 			}
 
 			*m.logList = append(*m.logList, "Strategy: Sell OCO order canceled")
@@ -281,17 +299,16 @@ func (m *MMStrategy) holding() {
 				m.MarketService.MarketSnapshotsRecord[0].HigherBidPrice, binance.SideTypeSell)
 			m.OrderBookService.AddOpenOrder(m.BinanceService.OrderResponseToOrder(*order))
 			if err != nil {
-				println(11)
-				*m.logList = append(*m.logList, err.Error())
+				*m.logList = append(*m.logList, "e10: "+err.Error())
+				return
 			}
 
 			*m.logList = append(*m.logList, "Strategy: Waiting to fill sell timeout order")
 			for {
 				timeoutSellORder, err := m.BinanceService.GetOrder(order.OrderID)
 				if err != nil {
-					println(12)
-					*m.logList = append(*m.logList, "e2"+err.Error())
-					break
+					*m.logList = append(*m.logList, "e11: "+err.Error())
+					return
 				}
 
 				if timeoutSellORder.Status == binance.OrderStatusTypeFilled {
