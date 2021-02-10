@@ -88,7 +88,7 @@ func (ui *UserInterface) Run() {
 		marketSnapshotParagraph.Block.Title = "Market Status " + ui.WalletService.Coin1 + ui.WalletService.Coin2
 		marketSnapshotParagraph.Text = fmt.Sprintf("Max Price: %4f\n", maxPrice)
 		marketSnapshotParagraph.Text += fmt.Sprintf("Min Price: %4f\n", minPrice)
-		marketSnapshotParagraph.Text += fmt.Sprintf("Oscilation: %4f\n", oscilation)
+		marketSnapshotParagraph.Text += fmt.Sprintf("Oscilation: %.2f%%\n", oscilation)
 		marketSnapshotParagraph.Text += fmt.Sprintf("Lower Ask: %4f\n", lowerAsk)
 		marketSnapshotParagraph.Text += fmt.Sprintf("[Current Price: %4f](fg:blue)\n", centerPrice)
 		marketSnapshotParagraph.Text += fmt.Sprintf("Higher Bid: %4f\n", higherBid)
