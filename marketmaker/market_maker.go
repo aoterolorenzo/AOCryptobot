@@ -147,7 +147,7 @@ func (m *MMStrategy) monitor() {
 	*m.logList = append(*m.logList, "Strategy: Time to buy.")
 
 	m.buyRate = m.MarketService.CurrentPrice(&m.MarketService.MarketSnapshotsRecord) * (1 - m.buyMargin)
-	balanceA, _ := m.BinanceService.GetTotalBalance("EUR")
+	balanceA, _ := m.BinanceService.GetTotalBalance(m.WalletService.Coin2)
 	m.buyAmount = balanceA * m.pctAmountToTrade / 100
 
 	//if m.startCoin1Amout > balanceA {
@@ -164,7 +164,8 @@ func (m *MMStrategy) monitor() {
 	m.buyOrder = buyOrder
 
 	*m.logList = append(*m.logList,
-		fmt.Sprintf("Strategy: Buy order emitted: rate %4f EUR, amount %4f EUR", m.buyRate, m.buyAmount))
+		fmt.Sprintf("Strategy: Buy order emitted: rate %4f %s, amount %4f %s", m.buyRate, m.WalletService.Coin2,
+			m.buyAmount, m.WalletService.Coin2))
 
 	m.state.Time = int(time.Now().Unix())
 
@@ -197,8 +198,9 @@ func (m *MMStrategy) buying() {
 			*m.logList = append(*m.logList, err.Error())
 		}
 
-		*m.logList = append(*m.logList, fmt.Sprintf("Strategy:  Sell OCO order emmitted: rate %f EUR, "+
-			"cantidad %f EUR, stop-loss %f EUR ", m.sellRate, m.sellAmount, m.stopPrice))
+		*m.logList = append(*m.logList, fmt.Sprintf("Strategy:  Sell OCO order emmitted: rate %f %s, "+
+			"cantidad %f %s, stop-loss %f %s ", m.sellRate, m.WalletService.Coin2, m.sellAmount, m.WalletService.Coin2,
+			m.stopPrice, m.WalletService.Coin2))
 		m.OrderBookService.AddOpenOrder(m.BinanceService.OCOOrderResponseToOrder(*m.sellOCOOrder))
 		m.state.Current = HOLDING
 		m.state.Time = int(time.Now().Unix())

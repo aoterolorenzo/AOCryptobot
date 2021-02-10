@@ -85,7 +85,7 @@ func (ui *UserInterface) Run() {
 		marketSnapshotParagraph := widgets.NewParagraph()
 		marketSnapshotParagraph.BorderStyle.Fg = termui.ColorYellow
 		marketSnapshotParagraph.TitleStyle.Fg = termui.ColorYellow
-		marketSnapshotParagraph.Block.Title = "Market Status ETHEUR"
+		marketSnapshotParagraph.Block.Title = "Market Status " + ui.WalletService.Coin1 + ui.WalletService.Coin2
 		marketSnapshotParagraph.Text = fmt.Sprintf("Max Price: %4f\n", maxPrice)
 		marketSnapshotParagraph.Text += fmt.Sprintf("Min Price: %4f\n", minPrice)
 		marketSnapshotParagraph.Text += fmt.Sprintf("Oscilation: %4f\n", oscilation)
@@ -95,19 +95,19 @@ func (ui *UserInterface) Run() {
 		marketSnapshotParagraph.Text += fmt.Sprintf("Percentil: %2f\n", percentil)
 		marketSnapshotParagraph.SetRect(0, 0, 34, 9)
 
-		balanceEUR, err := ui.WalletService.GetAssetBalance("EUR")
+		balanceCoin1, err := ui.WalletService.GetAssetBalance(ui.WalletService.Coin1)
 		if err != nil {
 			log.Fatalln(err)
 		}
-		balanceETH, err := ui.WalletService.GetAssetBalance("ETH")
+		balanceCoin2, err := ui.WalletService.GetAssetBalance(ui.WalletService.Coin2)
 		if err != nil {
 			log.Fatalln(err)
 		}
 
 		walletStatusParagraph := widgets.NewParagraph()
 		walletStatusParagraph.Block.Title = "Wallet"
-		walletStatusParagraph.Text = fmt.Sprintf("Balance EUR: %.8f\n", balanceEUR)
-		walletStatusParagraph.Text += fmt.Sprintf("Balance ETH: %.8f\n", balanceETH)
+		walletStatusParagraph.Text = fmt.Sprintf("Balance %s: %.8f\n", ui.WalletService.Coin2, balanceCoin1)
+		walletStatusParagraph.Text += fmt.Sprintf("Balance %s: %.8f\n", ui.WalletService.Coin1, balanceCoin2)
 		walletStatusParagraph.SetRect(68, 0, 34, 4)
 
 		operationsList := widgets.NewList()

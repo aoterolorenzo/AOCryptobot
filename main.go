@@ -6,23 +6,28 @@ import (
 	"./marketmaker/service/common"
 	"./marketmaker/ui"
 	"os"
+	"strings"
 )
 
 func main() {
 
 	var logList []string
 	binanceService := binance.BinanceService{}
-	binanceService.SetPair(os.Getenv("pair"))
+
+	coin1 := strings.Split(os.Getenv("pair"), "-")[0]
+	coin2 := strings.Split(os.Getenv("pair"), "-")[1]
+	pair := strings.Replace("-", "", os.Getenv("pair"), 1)
+	binanceService.SetPair(pair)
 	binanceService.ConfigureClient()
 
 	marketService := common.MarketService{}
-	walletService := common.WalletService{Coin1: "ETH", Coin2: "EUR"}
+	walletService := common.WalletService{Coin1: coin1, Coin2: coin2}
 	walletService.InitWallet()
 	_ = walletService.UpdateWallet()
 	orderBookService := common.OrderBookService{}
 	orderBookService.Init()
 
-	marketService.StartMonitor()
+	marketService.StartMonitor(pair)
 	for {
 		if len(marketService.MarketSnapshotsRecord) > 0 {
 			break
