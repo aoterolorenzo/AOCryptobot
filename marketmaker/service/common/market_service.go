@@ -85,13 +85,13 @@ func (marketService *MarketService) AppendStatus(marketSnapshot *model.MarketSna
 	reverseAny(marketService.MarketSnapshotsRecord)
 }
 
-func (marketService *MarketService) StartMonitor() {
-	go marketService.WsDepth()
+func (marketService *MarketService) StartMonitor(pair string) {
+	go marketService.WsDepth(pair)
 }
 
-func (marketService *MarketService) WsDepth() {
+func (marketService *MarketService) WsDepth(pair string) {
 	//TODO: Use exchange logic from here and not on market service
-	doneC, _, err := binance.WsDepthServe("ETHEUR", marketService.WsDepthHandler, marketService.ErrHandler)
+	doneC, _, err := binance.WsDepthServe(pair, marketService.WsDepthHandler, marketService.ErrHandler)
 	if err != nil {
 		log.Fatal(err)
 		return
