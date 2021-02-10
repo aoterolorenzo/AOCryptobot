@@ -106,8 +106,8 @@ func (ui *UserInterface) Run() {
 
 		walletStatusParagraph := widgets.NewParagraph()
 		walletStatusParagraph.Block.Title = "Wallet"
-		walletStatusParagraph.Text = fmt.Sprintf("Balance %s: %.8f\n", ui.WalletService.Coin2, balanceCoin1)
-		walletStatusParagraph.Text += fmt.Sprintf("Balance %s: %.8f\n", ui.WalletService.Coin1, balanceCoin2)
+		walletStatusParagraph.Text = fmt.Sprintf("Balance %s: %.8f\n", ui.WalletService.Coin1, balanceCoin1)
+		walletStatusParagraph.Text += fmt.Sprintf("Balance %s: %.8f\n", ui.WalletService.Coin2, balanceCoin2)
 		walletStatusParagraph.SetRect(68, 0, 34, 4)
 
 		operationsList := widgets.NewList()
