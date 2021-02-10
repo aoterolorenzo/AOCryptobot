@@ -106,7 +106,11 @@ func (marketService *MarketService) WsDepthHandler(event *binance.WsDepthEvent) 
 		marketService.ErrHandler(err)
 		return
 	}
-	marketService.AppendStatus(&marketSnapshot)
+
+	// Grab the record only if there are 2 bid and ask groups
+	if len(marketSnapshot.WsDepthEvent.Bids) > 2 && len(marketSnapshot.WsDepthEvent.Asks) > 2 {
+		marketService.AppendStatus(&marketSnapshot)
+	}
 }
 
 func (marketService *MarketService) ErrHandler(err error) {
