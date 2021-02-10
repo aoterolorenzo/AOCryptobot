@@ -86,12 +86,12 @@ func (ui *UserInterface) Run() {
 		marketSnapshotParagraph.BorderStyle.Fg = termui.ColorYellow
 		marketSnapshotParagraph.TitleStyle.Fg = termui.ColorYellow
 		marketSnapshotParagraph.Block.Title = "Market Status " + ui.WalletService.Coin1 + ui.WalletService.Coin2
-		marketSnapshotParagraph.Text = fmt.Sprintf("Max Price: %4f\n", maxPrice)
-		marketSnapshotParagraph.Text += fmt.Sprintf("Min Price: %4f\n", minPrice)
+		marketSnapshotParagraph.Text = fmt.Sprintf("Max Price: %.8f\n", maxPrice)
+		marketSnapshotParagraph.Text += fmt.Sprintf("Min Price: %.8f\n", minPrice)
 		marketSnapshotParagraph.Text += fmt.Sprintf("Oscilation: %.2f%%\n", oscilation)
-		marketSnapshotParagraph.Text += fmt.Sprintf("Lower Ask: %4f\n", lowerAsk)
-		marketSnapshotParagraph.Text += fmt.Sprintf("[Current Price: %4f](fg:blue)\n", centerPrice)
-		marketSnapshotParagraph.Text += fmt.Sprintf("Higher Bid: %4f\n", higherBid)
+		marketSnapshotParagraph.Text += fmt.Sprintf("Lower Ask: %.8f\n", lowerAsk)
+		marketSnapshotParagraph.Text += fmt.Sprintf("[Current Price: %.8f](fg:blue)\n", centerPrice)
+		marketSnapshotParagraph.Text += fmt.Sprintf("Higher Bid: %.8f\n", higherBid)
 		marketSnapshotParagraph.Text += fmt.Sprintf("Percentil: %2f\n", percentil)
 		marketSnapshotParagraph.SetRect(0, 0, 34, 9)
 
