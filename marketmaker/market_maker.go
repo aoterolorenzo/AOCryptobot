@@ -8,12 +8,14 @@ import (
 	"github.com/adshao/go-binance/v2"
 	tm "github.com/buger/goterm"
 	"github.com/joho/godotenv"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"strconv"
 	"sync"
 	"time"
 )
+
+var logger = helpers.Logger{}
 
 const (
 	MONITOR = "MONITOR"
@@ -62,7 +64,7 @@ func init() {
 	cwd, _ := os.Getwd()
 	err := godotenv.Load(cwd + "/marketmaker/strategy.env")
 	if err != nil {
-		log.Fatal("Error loading go.env file", err)
+		log.Fatalln("Error loading go.env file", err)
 	}
 }
 
@@ -103,9 +105,7 @@ func (m *MMStrategy) Execute(waitTime int) {
 	m.state.Current = MONITOR
 
 	// Wait window iterations until monitor loads
-	m.logListMutex.Lock()
-	*m.logList = append(*m.logList, m.threadName+": Loading window data...")
-	m.logListMutex.Unlock()
+	m.logAndList("Loading window data...", log.InfoLevel)
 
 	for {
 		if len(m.MarketService.MarketSnapshotsRecord) > m.monitorWindow {
@@ -115,9 +115,7 @@ func (m *MMStrategy) Execute(waitTime int) {
 
 	time.Sleep(time.Duration(waitTime) * time.Second)
 
-	m.logListMutex.Lock()
-	*m.logList = append(*m.logList, m.threadName+": Data loaded, thread started")
-	m.logListMutex.Unlock()
+	m.logAndList("Data loaded, thread started", log.InfoLevel)
 
 	for {
 		// Switch functions depending on the current state
@@ -141,16 +139,12 @@ func (m *MMStrategy) monitor() {
 
 	lastPricePercentile, err := m.MarketService.CurrentPricePercentile(m.monitorWindow, &m.MarketService.MarketSnapshotsRecord)
 	if err != nil {
-		m.logListMutex.Lock()
-		*m.logList = append(*m.logList, m.threadName+" e1:"+err.Error())
-		m.logListMutex.Unlock()
+		m.logAndList(" e1:"+err.Error(), log.ErrorLevel)
 		return
 	}
 	pctVariation, err := m.MarketService.PctVariation(m.monitorWindow, &m.MarketService.MarketSnapshotsRecord)
 	if err != nil {
-		m.logListMutex.Lock()
-		*m.logList = append(*m.logList, m.threadName+" e2:"+err.Error())
-		m.logListMutex.Unlock()
+		m.logAndList(" e2:"+err.Error(), log.ErrorLevel)
 		return
 	}
 
@@ -160,24 +154,18 @@ func (m *MMStrategy) monitor() {
 	}
 
 	if pctVariation < m.panicModeMargin {
-		m.logListMutex.Lock()
-		*m.logList = append(*m.logList, m.threadName+": Panic mode: Market going down")
-		*m.logList = append(*m.logList, m.threadName+": Waiting for market...")
-		m.logListMutex.Unlock()
+		m.logAndList("Panic mode: Market going down", log.InfoLevel)
+		m.logAndList("Waiting for market...", log.InfoLevel)
 
 		for {
 			lastPricePercentile, err = m.MarketService.CurrentPricePercentile(m.monitorWindow, &m.MarketService.MarketSnapshotsRecord)
 			if err != nil {
-				m.logListMutex.Lock()
-				*m.logList = append(*m.logList, m.threadName+" e1: "+err.Error())
-				m.logListMutex.Unlock()
+				m.logAndList("e1: "+err.Error(), log.ErrorLevel)
 				return
 			}
 			pctVariation, err = m.MarketService.PctVariation(m.monitorWindow, &m.MarketService.MarketSnapshotsRecord)
 			if err != nil {
-				m.logListMutex.Lock()
-				*m.logList = append(*m.logList, m.threadName+" e2: "+err.Error())
-				m.logListMutex.Unlock()
+				m.logAndList("e2: "+err.Error(), log.ErrorLevel)
 				return
 			}
 
@@ -190,9 +178,7 @@ func (m *MMStrategy) monitor() {
 		return
 	}
 
-	m.logListMutex.Lock()
-	*m.logList = append(*m.logList, m.threadName+": Time to buy")
-	m.logListMutex.Unlock()
+	m.logAndList("Time to buy", log.InfoLevel)
 
 	m.buyRate = m.MarketService.CurrentPrice(&m.MarketService.MarketSnapshotsRecord) * (1 - m.buyMargin)
 	balanceA, _ := m.BinanceService.GetTotalBalance(m.WalletService.Coin2)
@@ -200,18 +186,13 @@ func (m *MMStrategy) monitor() {
 
 	buyOrder, err := m.BinanceService.MakeOrder(m.buyAmount, m.buyRate, binance.SideTypeBuy)
 	if err != nil {
-		m.logListMutex.Lock()
-		*m.logList = append(*m.logList, m.threadName+" e3: "+err.Error())
-		m.logListMutex.Unlock()
+		m.logAndList("e3: "+err.Error(), log.ErrorLevel)
 		return
 	}
 	m.buyOrder = buyOrder
 
-	m.logListMutex.Lock()
-	*m.logList = append(*m.logList,
-		fmt.Sprintf(m.threadName+": Buy order emitted: rate %4f %s, amount %4f %s", m.buyRate, m.WalletService.Coin2,
-			m.buyAmount, m.WalletService.Coin2))
-	m.logListMutex.Unlock()
+	m.logAndList(fmt.Sprintf("Buy order emitted: rate %4f %s, amount %4f %s", m.buyRate, m.WalletService.Coin2,
+		m.buyAmount, m.WalletService.Coin2), log.InfoLevel)
 
 	m.state.Time = int(time.Now().Unix())
 
@@ -224,16 +205,12 @@ func (m *MMStrategy) buying() {
 
 	orderStatus, err := m.BinanceService.GetOrderStatus(m.buyOrder.OrderID)
 	if err != nil {
-		m.logListMutex.Lock()
-		*m.logList = append(*m.logList, m.threadName+" e4: "+err.Error())
-		m.logListMutex.Unlock()
+		m.logAndList("e4: "+err.Error(), log.ErrorLevel)
 		return
 	}
 
 	if orderStatus.Status == binance.OrderStatusTypeFilled {
-		m.logListMutex.Lock()
-		*m.logList = append(*m.logList, m.threadName+":  Buy order filled")
-		m.logListMutex.Unlock()
+		m.logAndList("Buy order filled", log.InfoLevel)
 		m.OrderBookService.RemoveOpenOrder(m.BinanceService.OrderResponseToOrder(*m.buyOrder))
 		m.OrderBookService.AddFilledOrder(m.BinanceService.OrderResponseToOrder(*m.buyOrder))
 
@@ -245,30 +222,23 @@ func (m *MMStrategy) buying() {
 
 		m.sellOCOOrder, err = m.BinanceService.MakeOCOOrder(m.sellAmount, m.sellRate, m.stopPrice, m.stopLimitPrice, binance.SideTypeSell)
 		if err != nil {
-			m.logListMutex.Lock()
-			*m.logList = append(*m.logList, m.threadName+" e5: "+err.Error())
-			m.logListMutex.Unlock()
+			m.logAndList("e5: "+err.Error(), log.ErrorLevel)
 			return
 		}
 
 		m.logListMutex.Lock()
-		*m.logList = append(*m.logList, fmt.Sprintf(m.threadName+":  Sell OCO order emmitted: rate %f %s, "+
+		m.logAndList(fmt.Sprintf("Sell OCO order emmitted: rate %f %s, "+
 			"cantidad %f %s, stop-loss %f %s ", m.sellRate, m.WalletService.Coin2, m.sellAmount, m.WalletService.Coin2,
-			m.stopPrice, m.WalletService.Coin2))
-		m.logListMutex.Unlock()
+			m.stopPrice, m.WalletService.Coin2), log.InfoLevel)
 		m.OrderBookService.AddOpenOrder(m.BinanceService.OCOOrderResponseToOrder(*m.sellOCOOrder))
 		m.state.Current = HOLDING
 		m.state.Time = int(time.Now().Unix())
 
 	} else if m.state.Time+m.buyingTimeout < int(time.Now().Unix()) {
-		m.logListMutex.Lock()
-		*m.logList = append(*m.logList, m.threadName+": Buy timeout. Order canceled")
-		m.logListMutex.Unlock()
+		m.logAndList("Buy timeout. Order canceled", log.InfoLevel)
 		err = m.BinanceService.CancelOrder(m.buyOrder.OrderID)
 		if err != nil {
-			m.logListMutex.Lock()
-			*m.logList = append(*m.logList, m.threadName+" e6: "+err.Error())
-			m.logListMutex.Unlock()
+			m.logAndList("e6: "+err.Error(), log.ErrorLevel)
 			return
 		}
 
@@ -292,18 +262,14 @@ func (m *MMStrategy) holding() {
 		if tempSellOrder.Status == binance.OrderStatusTypeFilled &&
 			tempSellOrder.Type == binance.OrderTypeStopLossLimit {
 			// STOP LOSS LIMIT FILLED
-			m.logListMutex.Lock()
-			*m.logList = append(*m.logList, m.threadName+": STOP LOSS activated. Sold by strategy")
-			m.logListMutex.Unlock()
+			m.logAndList("STOP LOSS activated. Sold by strategy", log.InfoLevel)
 			m.OrderBookService.RemoveOpenOrder(m.BinanceService.OCOOrderResponseToOrder(*m.sellOCOOrder))
 			m.OrderBookService.AddFilledOrder(m.BinanceService.OCOOrderResponseToOrder(*m.sellOCOOrder))
 			m.state.Current = MONITOR
 			m.state.Time = int(time.Now().Unix())
 		} else if tempSellOrder.Status == binance.OrderStatusTypeFilled {
 			// LIMIT FILLED
-			m.logListMutex.Lock()
-			*m.logList = append(*m.logList, m.threadName+": Sell successfully filled")
-			m.logListMutex.Unlock()
+			m.logAndList("Sell successfully filled", log.InfoLevel)
 			m.OrderBookService.RemoveOpenOrder(m.BinanceService.OCOOrderResponseToOrder(*m.sellOCOOrder))
 			m.OrderBookService.AddFilledOrder(m.BinanceService.OCOOrderResponseToOrder(*m.sellOCOOrder))
 			m.state.Current = MONITOR
@@ -314,23 +280,17 @@ func (m *MMStrategy) holding() {
 
 	// CHECK SELL IS NOT TIMEOUT init + 2 dias = ahora
 	if m.sellingTimeout != 0 && m.state.Time+m.sellingTimeout < int(time.Now().Unix()) {
-		m.logListMutex.Lock()
-		*m.logList = append(*m.logList, m.threadName+": Sell timeout")
-		m.logListMutex.Unlock()
+		m.logAndList("Sell timeout", log.InfoLevel)
 
 		orderA, err := m.BinanceService.GetOrder(m.sellOCOOrder.Orders[0].OrderID)
 		if err != nil {
-			m.logListMutex.Lock()
-			*m.logList = append(*m.logList, m.threadName+" e7: "+err.Error())
-			m.logListMutex.Unlock()
+			m.logAndList("e7: "+err.Error(), log.ErrorLevel)
 			return
 		}
 
 		orderB, err := m.BinanceService.GetOrder(m.sellOCOOrder.Orders[1].OrderID)
 		if err != nil {
-			m.logListMutex.Lock()
-			*m.logList = append(*m.logList, m.threadName+" e8: "+err.Error())
-			m.logListMutex.Unlock()
+			m.logAndList("e8: "+err.Error(), log.ErrorLevel)
 			return
 		}
 
@@ -338,16 +298,12 @@ func (m *MMStrategy) holding() {
 			!(orderB.Status == binance.OrderStatusTypePartiallyFilled) {
 			err = m.BinanceService.CancelOrder(orderA.OrderID)
 			if err != nil {
-				m.logListMutex.Lock()
-				*m.logList = append(*m.logList, m.threadName+" e9: "+err.Error())
-				m.logListMutex.Unlock()
+				m.logAndList("e9: "+err.Error(), log.ErrorLevel)
 				return
 			}
 
-			m.logListMutex.Lock()
-			*m.logList = append(*m.logList, m.threadName+": Sell OCO order canceled")
-			*m.logList = append(*m.logList, m.threadName+": Sell order at market price emitted")
-			m.logListMutex.Unlock()
+			m.logAndList("Sell OCO order canceled", log.InfoLevel)
+			m.logAndList("Sell order at market price emitted", log.InfoLevel)
 
 			m.OrderBookService.RemoveOpenOrder(m.BinanceService.OCOOrderResponseToOrder(*m.sellOCOOrder))
 
@@ -355,28 +311,20 @@ func (m *MMStrategy) holding() {
 				m.MarketService.MarketSnapshotsRecord[0].HigherBidPrice, binance.SideTypeSell)
 			m.OrderBookService.AddOpenOrder(m.BinanceService.OrderResponseToOrder(*order))
 			if err != nil {
-				m.logListMutex.Lock()
-				*m.logList = append(*m.logList, m.threadName+" e10: "+err.Error())
-				m.logListMutex.Unlock()
+				m.logAndList("e10: "+err.Error(), log.ErrorLevel)
 				return
 			}
 
-			m.logListMutex.Lock()
-			*m.logList = append(*m.logList, m.threadName+": Waiting to fill sell timeout order")
-			m.logListMutex.Unlock()
+			m.logAndList("Waiting to fill sell timeout order", log.InfoLevel)
 			for {
 				timeoutSellORder, err := m.BinanceService.GetOrder(order.OrderID)
 				if err != nil {
-					m.logListMutex.Lock()
-					*m.logList = append(*m.logList, m.threadName+" e11: "+err.Error())
-					m.logListMutex.Unlock()
+					m.logAndList(" e11: "+err.Error(), log.ErrorLevel)
 					return
 				}
 
 				if timeoutSellORder.Status == binance.OrderStatusTypeFilled {
-					m.logListMutex.Lock()
-					*m.logList = append(*m.logList, m.threadName+": Sell timeout order filled")
-					m.logListMutex.Unlock()
+					m.logAndList("Sell timeout order filled", log.InfoLevel)
 					m.OrderBookService.RemoveOpenOrder(m.BinanceService.OrderResponseToOrder(*order))
 					m.OrderBookService.AddFilledOrder(m.BinanceService.OrderResponseToOrder(*order))
 					m.state.Current = MONITOR
@@ -389,4 +337,34 @@ func (m *MMStrategy) holding() {
 		}
 	}
 
+}
+
+func (m *MMStrategy) logAndList(msg string, loglevel log.Level) {
+
+	switch loglevel {
+	case log.PanicLevel:
+		logger.Panicln(m.threadName + ": " + msg)
+		break
+	case log.FatalLevel:
+		logger.Fatalln(m.threadName + ": " + msg)
+		break
+	case log.ErrorLevel:
+		logger.Errorln(m.threadName + ": " + msg)
+		break
+	case log.WarnLevel:
+		logger.Warnln(m.threadName + ": " + msg)
+		break
+	case log.InfoLevel:
+		logger.Infoln(m.threadName + ": " + msg)
+		m.logListMutex.Lock()
+		*m.logList = append(*m.logList, m.threadName+": "+msg)
+		m.logListMutex.Unlock()
+		break
+	case log.DebugLevel:
+		logger.Debugln(m.threadName + ": " + msg)
+		break
+	case log.TraceLevel:
+		logger.Traceln(m.threadName + ": " + msg)
+		break
+	}
 }
