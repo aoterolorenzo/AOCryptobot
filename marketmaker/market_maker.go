@@ -218,7 +218,7 @@ func (m *MMStrategy) buying() {
 		m.sellRate = m.buyRate * (1 + m.buyMargin) * (1 + m.sellMargin)
 		m.sellAmount = m.buyAmount / m.buyRate
 		m.stopPrice = m.sellRate * (1 - m.stopLossPct)
-		m.stopLimitPrice = m.stopPrice * (1 + m.trailingStopLossPct) * (1 - 0.0004)
+		m.stopLimitPrice = m.stopPrice * (1 + m.trailingStopLossPct) * (1 - 0.00075)
 
 		m.sellOCOOrder, err = m.BinanceService.MakeOCOOrder(m.sellAmount, m.sellRate, m.stopPrice, m.stopLimitPrice, binance.SideTypeSell)
 		if err != nil {
@@ -226,7 +226,6 @@ func (m *MMStrategy) buying() {
 			return
 		}
 
-		m.logListMutex.Lock()
 		m.logAndList(fmt.Sprintf("Sell OCO order emmitted: rate %f %s, "+
 			"cantidad %f %s, stop-loss %f %s ", m.sellRate, m.WalletService.Coin2, m.sellAmount, m.WalletService.Coin2,
 			m.stopPrice, m.WalletService.Coin2), log.InfoLevel)

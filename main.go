@@ -17,8 +17,6 @@ var logger = helpers.Logger{}
 
 func main() {
 
-	logger.Errorln("test")
-
 	threadNumber, err := strconv.Atoi(os.Getenv("threadNumber"))
 	monitorWindow, err := strconv.Atoi(os.Getenv("monitorWindow"))
 	if err != nil {
@@ -40,7 +38,7 @@ func main() {
 	walletService.InitWallet()
 	err = walletService.UpdateWallet()
 	if err != nil {
-		logger.Fatalln("Error initially updating wallet")
+		logger.Fatalln("Error initially updating wallet" + err.Error())
 	}
 	orderBookService := common.OrderBookService{}
 	orderBookService.SetMutex(&orderBookMutex)
