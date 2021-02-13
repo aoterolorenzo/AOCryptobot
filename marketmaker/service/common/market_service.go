@@ -108,7 +108,8 @@ func (marketService *MarketService) WsDepthHandler(event *binance.WsDepthEvent) 
 	}
 
 	// Grab the record only if there are 2 bid and ask groups
-	if len(marketSnapshot.WsDepthEvent.Bids) > 2 && len(marketSnapshot.WsDepthEvent.Asks) > 2 {
+	if marketSnapshot.WsDepthEvent != nil && marketSnapshot.WsDepthEvent.Bids != nil && marketSnapshot.WsDepthEvent.Asks != nil &&
+		len(marketSnapshot.WsDepthEvent.Bids) > 2 && len(marketSnapshot.WsDepthEvent.Asks) > 2 {
 		marketService.AppendStatus(&marketSnapshot)
 	}
 }
