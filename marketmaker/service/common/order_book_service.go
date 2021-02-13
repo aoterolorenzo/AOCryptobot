@@ -3,35 +3,49 @@ package common
 import (
 	"../../model"
 	"github.com/adshao/go-binance/v2"
+	"sync"
 )
 
 type OrderBookService struct {
 	OrderBook model.OrderBook
+	mutex     *sync.Mutex
 }
 
 func (ob *OrderBookService) Init() {
 	ob.OrderBook = model.OrderBook{}
 }
 
+func (ob *OrderBookService) SetMutex(mutex *sync.Mutex) {
+	ob.mutex = mutex
+}
+
 func (ob *OrderBookService) AddFilledOrder(order binance.Order) {
+	ob.mutex.Lock()
 	ob.OrderBook.FilledOrders = append(ob.OrderBook.FilledOrders, order)
+	ob.mutex.Unlock()
 }
 
 func (ob *OrderBookService) AddOpenOrder(order binance.Order) {
+	ob.mutex.Lock()
 	ob.OrderBook.OpenOrders = append(ob.OrderBook.OpenOrders, order)
+	ob.mutex.Unlock()
 }
 
 func (ob *OrderBookService) AddCanceledOrder(order binance.Order) {
+	ob.mutex.Lock()
 	ob.OrderBook.CanceledOrders = append(ob.OrderBook.CanceledOrders, order)
+	ob.mutex.Unlock()
 }
 
 func (ob *OrderBookService) RemoveOpenOrder(order binance.Order) {
+	ob.mutex.Lock()
 	for i, lOrder := range ob.OrderBook.OpenOrders {
 		if order == lOrder {
 			(&ob.OrderBook).OpenOrders = append(((&ob.OrderBook).OpenOrders)[:i], ((&ob.OrderBook).OpenOrders)[i+1:]...)
 			break
 		}
 	}
+	ob.mutex.Unlock()
 }
 
 func (ob *OrderBookService) OpenSellOrdersCount() int {

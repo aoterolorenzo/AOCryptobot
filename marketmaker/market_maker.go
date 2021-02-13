@@ -11,6 +11,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -26,6 +27,7 @@ type MMStrategy struct {
 	WalletService        *common.WalletService
 	OrderBookService     *common.OrderBookService
 	logList              *[]string
+	logListMutex         *sync.Mutex
 	state                helpers.STATE
 	startCoin1Amout      float64
 	startCoin2Amout      float64
@@ -41,6 +43,7 @@ type MMStrategy struct {
 	monitorFrequency     int
 	buyingTimeout        int
 	sellingTimeout       int
+	threadName           string
 
 	// Execution time variables
 	buyRate   float64
@@ -71,11 +74,16 @@ func (m *MMStrategy) SetServices(binanceService *exchangeService.BinanceService,
 	m.OrderBookService = orderBookService
 }
 
-func (m *MMStrategy) SetLogList(logList *[]string) {
+func (m *MMStrategy) SetLogListAndMutex(logList *[]string, mutex *sync.Mutex) {
+	m.logListMutex = mutex
 	m.logList = logList
 }
 
-func (m *MMStrategy) Execute() {
+func (m *MMStrategy) SetThreadName(threadName string) {
+	m.threadName = threadName
+}
+
+func (m *MMStrategy) Execute(waitTime int) {
 
 	// Get .env file strategy variables
 	m.monitorWindow, _ = strconv.Atoi(os.Getenv("monitorWindow"))
@@ -95,7 +103,9 @@ func (m *MMStrategy) Execute() {
 	m.state.Current = MONITOR
 
 	// Wait window iterations until monitor loads
-	*m.logList = append(*m.logList, "Loading window data...")
+	m.logListMutex.Lock()
+	*m.logList = append(*m.logList, m.threadName+": Loading window data...")
+	m.logListMutex.Unlock()
 
 	for {
 		if len(m.MarketService.MarketSnapshotsRecord) > m.monitorWindow {
@@ -103,7 +113,11 @@ func (m *MMStrategy) Execute() {
 		}
 	}
 
-	*m.logList = append(*m.logList, "Data loaded, thread started")
+	time.Sleep(time.Duration(waitTime) * time.Second)
+
+	m.logListMutex.Lock()
+	*m.logList = append(*m.logList, m.threadName+": Data loaded, thread started")
+	m.logListMutex.Unlock()
 
 	for {
 		// Switch functions depending on the current state
@@ -127,12 +141,16 @@ func (m *MMStrategy) monitor() {
 
 	lastPricePercentile, err := m.MarketService.CurrentPricePercentile(m.monitorWindow, &m.MarketService.MarketSnapshotsRecord)
 	if err != nil {
-		*m.logList = append(*m.logList, "e1:"+err.Error())
+		m.logListMutex.Lock()
+		*m.logList = append(*m.logList, m.threadName+" e1:"+err.Error())
+		m.logListMutex.Unlock()
 		return
 	}
 	pctVariation, err := m.MarketService.PctVariation(m.monitorWindow, &m.MarketService.MarketSnapshotsRecord)
 	if err != nil {
-		*m.logList = append(*m.logList, "e2:"+err.Error())
+		m.logListMutex.Lock()
+		*m.logList = append(*m.logList, m.threadName+" e2:"+err.Error())
+		m.logListMutex.Unlock()
 		return
 	}
 
@@ -142,18 +160,24 @@ func (m *MMStrategy) monitor() {
 	}
 
 	if pctVariation < m.panicModeMargin {
-		*m.logList = append(*m.logList, "Strategy: Panic mode: Market going down")
-		*m.logList = append(*m.logList, "Strategy: Waiting for market...")
+		m.logListMutex.Lock()
+		*m.logList = append(*m.logList, m.threadName+": Panic mode: Market going down")
+		*m.logList = append(*m.logList, m.threadName+": Waiting for market...")
+		m.logListMutex.Unlock()
 
 		for {
 			lastPricePercentile, err = m.MarketService.CurrentPricePercentile(m.monitorWindow, &m.MarketService.MarketSnapshotsRecord)
 			if err != nil {
-				*m.logList = append(*m.logList, "e1: "+err.Error())
+				m.logListMutex.Lock()
+				*m.logList = append(*m.logList, m.threadName+" e1: "+err.Error())
+				m.logListMutex.Unlock()
 				return
 			}
 			pctVariation, err = m.MarketService.PctVariation(m.monitorWindow, &m.MarketService.MarketSnapshotsRecord)
 			if err != nil {
-				*m.logList = append(*m.logList, "e2: "+err.Error())
+				m.logListMutex.Lock()
+				*m.logList = append(*m.logList, m.threadName+" e2: "+err.Error())
+				m.logListMutex.Unlock()
 				return
 			}
 
@@ -166,7 +190,9 @@ func (m *MMStrategy) monitor() {
 		return
 	}
 
-	*m.logList = append(*m.logList, "Strategy: Time to buy")
+	m.logListMutex.Lock()
+	*m.logList = append(*m.logList, m.threadName+": Time to buy")
+	m.logListMutex.Unlock()
 
 	m.buyRate = m.MarketService.CurrentPrice(&m.MarketService.MarketSnapshotsRecord) * (1 - m.buyMargin)
 	balanceA, _ := m.BinanceService.GetTotalBalance(m.WalletService.Coin2)
@@ -174,14 +200,18 @@ func (m *MMStrategy) monitor() {
 
 	buyOrder, err := m.BinanceService.MakeOrder(m.buyAmount, m.buyRate, binance.SideTypeBuy)
 	if err != nil {
-		*m.logList = append(*m.logList, "e3: "+err.Error())
+		m.logListMutex.Lock()
+		*m.logList = append(*m.logList, m.threadName+" e3: "+err.Error())
+		m.logListMutex.Unlock()
 		return
 	}
 	m.buyOrder = buyOrder
 
+	m.logListMutex.Lock()
 	*m.logList = append(*m.logList,
-		fmt.Sprintf("Strategy: Buy order emitted: rate %4f %s, amount %4f %s", m.buyRate, m.WalletService.Coin2,
+		fmt.Sprintf(m.threadName+": Buy order emitted: rate %4f %s, amount %4f %s", m.buyRate, m.WalletService.Coin2,
 			m.buyAmount, m.WalletService.Coin2))
+	m.logListMutex.Unlock()
 
 	m.state.Time = int(time.Now().Unix())
 
@@ -194,12 +224,16 @@ func (m *MMStrategy) buying() {
 
 	orderStatus, err := m.BinanceService.GetOrderStatus(m.buyOrder.OrderID)
 	if err != nil {
-		*m.logList = append(*m.logList, "e4: "+err.Error())
+		m.logListMutex.Lock()
+		*m.logList = append(*m.logList, m.threadName+" e4: "+err.Error())
+		m.logListMutex.Unlock()
 		return
 	}
 
 	if orderStatus.Status == binance.OrderStatusTypeFilled {
-		*m.logList = append(*m.logList, "Strategy:  Buy order filled")
+		m.logListMutex.Lock()
+		*m.logList = append(*m.logList, m.threadName+":  Buy order filled")
+		m.logListMutex.Unlock()
 		m.OrderBookService.RemoveOpenOrder(m.BinanceService.OrderResponseToOrder(*m.buyOrder))
 		m.OrderBookService.AddFilledOrder(m.BinanceService.OrderResponseToOrder(*m.buyOrder))
 
@@ -211,22 +245,30 @@ func (m *MMStrategy) buying() {
 
 		m.sellOCOOrder, err = m.BinanceService.MakeOCOOrder(m.sellAmount, m.sellRate, m.stopPrice, m.stopLimitPrice, binance.SideTypeSell)
 		if err != nil {
-			*m.logList = append(*m.logList, "e5: "+err.Error())
+			m.logListMutex.Lock()
+			*m.logList = append(*m.logList, m.threadName+" e5: "+err.Error())
+			m.logListMutex.Unlock()
 			return
 		}
 
-		*m.logList = append(*m.logList, fmt.Sprintf("Strategy:  Sell OCO order emmitted: rate %f %s, "+
+		m.logListMutex.Lock()
+		*m.logList = append(*m.logList, fmt.Sprintf(m.threadName+":  Sell OCO order emmitted: rate %f %s, "+
 			"cantidad %f %s, stop-loss %f %s ", m.sellRate, m.WalletService.Coin2, m.sellAmount, m.WalletService.Coin2,
 			m.stopPrice, m.WalletService.Coin2))
+		m.logListMutex.Unlock()
 		m.OrderBookService.AddOpenOrder(m.BinanceService.OCOOrderResponseToOrder(*m.sellOCOOrder))
 		m.state.Current = HOLDING
 		m.state.Time = int(time.Now().Unix())
 
 	} else if m.state.Time+m.buyingTimeout < int(time.Now().Unix()) {
-		*m.logList = append(*m.logList, "Strategy: Buy timeout. Order canceled")
+		m.logListMutex.Lock()
+		*m.logList = append(*m.logList, m.threadName+": Buy timeout. Order canceled")
+		m.logListMutex.Unlock()
 		err = m.BinanceService.CancelOrder(m.buyOrder.OrderID)
 		if err != nil {
-			*m.logList = append(*m.logList, "e6: "+err.Error())
+			m.logListMutex.Lock()
+			*m.logList = append(*m.logList, m.threadName+" e6: "+err.Error())
+			m.logListMutex.Unlock()
 			return
 		}
 
@@ -250,14 +292,18 @@ func (m *MMStrategy) holding() {
 		if tempSellOrder.Status == binance.OrderStatusTypeFilled &&
 			tempSellOrder.Type == binance.OrderTypeStopLossLimit {
 			// STOP LOSS LIMIT FILLED
-			*m.logList = append(*m.logList, "Strategy: STOP LOSS activated. Sold by strategy")
+			m.logListMutex.Lock()
+			*m.logList = append(*m.logList, m.threadName+": STOP LOSS activated. Sold by strategy")
+			m.logListMutex.Unlock()
 			m.OrderBookService.RemoveOpenOrder(m.BinanceService.OCOOrderResponseToOrder(*m.sellOCOOrder))
 			m.OrderBookService.AddFilledOrder(m.BinanceService.OCOOrderResponseToOrder(*m.sellOCOOrder))
 			m.state.Current = MONITOR
 			m.state.Time = int(time.Now().Unix())
 		} else if tempSellOrder.Status == binance.OrderStatusTypeFilled {
 			// LIMIT FILLED
-			*m.logList = append(*m.logList, "Strategy: Sell successfully filled")
+			m.logListMutex.Lock()
+			*m.logList = append(*m.logList, m.threadName+": Sell successfully filled")
+			m.logListMutex.Unlock()
 			m.OrderBookService.RemoveOpenOrder(m.BinanceService.OCOOrderResponseToOrder(*m.sellOCOOrder))
 			m.OrderBookService.AddFilledOrder(m.BinanceService.OCOOrderResponseToOrder(*m.sellOCOOrder))
 			m.state.Current = MONITOR
@@ -268,17 +314,23 @@ func (m *MMStrategy) holding() {
 
 	// CHECK SELL IS NOT TIMEOUT init + 2 dias = ahora
 	if m.sellingTimeout != 0 && m.state.Time+m.sellingTimeout < int(time.Now().Unix()) {
-		*m.logList = append(*m.logList, "Strategy: Sell timeout")
+		m.logListMutex.Lock()
+		*m.logList = append(*m.logList, m.threadName+": Sell timeout")
+		m.logListMutex.Unlock()
 
 		orderA, err := m.BinanceService.GetOrder(m.sellOCOOrder.Orders[0].OrderID)
 		if err != nil {
-			*m.logList = append(*m.logList, "e7: "+err.Error())
+			m.logListMutex.Lock()
+			*m.logList = append(*m.logList, m.threadName+" e7: "+err.Error())
+			m.logListMutex.Unlock()
 			return
 		}
 
 		orderB, err := m.BinanceService.GetOrder(m.sellOCOOrder.Orders[1].OrderID)
 		if err != nil {
-			*m.logList = append(*m.logList, "e8: "+err.Error())
+			m.logListMutex.Lock()
+			*m.logList = append(*m.logList, m.threadName+" e8: "+err.Error())
+			m.logListMutex.Unlock()
 			return
 		}
 
@@ -286,12 +338,16 @@ func (m *MMStrategy) holding() {
 			!(orderB.Status == binance.OrderStatusTypePartiallyFilled) {
 			err = m.BinanceService.CancelOrder(orderA.OrderID)
 			if err != nil {
-				*m.logList = append(*m.logList, "e9: "+err.Error())
+				m.logListMutex.Lock()
+				*m.logList = append(*m.logList, m.threadName+" e9: "+err.Error())
+				m.logListMutex.Unlock()
 				return
 			}
 
-			*m.logList = append(*m.logList, "Strategy: Sell OCO order canceled")
-			*m.logList = append(*m.logList, "Strategy: Sell order at market price emitted")
+			m.logListMutex.Lock()
+			*m.logList = append(*m.logList, m.threadName+": Sell OCO order canceled")
+			*m.logList = append(*m.logList, m.threadName+": Sell order at market price emitted")
+			m.logListMutex.Unlock()
 
 			m.OrderBookService.RemoveOpenOrder(m.BinanceService.OCOOrderResponseToOrder(*m.sellOCOOrder))
 
@@ -299,20 +355,28 @@ func (m *MMStrategy) holding() {
 				m.MarketService.MarketSnapshotsRecord[0].HigherBidPrice, binance.SideTypeSell)
 			m.OrderBookService.AddOpenOrder(m.BinanceService.OrderResponseToOrder(*order))
 			if err != nil {
-				*m.logList = append(*m.logList, "e10: "+err.Error())
+				m.logListMutex.Lock()
+				*m.logList = append(*m.logList, m.threadName+" e10: "+err.Error())
+				m.logListMutex.Unlock()
 				return
 			}
 
-			*m.logList = append(*m.logList, "Strategy: Waiting to fill sell timeout order")
+			m.logListMutex.Lock()
+			*m.logList = append(*m.logList, m.threadName+": Waiting to fill sell timeout order")
+			m.logListMutex.Unlock()
 			for {
 				timeoutSellORder, err := m.BinanceService.GetOrder(order.OrderID)
 				if err != nil {
-					*m.logList = append(*m.logList, "e11: "+err.Error())
+					m.logListMutex.Lock()
+					*m.logList = append(*m.logList, m.threadName+" e11: "+err.Error())
+					m.logListMutex.Unlock()
 					return
 				}
 
 				if timeoutSellORder.Status == binance.OrderStatusTypeFilled {
-					*m.logList = append(*m.logList, "Strategy: Sell timeout order filled")
+					m.logListMutex.Lock()
+					*m.logList = append(*m.logList, m.threadName+": Sell timeout order filled")
+					m.logListMutex.Unlock()
 					m.OrderBookService.RemoveOpenOrder(m.BinanceService.OrderResponseToOrder(*order))
 					m.OrderBookService.AddFilledOrder(m.BinanceService.OrderResponseToOrder(*order))
 					m.state.Current = MONITOR
