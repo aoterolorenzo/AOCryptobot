@@ -1,15 +1,17 @@
 package binance
 
 import (
+	"../../helpers"
 	"context"
 	"fmt"
 	"github.com/adshao/go-binance/v2"
 	"github.com/joho/godotenv"
-	"log"
 	"math"
 	"os"
 	"strconv"
 )
+
+var logger = helpers.Logger{}
 
 type BinanceService struct {
 	binanceClient *binance.Client
@@ -22,7 +24,7 @@ func init() {
 	cwd, _ := os.Getwd()
 	err := godotenv.Load(cwd + "/marketmaker/service/binance/conf.env")
 	if err != nil {
-		log.Fatal("Error loading go.env file", err)
+		logger.Fatalln("Error loading go.env file", err)
 	}
 }
 
@@ -185,7 +187,7 @@ func (binanceService *BinanceService) WsDepth(dh binance.WsDepthHandler, eh bina
 	//TODO: Use exchange logic from here and not on market service
 	doneC, _, err := binance.WsDepthServe(binanceService.pair, dh, eh)
 	if err != nil {
-		log.Fatal(err)
+		logger.Errorln(err)
 		return
 	}
 	<-doneC

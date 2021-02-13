@@ -1,12 +1,14 @@
 package common
 
 import (
+	"../../helpers"
 	"../../model"
 	"github.com/adshao/go-binance/v2"
-	"log"
 	"math"
 	"reflect"
 )
+
+var logger = helpers.Logger{}
 
 type MarketService struct {
 	MarketSnapshotsRecord []model.MarketSnapshot
@@ -93,7 +95,7 @@ func (marketService *MarketService) WsDepth(pair string) {
 	//TODO: Use exchange logic from here and not on market service
 	doneC, _, err := binance.WsDepthServe(pair, marketService.WsDepthHandler, marketService.ErrHandler)
 	if err != nil {
-		log.Fatal(err)
+		logger.Errorln(err)
 		return
 	}
 	<-doneC
@@ -115,7 +117,7 @@ func (marketService *MarketService) WsDepthHandler(event *binance.WsDepthEvent) 
 }
 
 func (marketService *MarketService) ErrHandler(err error) {
-	log.Fatal(err)
+	logger.Errorln(err)
 }
 
 func reverseAny(s interface{}) {

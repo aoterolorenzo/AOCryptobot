@@ -1,15 +1,17 @@
 package ui
 
 import (
+	"../helpers"
 	"../model"
 	"../service/binance"
 	"../service/common"
 	"fmt"
 	"github.com/gizak/termui"
 	"github.com/gizak/termui/widgets"
-	"log"
 	"time"
 )
+
+var logger = helpers.Logger{}
 
 type UserInterface struct {
 	ExchangeService  *binance.BinanceService
@@ -53,7 +55,7 @@ func (ui *UserInterface) SetLogList(logList *[]string) {
 }
 func (ui *UserInterface) Run() {
 	if err := termui.Init(); err != nil {
-		log.Fatalf("failed to initialize termui: %v", err)
+		logger.Fatalln(fmt.Sprintf("failed to initialize termui: %v", err))
 	}
 	defer termui.Close()
 
@@ -64,22 +66,22 @@ func (ui *UserInterface) Run() {
 
 		maxPrice, err := ui.MarketService.MaxPrice(60, &ui.MarketService.MarketSnapshotsRecord)
 		if err != nil {
-			log.Fatalln(err)
+			logger.Fatalln("ui: " + err.Error())
 		}
 		minPrice, err := ui.MarketService.MinPrice(60, &ui.MarketService.MarketSnapshotsRecord)
 		if err != nil {
-			log.Fatalln(err)
+			logger.Fatalln("ui: " + err.Error())
 		}
 		oscilation, err := ui.MarketService.PctVariation(60, &ui.MarketService.MarketSnapshotsRecord)
 		if err != nil {
-			log.Fatalln(err)
+			logger.Fatalln("ui: " + err.Error())
 		}
 		lowerAsk := ui.MarketService.MarketSnapshotsRecord[0].LowerAskPrice
 		centerPrice := ui.MarketService.MarketSnapshotsRecord[0].CenterPrice
 		higherBid := ui.MarketService.MarketSnapshotsRecord[0].HigherBidPrice
 		percentil, err := ui.MarketService.CurrentPricePercentile(60, &ui.MarketService.MarketSnapshotsRecord)
 		if err != nil {
-			log.Fatalln(err)
+			logger.Fatalln("ui: " + err.Error())
 		}
 
 		marketSnapshotParagraph := widgets.NewParagraph()
@@ -97,11 +99,11 @@ func (ui *UserInterface) Run() {
 
 		balanceCoin1, err := ui.WalletService.GetAssetBalance(ui.WalletService.Coin1)
 		if err != nil {
-			log.Fatalln(err)
+			logger.Fatalln("ui: " + err.Error())
 		}
 		balanceCoin2, err := ui.WalletService.GetAssetBalance(ui.WalletService.Coin2)
 		if err != nil {
-			log.Fatalln(err)
+			logger.Fatalln("ui: " + err.Error())
 		}
 
 		walletStatusParagraph := widgets.NewParagraph()

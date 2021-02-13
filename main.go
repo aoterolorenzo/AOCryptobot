@@ -2,10 +2,10 @@ package main
 
 import (
 	"./marketmaker"
+	"./marketmaker/helpers"
 	"./marketmaker/service/binance"
 	"./marketmaker/service/common"
 	"./marketmaker/ui"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -13,13 +13,16 @@ import (
 	"time"
 )
 
+var logger = helpers.Logger{}
+
 func main() {
 
-	log.Println("Loading bot...")
+	logger.Errorln("test")
+
 	threadNumber, err := strconv.Atoi(os.Getenv("threadNumber"))
 	monitorWindow, err := strconv.Atoi(os.Getenv("monitorWindow"))
 	if err != nil {
-		log.Fatal("Error parsing threadNumber from strategy.env")
+		logger.Fatalln("Error parsing threadNumber from strategy.env")
 	}
 	var logList []string
 	logListMutex := sync.Mutex{}
@@ -37,7 +40,7 @@ func main() {
 	walletService.InitWallet()
 	err = walletService.UpdateWallet()
 	if err != nil {
-		log.Fatal("Error initially updating wallet")
+		logger.Fatalln("Error initially updating wallet")
 	}
 	orderBookService := common.OrderBookService{}
 	orderBookService.SetMutex(&orderBookMutex)
