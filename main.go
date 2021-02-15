@@ -1,11 +1,11 @@
 package main
 
 import (
-	"./marketmaker"
-	"./marketmaker/helpers"
-	"./marketmaker/service/binance"
-	"./marketmaker/service/common"
-	"./marketmaker/ui"
+	"gitlab.com/aoterocom/AOCryptobot/marketmaker"
+	"gitlab.com/aoterocom/AOCryptobot/marketmaker/helpers"
+	"gitlab.com/aoterocom/AOCryptobot/marketmaker/service/binance"
+	"gitlab.com/aoterocom/AOCryptobot/marketmaker/service/common"
+	"gitlab.com/aoterocom/AOCryptobot/marketmaker/ui"
 	"os"
 	"strconv"
 	"strings"

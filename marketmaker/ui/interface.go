@@ -1,13 +1,13 @@
 package ui
 
 import (
-	"../helpers"
-	"../model"
-	"../service/binance"
-	"../service/common"
 	"fmt"
-	"github.com/gizak/termui"
-	"github.com/gizak/termui/widgets"
+	"github.com/gizak/termui/v3"
+	"github.com/gizak/termui/v3/widgets"
+	"gitlab.com/aoterocom/AOCryptobot/marketmaker/helpers"
+	"gitlab.com/aoterocom/AOCryptobot/marketmaker/model"
+	"gitlab.com/aoterocom/AOCryptobot/marketmaker/service/binance"
+	"gitlab.com/aoterocom/AOCryptobot/marketmaker/service/common"
 	"time"
 )
 

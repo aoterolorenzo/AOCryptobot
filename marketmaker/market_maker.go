@@ -1,14 +1,14 @@
 package marketmaker
 
 import (
-	"../marketmaker/helpers"
-	exchangeService "../marketmaker/service/binance"
-	"../marketmaker/service/common"
 	"fmt"
 	"github.com/adshao/go-binance/v2"
 	tm "github.com/buger/goterm"
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
+	"gitlab.com/aoterocom/AOCryptobot/marketmaker/helpers"
+	exchangeService "gitlab.com/aoterocom/AOCryptobot/marketmaker/service/binance"
+	"gitlab.com/aoterocom/AOCryptobot/marketmaker/service/common"
 	"os"
 	"strconv"
 	"strings"

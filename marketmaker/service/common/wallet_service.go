@@ -1,9 +1,9 @@
 package common
 
 import (
-	"../../model"
-	"../../service/binance"
 	"fmt"
+	"gitlab.com/aoterocom/AOCryptobot/marketmaker/model"
+	"gitlab.com/aoterocom/AOCryptobot/marketmaker/service/binance"
 )
 
 type WalletService struct {

@@ -1,11 +1,11 @@
 package binance
 
 import (
-	"../../helpers"
 	"context"
 	"fmt"
 	"github.com/adshao/go-binance/v2"
 	"github.com/joho/godotenv"
+	"gitlab.com/aoterocom/AOCryptobot/marketmaker/helpers"
 	"math"
 	"os"
 	"strconv"

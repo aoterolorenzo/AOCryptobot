@@ -1,8 +1,8 @@
 package common
 
 import (
-	"../../model"
 	"github.com/adshao/go-binance/v2"
+	"gitlab.com/aoterocom/AOCryptobot/marketmaker/model"
 	"sync"
 )
 
