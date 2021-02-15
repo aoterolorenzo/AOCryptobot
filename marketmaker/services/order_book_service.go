@@ -1,18 +1,18 @@
-package common
+package services
 
 import (
 	"github.com/adshao/go-binance/v2"
-	"gitlab.com/aoterocom/AOCryptobot/marketmaker/model"
+	"gitlab.com/aoterocom/AOCryptobot/marketmaker/models"
 	"sync"
 )
 
 type OrderBookService struct {
-	OrderBook model.OrderBook
+	OrderBook models.OrderBook
 	mutex     *sync.Mutex
 }
 
 func (ob *OrderBookService) Init() {
-	ob.OrderBook = model.OrderBook{}
+	ob.OrderBook = models.OrderBook{}
 }
 
 func (ob *OrderBookService) SetMutex(mutex *sync.Mutex) {

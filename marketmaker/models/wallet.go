@@ -1,4 +1,4 @@
-package model
+package models
 
 type Wallet struct {
 	Coin1FreeBalance   float64

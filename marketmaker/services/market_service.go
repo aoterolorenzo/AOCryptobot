@@ -1,9 +1,9 @@
-package common
+package services
 
 import (
 	"github.com/adshao/go-binance/v2"
 	"gitlab.com/aoterocom/AOCryptobot/marketmaker/helpers"
-	"gitlab.com/aoterocom/AOCryptobot/marketmaker/model"
+	"gitlab.com/aoterocom/AOCryptobot/marketmaker/models"
 	"math"
 	"reflect"
 )
@@ -11,11 +11,11 @@ import (
 var logger = helpers.Logger{}
 
 type MarketService struct {
-	MarketSnapshotsRecord []model.MarketSnapshot
+	MarketSnapshotsRecord []models.MarketSnapshot
 }
 
 // Get maximum price within the last s seconds
-func (marketService *MarketService) MaxPrice(s int, marketSnapshot *[]model.MarketSnapshot) (float64, error) {
+func (marketService *MarketService) MaxPrice(s int, marketSnapshot *[]models.MarketSnapshot) (float64, error) {
 	if s > len(*marketSnapshot) {
 		s = len(*marketSnapshot)
 	}
@@ -31,7 +31,7 @@ func (marketService *MarketService) MaxPrice(s int, marketSnapshot *[]model.Mark
 }
 
 // Get minimum price within the last s seconds
-func (marketService *MarketService) MinPrice(s int, marketSnapshot *[]model.MarketSnapshot) (float64, error) {
+func (marketService *MarketService) MinPrice(s int, marketSnapshot *[]models.MarketSnapshot) (float64, error) {
 	if s > len(*marketSnapshot) {
 		s = len(*marketSnapshot)
 	}
@@ -47,7 +47,7 @@ func (marketService *MarketService) MinPrice(s int, marketSnapshot *[]model.Mark
 }
 
 //TODO: No need marketSnapshot on the arguments since
-func (marketService *MarketService) CurrentPricePercentile(s int, marketSnapshot *[]model.MarketSnapshot) (float64, error) {
+func (marketService *MarketService) CurrentPricePercentile(s int, marketSnapshot *[]models.MarketSnapshot) (float64, error) {
 
 	maxPrice, err := marketService.MaxPrice(s, marketSnapshot)
 	if err != nil {
@@ -65,11 +65,11 @@ func (marketService *MarketService) CurrentPricePercentile(s int, marketSnapshot
 	return aboveMinPrice * 100 / spread, nil
 }
 
-func (marketService *MarketService) CurrentPrice(marketSnapshot *[]model.MarketSnapshot) float64 {
+func (marketService *MarketService) CurrentPrice(marketSnapshot *[]models.MarketSnapshot) float64 {
 	return (*marketSnapshot)[0].CenterPrice
 }
 
-func (marketService *MarketService) PctVariation(s int, marketSnapshot *[]model.MarketSnapshot) (float64, error) {
+func (marketService *MarketService) PctVariation(s int, marketSnapshot *[]models.MarketSnapshot) (float64, error) {
 	if s > len(*marketSnapshot) {
 		s = len(*marketSnapshot)
 	}
@@ -80,8 +80,8 @@ func (marketService *MarketService) PctVariation(s int, marketSnapshot *[]model.
 	return 100 - (oldPrice * 100 / newPrice), nil
 }
 
-// Adds a model.MarketSnapshot to the record's model.MarketSnapshot
-func (marketService *MarketService) AppendStatus(marketSnapshot *model.MarketSnapshot) {
+// Adds a models.MarketSnapshot to the record's models.MarketSnapshot
+func (marketService *MarketService) AppendStatus(marketSnapshot *models.MarketSnapshot) {
 	reverseAny(marketService.MarketSnapshotsRecord)
 	marketService.MarketSnapshotsRecord = append(marketService.MarketSnapshotsRecord, *marketSnapshot)
 	reverseAny(marketService.MarketSnapshotsRecord)
@@ -92,7 +92,7 @@ func (marketService *MarketService) StartMonitor(pair string) {
 }
 
 func (marketService *MarketService) WsDepth(pair string) {
-	//TODO: Use exchange logic from here and not on market service
+	//TODO: Use exchange logic from here and not on market services
 	doneC, _, err := binance.WsDepthServe(pair, marketService.WsDepthHandler, marketService.ErrHandler)
 	if err != nil {
 		logger.Errorln(err)
@@ -102,7 +102,7 @@ func (marketService *MarketService) WsDepth(pair string) {
 }
 
 func (marketService *MarketService) WsDepthHandler(event *binance.WsDepthEvent) {
-	marketSnapshot := model.MarketSnapshot{}
+	marketSnapshot := models.MarketSnapshot{}
 	err := marketSnapshot.Set(event)
 	if err != nil {
 		marketService.ErrHandler(err)

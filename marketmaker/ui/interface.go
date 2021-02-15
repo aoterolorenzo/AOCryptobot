@@ -5,9 +5,9 @@ import (
 	"github.com/gizak/termui/v3"
 	"github.com/gizak/termui/v3/widgets"
 	"gitlab.com/aoterocom/AOCryptobot/marketmaker/helpers"
-	"gitlab.com/aoterocom/AOCryptobot/marketmaker/model"
-	"gitlab.com/aoterocom/AOCryptobot/marketmaker/service/binance"
-	"gitlab.com/aoterocom/AOCryptobot/marketmaker/service/common"
+	"gitlab.com/aoterocom/AOCryptobot/marketmaker/models"
+	"gitlab.com/aoterocom/AOCryptobot/marketmaker/services"
+	"gitlab.com/aoterocom/AOCryptobot/marketmaker/services/binance"
 	"time"
 )
 
@@ -15,10 +15,10 @@ var logger = helpers.Logger{}
 
 type UserInterface struct {
 	ExchangeService  *binance.BinanceService
-	MarketService    *common.MarketService
-	WalletService    *common.WalletService
-	OrderBookService *common.OrderBookService
-	initialWallet    *model.Wallet
+	MarketService    *services.MarketService
+	WalletService    *services.WalletService
+	OrderBookService *services.OrderBookService
+	initialWallet    *models.Wallet
 	initialPrice     float64
 	logList          *[]string
 	initialBalance   float64
@@ -31,8 +31,8 @@ func (ui *UserInterface) SetExchangeService(exchangeService *binance.BinanceServ
 	ui.ExchangeService = exchangeService
 }
 
-func (ui *UserInterface) SetServices(exchangeService *binance.BinanceService, MarketService *common.MarketService,
-	walletService *common.WalletService, orderBookService *common.OrderBookService) {
+func (ui *UserInterface) SetServices(exchangeService *binance.BinanceService, MarketService *services.MarketService,
+	walletService *services.WalletService, orderBookService *services.OrderBookService) {
 	ui.ExchangeService = exchangeService
 	ui.MarketService = MarketService
 	ui.WalletService = walletService
