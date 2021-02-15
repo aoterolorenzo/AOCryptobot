@@ -27,31 +27,31 @@ func init() {
 }
 
 func (l *Logger) Errorln(args ...interface{}) {
-	defaultLogger.Errorln(args)
+	defaultLogger.Errorln(args...)
 }
 
 func (l *Logger) Fatalln(args ...interface{}) {
-	defaultLogger.Fatalln(args)
+	defaultLogger.Fatalln(args...)
 }
 
 func (l *Logger) Panicln(args ...interface{}) {
-	defaultLogger.Panicln(args)
+	defaultLogger.Panicln(args...)
 }
 
 func (l *Logger) Warnln(args ...interface{}) {
-	defaultLogger.Warnln(args)
+	defaultLogger.Warnln(args...)
 }
 
 func (l *Logger) Infoln(args ...interface{}) {
-	defaultLogger.Infoln(args)
+	defaultLogger.Infoln(args...)
 }
 
 func (l *Logger) Traceln(args ...interface{}) {
-	defaultLogger.Traceln(args)
+	defaultLogger.Traceln(args...)
 }
 
 func (l *Logger) Debugln(args ...interface{}) {
-	defaultLogger.Debugln(args)
+	defaultLogger.Debugln(args...)
 }
 
 type PlainFormatter struct {
