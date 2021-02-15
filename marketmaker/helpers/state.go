@@ -2,7 +2,7 @@ package helpers
 
 type STATE struct {
 	Current string
-	Time int
+	Time    int
 }
 
 func (s STATE) Set(newState string, time int) {
