@@ -57,7 +57,7 @@ That implies that the sell order will be complete or taking the benefit or by th
 
 
 1. Install dependencies with
-`go get ./..`
+`go mod download`
 
 2. Test with
 `go test ./..`
