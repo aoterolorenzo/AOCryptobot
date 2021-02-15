@@ -20,7 +20,7 @@ func init() {
 
 	plainFormatter := new(PlainFormatter)
 	plainFormatter.TimestampFormat = "2006-01-02 15:04:05"
-	plainFormatter.LevelDesc = []string{"PANC", "FATL", "ERRO", "WARN", "INFO", "DEBG"}
+	plainFormatter.LevelDesc = []string{"PANC", "FATL", "E", "WARN", "INFO", "DEBG"}
 	defaultLogger = log.New()
 	defaultLogger.SetOutput(f)
 	defaultLogger.SetFormatter(plainFormatter)

@@ -55,7 +55,8 @@ func (ui *UserInterface) SetLogList(logList *[]string) {
 }
 func (ui *UserInterface) Run() {
 	if err := termui.Init(); err != nil {
-		logger.Fatalln(fmt.Sprintf("failed to initialize termui: %v", err))
+		logger.Errorln(fmt.Sprintf("failed to initialize termui: %v", err))
+		return
 	}
 	defer termui.Close()
 
@@ -66,22 +67,26 @@ func (ui *UserInterface) Run() {
 
 		maxPrice, err := ui.MarketService.MaxPrice(60, &ui.MarketService.MarketSnapshotsRecord)
 		if err != nil {
-			logger.Fatalln("ui: " + err.Error())
+			logger.Errorln("ui: " + err.Error())
+			return
 		}
 		minPrice, err := ui.MarketService.MinPrice(60, &ui.MarketService.MarketSnapshotsRecord)
 		if err != nil {
-			logger.Fatalln("ui: " + err.Error())
+			logger.Errorln("ui: " + err.Error())
+			return
 		}
 		oscilation, err := ui.MarketService.PctVariation(60, &ui.MarketService.MarketSnapshotsRecord)
 		if err != nil {
-			logger.Fatalln("ui: " + err.Error())
+			logger.Errorln("ui: " + err.Error())
+			return
 		}
 		lowerAsk := ui.MarketService.MarketSnapshotsRecord[0].LowerAskPrice
 		centerPrice := ui.MarketService.MarketSnapshotsRecord[0].CenterPrice
 		higherBid := ui.MarketService.MarketSnapshotsRecord[0].HigherBidPrice
 		percentil, err := ui.MarketService.CurrentPricePercentile(60, &ui.MarketService.MarketSnapshotsRecord)
 		if err != nil {
-			logger.Fatalln("ui: " + err.Error())
+			logger.Errorln("ui: " + err.Error())
+			return
 		}
 
 		marketSnapshotParagraph := widgets.NewParagraph()
@@ -99,11 +104,13 @@ func (ui *UserInterface) Run() {
 
 		balanceCoin1, err := ui.WalletService.GetAssetBalance(ui.WalletService.Coin1)
 		if err != nil {
-			logger.Fatalln("ui: " + err.Error())
+			logger.Errorln("ui: " + err.Error())
+			return
 		}
 		balanceCoin2, err := ui.WalletService.GetAssetBalance(ui.WalletService.Coin2)
 		if err != nil {
-			logger.Fatalln("ui: " + err.Error())
+			logger.Errorln("ui: " + err.Error())
+			return
 		}
 
 		walletStatusParagraph := widgets.NewParagraph()
