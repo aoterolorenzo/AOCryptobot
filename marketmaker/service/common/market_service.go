@@ -1,9 +1,9 @@
 package common
 
 import (
-	"../../helpers"
-	"../../model"
 	"github.com/adshao/go-binance/v2"
+	"gitlab.com/aoterocom/AOCryptobot/marketmaker/helpers"
+	"gitlab.com/aoterocom/AOCryptobot/marketmaker/model"
 	"math"
 	"reflect"
 )
