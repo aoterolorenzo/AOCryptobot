@@ -250,7 +250,7 @@ func (m *MMStrategy) buying() {
 			m.sellAmount, _ = m.WalletService.GetFreeAssetBalance(m.WalletService.Coin1)
 
 			if strings.Contains(err.Error(), "insufficient balance") {
-				m.buyAmount, err = m.WalletService.GetFreeAssetBalance(m.WalletService.Coin1)
+				m.buyAmount, err = m.WalletService.GetFreeAssetBalance(m.WalletService.Coin2)
 				if err != nil {
 					m.logAndList("e5b: "+err.Error(), log.ErrorLevel)
 				}
@@ -270,8 +270,7 @@ func (m *MMStrategy) buying() {
 		m.logAndList(fmt.Sprintf("Buy timeout. Order #%d canceled", m.buyOrder.OrderID), log.InfoLevel)
 		err = m.BinanceService.CancelOrder(m.buyOrder.OrderID)
 		if err != nil {
-			m.logAndList("e6: "+err.Error(), log.ErrorLevel)
-			return
+			m.logAndList("e6: "+err.Error(), log.WarnLevel)
 		}
 
 		m.OrderBookService.RemoveOpenOrder(m.BinanceService.OrderResponseToOrder(*m.buyOrder))
