@@ -22,7 +22,7 @@ type BinanceService struct {
 
 func init() {
 	cwd, _ := os.Getwd()
-	err := godotenv.Load(cwd + "/marketmaker/service/binance/conf.env")
+	err := godotenv.Load(cwd + "/marketmaker/services/binance/conf.env")
 	if err != nil {
 		logger.Fatalln("Error loading go.env file", err)
 	}
@@ -184,7 +184,7 @@ func (binanceService *BinanceService) GetOrderStatus(orderId int64) (*binance.Or
 //}
 
 func (binanceService *BinanceService) WsDepth(dh binance.WsDepthHandler, eh binance.ErrHandler) {
-	//TODO: Use exchange logic from here and not on market service
+	//TODO: Use exchange logic from here and not on market services
 	doneC, _, err := binance.WsDepthServe(binanceService.pair, dh, eh)
 	if err != nil {
 		logger.Errorln(err)

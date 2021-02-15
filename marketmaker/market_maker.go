@@ -7,8 +7,8 @@ import (
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/aoterocom/AOCryptobot/marketmaker/helpers"
-	exchangeService "gitlab.com/aoterocom/AOCryptobot/marketmaker/service/binance"
-	"gitlab.com/aoterocom/AOCryptobot/marketmaker/service/common"
+	"gitlab.com/aoterocom/AOCryptobot/marketmaker/services"
+	exchangeService "gitlab.com/aoterocom/AOCryptobot/marketmaker/services/binance"
 	"os"
 	"strconv"
 	"strings"
@@ -26,9 +26,9 @@ const (
 
 type MMStrategy struct {
 	BinanceService       *exchangeService.BinanceService
-	MarketService        *common.MarketService
-	WalletService        *common.WalletService
-	OrderBookService     *common.OrderBookService
+	MarketService        *services.MarketService
+	WalletService        *services.WalletService
+	OrderBookService     *services.OrderBookService
 	logList              *[]string
 	logListMutex         *sync.Mutex
 	state                helpers.STATE
@@ -71,8 +71,8 @@ func init() {
 	}
 }
 
-func (m *MMStrategy) SetServices(binanceService *exchangeService.BinanceService, marketService *common.MarketService,
-	walletService *common.WalletService, orderBookService *common.OrderBookService) {
+func (m *MMStrategy) SetServices(binanceService *exchangeService.BinanceService, marketService *services.MarketService,
+	walletService *services.WalletService, orderBookService *services.OrderBookService) {
 	m.BinanceService = binanceService
 	m.MarketService = marketService
 	m.WalletService = walletService
