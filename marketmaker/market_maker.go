@@ -11,6 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -52,12 +53,14 @@ type MMStrategy struct {
 	buyAmount float64
 	buyOrder  *binance.CreateOrderResponse
 
-	sellRate       float64
-	sellAmount     float64
-	sellOCOOrder   *binance.CreateOCOResponse
-	sellOrder      *binance.CreateOrderResponse
-	stopPrice      float64
-	stopLimitPrice float64
+	sellRate              float64
+	sellAmount            float64
+	sellOCOOrder          *binance.CreateOCOResponse
+	sellOrder             *binance.CreateOrderResponse
+	stopPrice             float64
+	stopLimitPrice        float64
+	afterSellingCoolDown  float64
+	afterStopLossCoolDown float64
 }
 
 func init() {
@@ -100,9 +103,14 @@ func (m *MMStrategy) Execute(waitTime int) {
 	m.buyingTimeout, _ = strconv.Atoi(os.Getenv("buyingTimeout"))
 	m.sellingTimeout, _ = strconv.Atoi(os.Getenv("sellingTimeout"))
 	m.trailingStopLossPct, _ = strconv.ParseFloat(os.Getenv("trailingStopLossPct"), 64)
+	m.afterSellingCoolDown, _ = strconv.ParseFloat(os.Getenv("afterSellingCoolDown"), 64)
+	m.afterStopLossCoolDown, _ = strconv.ParseFloat(os.Getenv("afterStopLossCoolDown"), 64)
 
 	// Set initial state to MONITOR and start marketService monitor
 	m.state.Current = MONITOR
+
+	//Set some dispersion between threads
+	m.monitorWindow += waitTime
 
 	// Wait window iterations until monitor loads
 	m.logAndList("Loading window data...", log.InfoLevel)
@@ -191,13 +199,14 @@ func (m *MMStrategy) monitor() {
 	}
 	m.buyOrder = buyOrder
 
-	m.logAndList(fmt.Sprintf("Buy order emitted: rate %4f %s, amount %4f %s", m.buyRate, m.WalletService.Coin2,
+	m.logAndList(fmt.Sprintf("Buy order #%d emitted: rate %4f %s, amount %4f %s", m.buyOrder.OrderID, m.buyRate, m.WalletService.Coin2,
 		m.buyAmount, m.WalletService.Coin2), log.InfoLevel)
 
 	m.state.Time = int(time.Now().Unix())
 
 	m.OrderBookService.AddOpenOrder(m.BinanceService.OrderResponseToOrder(*m.buyOrder))
 	m.state.Current = BUYING
+	m.state.Time = int(time.Now().Unix())
 
 }
 
@@ -205,36 +214,60 @@ func (m *MMStrategy) buying() {
 
 	orderStatus, err := m.BinanceService.GetOrderStatus(m.buyOrder.OrderID)
 	if err != nil {
-		m.logAndList("e4: "+err.Error(), log.ErrorLevel)
+		//m.logAndList("e4: "+err.Error(), log.ErrorLevel)
 		return
 	}
 
 	if orderStatus.Status == binance.OrderStatusTypeFilled {
-		m.logAndList("Buy order filled", log.InfoLevel)
+		m.logAndList(fmt.Sprintf("Buy order #%d filled", m.buyOrder.OrderID), log.InfoLevel)
 		m.OrderBookService.RemoveOpenOrder(m.BinanceService.OrderResponseToOrder(*m.buyOrder))
 		m.OrderBookService.AddFilledOrder(m.BinanceService.OrderResponseToOrder(*m.buyOrder))
+
+		err = m.WalletService.UpdateWallet()
+		if err != nil {
+			logger.Errorln("Error updating wallet" + err.Error())
+			return
+		}
 
 		//INICIAMOS ORDEN DE VENTA
 		m.sellRate = m.buyRate * (1 + m.buyMargin) * (1 + m.sellMargin)
 		m.sellAmount = m.buyAmount / m.buyRate
+		tBalance, err := m.WalletService.GetFreeAssetBalance(m.WalletService.Coin1)
+		if err != nil {
+			m.logAndList("e5x: "+err.Error(), log.ErrorLevel)
+		}
+		if m.sellAmount > tBalance {
+			m.sellAmount = tBalance
+		}
 		m.stopPrice = m.sellRate * (1 - m.stopLossPct)
-		m.stopLimitPrice = m.stopPrice * (1 + m.trailingStopLossPct) * (1 - 0.00075)
+		m.stopLimitPrice = m.stopPrice * (1 - 0.00075)
 
 		m.sellOCOOrder, err = m.BinanceService.MakeOCOOrder(m.sellAmount, m.sellRate, m.stopPrice, m.stopLimitPrice, binance.SideTypeSell)
 		if err != nil {
 			m.logAndList("e5: "+err.Error(), log.ErrorLevel)
+			m.logAndList(fmt.Sprintf("Amount %.2f Rate %.2f StopP %.2f StopLimPrice %.2f assetFree %.2f",
+				m.sellAmount, m.sellRate, m.stopPrice, m.stopLimitPrice, m.buyAmount), log.DebugLevel)
+			m.sellAmount, _ = m.WalletService.GetFreeAssetBalance(m.WalletService.Coin1)
+
+			if strings.Contains(err.Error(), "insufficient balance") {
+				m.buyAmount, err = m.WalletService.GetFreeAssetBalance(m.WalletService.Coin1)
+				if err != nil {
+					m.logAndList("e5b: "+err.Error(), log.ErrorLevel)
+				}
+			}
 			return
 		}
 
-		m.logAndList(fmt.Sprintf("Sell OCO order emmitted: rate %f %s, "+
-			"cantidad %f %s, stop-loss %f %s ", m.sellRate, m.WalletService.Coin2, m.sellAmount, m.WalletService.Coin2,
-			m.stopPrice, m.WalletService.Coin2), log.InfoLevel)
+		m.logAndList(fmt.Sprintf("Sell OCO order #%d/#%d emitted:", m.sellOCOOrder.Orders[0].OrderID,
+			m.sellOCOOrder.Orders[1].OrderID), log.InfoLevel)
+		m.logAndList(fmt.Sprintf("Rate %f %s, Quant %f %s, Stop-Loss %f %s ", m.sellRate,
+			m.WalletService.Coin2, m.sellAmount, m.WalletService.Coin2, m.stopPrice, m.WalletService.Coin2), log.InfoLevel)
 		m.OrderBookService.AddOpenOrder(m.BinanceService.OCOOrderResponseToOrder(*m.sellOCOOrder))
 		m.state.Current = HOLDING
 		m.state.Time = int(time.Now().Unix())
 
-	} else if m.state.Time+m.buyingTimeout < int(time.Now().Unix()) {
-		m.logAndList("Buy timeout. Order canceled", log.InfoLevel)
+	} else if orderStatus.Status != binance.OrderStatusTypePartiallyFilled && m.state.Time+m.buyingTimeout < int(time.Now().Unix()) {
+		m.logAndList(fmt.Sprintf("Buy timeout. Order #%d canceled", m.buyOrder.OrderID), log.InfoLevel)
 		err = m.BinanceService.CancelOrder(m.buyOrder.OrderID)
 		if err != nil {
 			m.logAndList("e6: "+err.Error(), log.ErrorLevel)
@@ -260,26 +293,46 @@ func (m *MMStrategy) holding() {
 
 		if tempSellOrder.Status == binance.OrderStatusTypeFilled &&
 			tempSellOrder.Type == binance.OrderTypeStopLossLimit {
-			// STOP LOSS LIMIT FILLED
-			m.logAndList("STOP LOSS activated. Sold by strategy", log.InfoLevel)
+			// Stop-loss triggered
+			m.logAndList(fmt.Sprintf("Sell order #%d/#%d filled by Stop-Loss", m.sellOCOOrder.Orders[0].OrderID,
+				m.sellOCOOrder.Orders[1].OrderID), log.InfoLevel)
 			m.OrderBookService.RemoveOpenOrder(m.BinanceService.OCOOrderResponseToOrder(*m.sellOCOOrder))
 			m.OrderBookService.AddFilledOrder(m.BinanceService.OCOOrderResponseToOrder(*m.sellOCOOrder))
+			err = m.WalletService.UpdateWallet()
+
+			// Stop-loss cooldown
+			time.Sleep(time.Duration(m.afterStopLossCoolDown) * time.Second)
+
+			if err != nil {
+				logger.Errorln("Error updating wallet" + err.Error())
+				return
+			}
 			m.state.Current = MONITOR
 			m.state.Time = int(time.Now().Unix())
 		} else if tempSellOrder.Status == binance.OrderStatusTypeFilled {
 			// LIMIT FILLED
-			m.logAndList("Sell successfully filled", log.InfoLevel)
+			m.logAndList(fmt.Sprintf("Sell order #%d/#%d successfully filled", m.sellOCOOrder.Orders[0].OrderID,
+				m.sellOCOOrder.Orders[1].OrderID), log.InfoLevel)
 			m.OrderBookService.RemoveOpenOrder(m.BinanceService.OCOOrderResponseToOrder(*m.sellOCOOrder))
 			m.OrderBookService.AddFilledOrder(m.BinanceService.OCOOrderResponseToOrder(*m.sellOCOOrder))
+			err = m.WalletService.UpdateWallet()
+			if err != nil {
+				logger.Errorln("Error updating wallet" + err.Error())
+				return
+			}
 			m.state.Current = MONITOR
+
+			m.logAndList("Cooling down", log.InfoLevel)
 			m.state.Time = int(time.Now().Unix())
+			time.Sleep(time.Duration(m.afterSellingCoolDown) * time.Second)
 		}
 
 	}
 
 	// CHECK SELL IS NOT TIMEOUT init + 2 dias = ahora
 	if m.sellingTimeout != 0 && m.state.Time+m.sellingTimeout < int(time.Now().Unix()) {
-		m.logAndList("Sell timeout", log.InfoLevel)
+		m.logAndList(fmt.Sprintf("Sell OCO order #%d/#%d timed out", m.sellOCOOrder.Orders[0].OrderID,
+			m.sellOCOOrder.Orders[1].OrderID), log.InfoLevel)
 
 		orderA, err := m.BinanceService.GetOrder(m.sellOCOOrder.Orders[0].OrderID)
 		if err != nil {
@@ -293,39 +346,48 @@ func (m *MMStrategy) holding() {
 			return
 		}
 
-		if !(orderA.Status == binance.OrderStatusTypePartiallyFilled) &&
-			!(orderB.Status == binance.OrderStatusTypePartiallyFilled) {
+		if !(orderA.Status == binance.OrderStatusTypePartiallyFilled) && !(orderA.Status == binance.OrderStatusTypeFilled) &&
+			!(orderB.Status == binance.OrderStatusTypePartiallyFilled) && !(orderB.Status == binance.OrderStatusTypeFilled) {
 			err = m.BinanceService.CancelOrder(orderA.OrderID)
 			if err != nil {
 				m.logAndList("e9: "+err.Error(), log.ErrorLevel)
 				return
 			}
 
-			m.logAndList("Sell OCO order canceled", log.InfoLevel)
-			m.logAndList("Sell order at market price emitted", log.InfoLevel)
+			m.logAndList(fmt.Sprintf("Sell OCO order #%d/#%d canceled", m.sellOCOOrder.Orders[0].OrderID,
+				m.sellOCOOrder.Orders[1].OrderID), log.InfoLevel)
 
 			m.OrderBookService.RemoveOpenOrder(m.BinanceService.OCOOrderResponseToOrder(*m.sellOCOOrder))
 
 			order, err := m.BinanceService.MakeOrder(m.sellAmount,
-				m.MarketService.MarketSnapshotsRecord[0].HigherBidPrice, binance.SideTypeSell)
+				m.MarketService.MarketSnapshotsRecord[0].HigherBidPrice*(1-0.0005), binance.SideTypeSell)
 			m.OrderBookService.AddOpenOrder(m.BinanceService.OrderResponseToOrder(*order))
+
+			m.logAndList(fmt.Sprintf("Sell order #%d emitted at market price", order.OrderID), log.InfoLevel)
 			if err != nil {
 				m.logAndList("e10: "+err.Error(), log.ErrorLevel)
 				return
 			}
 
-			m.logAndList("Waiting to fill sell timeout order", log.InfoLevel)
+			m.logAndList(fmt.Sprintf("Waiting to fill #%d sell timeout order", order.OrderID), log.InfoLevel)
 			for {
 				timeoutSellORder, err := m.BinanceService.GetOrder(order.OrderID)
 				if err != nil {
 					m.logAndList(" e11: "+err.Error(), log.ErrorLevel)
+					m.state.Current = MONITOR
+					m.state.Time = int(time.Now().Unix())
 					return
 				}
 
 				if timeoutSellORder.Status == binance.OrderStatusTypeFilled {
-					m.logAndList("Sell timeout order filled", log.InfoLevel)
+					m.logAndList(fmt.Sprintf("Sell timeout order #%d  filled", timeoutSellORder.OrderID), log.InfoLevel)
 					m.OrderBookService.RemoveOpenOrder(m.BinanceService.OrderResponseToOrder(*order))
 					m.OrderBookService.AddFilledOrder(m.BinanceService.OrderResponseToOrder(*order))
+					err = m.WalletService.UpdateWallet()
+					if err != nil {
+						logger.Errorln("Error updating wallet" + err.Error())
+						return
+					}
 					m.state.Current = MONITOR
 					m.state.Time = int(time.Now().Unix())
 					break

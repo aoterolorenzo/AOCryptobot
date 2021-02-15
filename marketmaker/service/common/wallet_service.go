@@ -13,6 +13,10 @@ type WalletService struct {
 }
 
 func (ws *WalletService) GetTotalAssetsBalance(price float64) float64 {
+	err := ws.UpdateWallet()
+	if err != nil {
+		return -1.0
+	}
 	return (ws.Wallet.Coin1FreeBalance+ws.Wallet.Coin1LockedBalance)*price +
 		(ws.Wallet.Coin2FreeBalance + ws.Wallet.Coin2LockedBalance)
 }
@@ -24,6 +28,34 @@ func (ws *WalletService) GetAssetBalance(coin string) (float64, error) {
 
 	if coin == ws.Coin2 {
 		return ws.Wallet.Coin2FreeBalance + ws.Wallet.Coin2LockedBalance, nil
+	}
+
+	return -1.0, fmt.Errorf("error: unavailable pair provided")
+}
+
+func (ws *WalletService) GetFreeAssetBalance(coin string) (float64, error) {
+	err := ws.UpdateWallet()
+	if err != nil {
+		return 0, err
+	}
+	if coin == ws.Coin1 {
+		return ws.Wallet.Coin1FreeBalance, nil
+	}
+
+	if coin == ws.Coin2 {
+		return ws.Wallet.Coin2FreeBalance, nil
+	}
+
+	return -1.0, fmt.Errorf("error: unavailable pair provided")
+}
+
+func (ws *WalletService) GetLockedAssetBalance(coin string) (float64, error) {
+	if coin == ws.Coin1 {
+		return ws.Wallet.Coin1LockedBalance, nil
+	}
+
+	if coin == ws.Coin2 {
+		return ws.Wallet.Coin2LockedBalance, nil
 	}
 
 	return -1.0, fmt.Errorf("error: unavailable pair provided")
