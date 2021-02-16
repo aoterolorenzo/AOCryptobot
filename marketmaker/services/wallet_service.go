@@ -94,10 +94,5 @@ func (ws *WalletService) UpdateWallet() error {
 	}
 	ws.Wallet.Coin2LockedBalance = coin2LockedBalance
 
-	logger.Infoln(fmt.Sprintf("%s wallet update: %.8f Total (%.8f Free %.8f Locked)",
-		ws.Coin1, coin1FreeBalance+coin1LockedBalance, coin1FreeBalance, coin1LockedBalance))
-	logger.Infoln(fmt.Sprintf("%s Wallet update: %.8f Total (%.8f Free %.8f Locked)",
-		ws.Coin2, coin2FreeBalance+coin2LockedBalance, coin2FreeBalance, coin2LockedBalance))
-
 	return nil
 }
