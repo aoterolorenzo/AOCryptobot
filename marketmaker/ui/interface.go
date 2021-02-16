@@ -44,13 +44,9 @@ func (ui *UserInterface) SetServices(exchangeService *binance.BinanceService, Ma
 }
 
 func (ui *UserInterface) UpdatePyL() {
-
 	ui.currentBalance = ui.WalletService.GetTotalAssetsBalance(ui.MarketService.CurrentPrice(&ui.MarketService.MarketSnapshotsRecord))
 	ui.totalPyL = ui.currentBalance - ui.initialBalance
 	ui.totalPyLPct = (ui.currentBalance * 100 / ui.initialBalance) - 100.0
-
-	logger.Infoln(fmt.Sprintf("%s wallet update: %.8f PyL (%.8f %%)",
-		ui.WalletService.Coin1, ui.totalPyL, ui.totalPyLPct))
 }
 
 func (ui *UserInterface) SetLogList(logList *[]string) {
@@ -165,6 +161,6 @@ func (ui *UserInterface) UpdateUI() {
 	pAndLParagraph.SetRect(100, 6, 68, 0)
 
 	operationsList.ScrollBottom()
-
+	termui.Render()
 	termui.Render(marketSnapshotParagraph, walletStatusParagraph, operationsList, ordersParagraph, pAndLParagraph)
 }
