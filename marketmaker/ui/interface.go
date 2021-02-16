@@ -66,20 +66,20 @@ func (ui *UserInterface) Run() {
 	ui.ExchangeService.ConfigureClient()
 
 	for {
-		time.Sleep(1 * time.Second)
-
-		ui.UpdateUI()
-
 		uiEvents := termui.PollEvents()
+		ticker := time.NewTicker(time.Second).C
 		for {
-			e := <-uiEvents
-			switch e.ID {
-			case "q", "<C-c>":
-				logger.Infoln("Exited by keyboard interrupt")
-				return
+			select {
+			case e := <-uiEvents:
+				switch e.ID {
+				case "q", "<C-c>":
+					logger.Infoln("Exited by keyboard interrupt")
+					return
+				}
+			case <-ticker:
+				ui.UpdateUI()
 			}
 		}
-
 	}
 }
 
