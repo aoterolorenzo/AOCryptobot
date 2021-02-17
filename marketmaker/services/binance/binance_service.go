@@ -6,7 +6,6 @@ import (
 	"github.com/adshao/go-binance/v2"
 	"github.com/joho/godotenv"
 	"gitlab.com/aoterocom/AOCryptobot/marketmaker/helpers"
-	"math"
 	"os"
 	"strconv"
 )
@@ -111,8 +110,8 @@ func (binanceService *BinanceService) MakeOrder(quantity float64, rate float64, 
 
 	order, err := binanceService.binanceClient.NewCreateOrderService().Symbol(binanceService.pair).
 		Side(sideType).Type(binance.OrderTypeLimit).
-		TimeInForce(binance.TimeInForceTypeGTC).Quantity(fmt.Sprintf("%.2f", math.Floor(quantity*100)/100)).
-		Price(fmt.Sprintf("%.2f", math.Floor(rate*100)/100)).Do(context.Background())
+		TimeInForce(binance.TimeInForceTypeGTC).Quantity(fmt.Sprintf("%.5f", quantity)).
+		Price(fmt.Sprintf("%.2f", rate)).Do(context.Background())
 
 	if err != nil {
 		return nil, err
@@ -129,10 +128,10 @@ func (binanceService *BinanceService) MakeOCOOrder(quantity float64, rate float6
 	}
 
 	order, err := binanceService.binanceClient.NewCreateOCOService().Symbol(binanceService.pair).Side(sideType).
-		Price(fmt.Sprintf("%.2f", math.Floor(rate*100)/100)).
-		StopPrice(fmt.Sprintf("%.2f", math.Floor(stopPrice*100)/100)).
-		StopLimitPrice(fmt.Sprintf("%.2f", math.Floor(stopLimitPrice*100)/100)).
-		Quantity(fmt.Sprintf("%.2f", math.Floor(quantity*100)/100)).
+		Price(fmt.Sprintf("%.2f", rate)).
+		StopPrice(fmt.Sprintf("%.2f", stopPrice)).
+		StopLimitPrice(fmt.Sprintf("%.2f", stopLimitPrice)).
+		Quantity(fmt.Sprintf("%.5f", quantity)).
 		StopLimitTimeInForce("GTC").Do(context.Background())
 
 	if err != nil {
