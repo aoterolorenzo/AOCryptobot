@@ -13,10 +13,6 @@ type WalletService struct {
 }
 
 func (ws *WalletService) GetTotalAssetsBalance(price float64) float64 {
-	err := ws.UpdateWallet()
-	if err != nil {
-		return -1.0
-	}
 	return (ws.Wallet.Coin1FreeBalance+ws.Wallet.Coin1LockedBalance)*price +
 		(ws.Wallet.Coin2FreeBalance + ws.Wallet.Coin2LockedBalance)
 }

@@ -60,6 +60,7 @@ type MMStrategy struct {
 	stopLimitPrice        float64
 	afterSellingCoolDown  float64
 	afterStopLossCoolDown float64
+	threadNumber          int
 }
 
 func init() {
@@ -90,6 +91,7 @@ func (m *MMStrategy) SetThreadName(threadName string) {
 func (m *MMStrategy) Execute(waitTime int) {
 
 	// Get .env file strategy variables
+	m.threadNumber, _ = strconv.Atoi(os.Getenv("threadNumber"))
 	m.monitorWindow, _ = strconv.Atoi(os.Getenv("monitorWindow"))
 	m.pctAmountToTrade, _ = strconv.ParseFloat(os.Getenv("pctAmountToTrade"), 64)
 	m.buyMargin, _ = strconv.ParseFloat(os.Getenv("buyMargin"), 64)
@@ -188,8 +190,9 @@ func (m *MMStrategy) monitor() {
 
 	m.logAndList("Time to buy", log.InfoLevel)
 
-	m.buyRate = m.MarketService.CurrentPrice(&m.MarketService.MarketSnapshotsRecord) * (1 - m.buyMargin)
-	balanceA, _ := m.BinanceService.GetTotalBalance(m.WalletService.Coin2)
+	currentPrice := m.MarketService.CurrentPrice(&m.MarketService.MarketSnapshotsRecord)
+	m.buyRate = currentPrice * (1 - m.buyMargin)
+	balanceA := m.WalletService.GetTotalAssetsBalance(currentPrice)
 	m.buyAmount = balanceA * m.pctAmountToTrade / 100
 
 	buyOrder, err := m.BinanceService.MakeOrder(m.buyAmount, m.buyRate, binance.SideTypeBuy)
@@ -234,6 +237,18 @@ func (m *MMStrategy) buying() {
 		m.sellAmount, _ = strconv.ParseFloat(order.ExecutedQuantity, 64)
 		m.stopPrice = m.sellRate * (1 - m.stopLossPct)
 		m.stopLimitPrice = m.stopPrice * (1 - 0.00075)
+
+		// Clean up the residues left by the decimals and broken thread amounts
+		freeAsset, err := m.WalletService.GetFreeAssetBalance(m.WalletService.Coin1)
+		if err != nil {
+			logger.Errorln("Error getting asset: " + err.Error())
+			return
+		}
+
+		// If there is residue or any broken thread had left a position on the other side, bring it on the OCO order
+		if freeAsset < m.sellAmount+(m.sellAmount*0.6) || m.OrderBookService.OpenOrdersCount() == m.threadNumber-1 {
+			m.sellAmount = freeAsset * 0.999
+		}
 
 		for {
 			m.sellOCOOrder, err = m.BinanceService.MakeOCOOrder(m.sellAmount, m.sellRate, m.stopPrice, m.stopLimitPrice, binance.SideTypeSell)
