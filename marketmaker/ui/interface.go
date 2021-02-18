@@ -38,12 +38,22 @@ func (ui *UserInterface) SetServices(exchangeService *binance.BinanceService, Ma
 	ui.WalletService = walletService
 	ui.OrderBookService = orderBookService
 	ui.initialWallet = ui.WalletService.Wallet
+	err := ui.WalletService.UpdateWallet()
+	if err != nil {
+		logger.Errorln("ui: " + err.Error())
+		return
+	}
 	ui.initialBalance = ui.WalletService.GetTotalAssetsBalance(ui.MarketService.CurrentPrice(&ui.MarketService.MarketSnapshotsRecord))
 
 	ui.UpdatePyL()
 }
 
 func (ui *UserInterface) UpdatePyL() {
+	err := ui.WalletService.UpdateWallet()
+	if err != nil {
+		logger.Errorln("ui: " + err.Error())
+		return
+	}
 	ui.currentBalance = ui.WalletService.GetTotalAssetsBalance(ui.MarketService.CurrentPrice(&ui.MarketService.MarketSnapshotsRecord))
 	ui.totalPyL = ui.currentBalance - ui.initialBalance
 	ui.totalPyLPct = (ui.currentBalance * 100 / ui.initialBalance) - 100.0
