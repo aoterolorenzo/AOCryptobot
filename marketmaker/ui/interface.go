@@ -43,7 +43,7 @@ func (ui *UserInterface) SetServices(exchangeService *binance.BinanceService, Ma
 		logger.Errorln("ui: " + err.Error())
 		return
 	}
-	ui.initialBalance = ui.WalletService.GetTotalAssetsBalance(ui.MarketService.CurrentPrice(&ui.MarketService.MarketSnapshotsRecord))
+	ui.initialBalance = ui.WalletService.GetTotalAssetsBalance(ui.MarketService.CurrentPrice())
 
 	ui.UpdatePyL()
 }
@@ -54,7 +54,7 @@ func (ui *UserInterface) UpdatePyL() {
 		logger.Errorln("ui: " + err.Error())
 		return
 	}
-	ui.currentBalance = ui.WalletService.GetTotalAssetsBalance(ui.MarketService.CurrentPrice(&ui.MarketService.MarketSnapshotsRecord))
+	ui.currentBalance = ui.WalletService.GetTotalAssetsBalance(ui.MarketService.CurrentPrice())
 	ui.totalPyL = ui.currentBalance - ui.initialBalance
 	ui.totalPyLPct = (ui.currentBalance * 100 / ui.initialBalance) - 100.0
 }
@@ -90,17 +90,17 @@ func (ui *UserInterface) Run() {
 }
 
 func (ui *UserInterface) UpdateUI() {
-	maxPrice, err := ui.MarketService.MaxPrice(60, &ui.MarketService.MarketSnapshotsRecord)
+	maxPrice, err := ui.MarketService.MaxPrice(60)
 	if err != nil {
 		logger.Errorln("ui: " + err.Error())
 		return
 	}
-	minPrice, err := ui.MarketService.MinPrice(60, &ui.MarketService.MarketSnapshotsRecord)
+	minPrice, err := ui.MarketService.MinPrice(60)
 	if err != nil {
 		logger.Errorln("ui: " + err.Error())
 		return
 	}
-	oscillation, err := ui.MarketService.PctVariation(60, &ui.MarketService.MarketSnapshotsRecord)
+	oscillation, err := ui.MarketService.PctVariation(60)
 	if err != nil {
 		logger.Errorln("ui: " + err.Error())
 		return
@@ -108,7 +108,7 @@ func (ui *UserInterface) UpdateUI() {
 	lowerAsk := ui.MarketService.MarketSnapshotsRecord[0].LowerAskPrice
 	centerPrice := ui.MarketService.MarketSnapshotsRecord[0].CenterPrice
 	higherBid := ui.MarketService.MarketSnapshotsRecord[0].HigherBidPrice
-	percentil, err := ui.MarketService.CurrentPricePercentile(60, &ui.MarketService.MarketSnapshotsRecord)
+	percentil, err := ui.MarketService.CurrentPricePercentile(60)
 	if err != nil {
 		logger.Errorln("ui: " + err.Error())
 		return

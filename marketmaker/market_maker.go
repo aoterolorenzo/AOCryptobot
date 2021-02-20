@@ -147,12 +147,12 @@ func (m *MMStrategy) Execute(waitTime int) {
 
 func (m *MMStrategy) monitor() {
 
-	lastPricePercentile, err := m.MarketService.CurrentPricePercentile(m.monitorWindow, &m.MarketService.MarketSnapshotsRecord)
+	lastPricePercentile, err := m.MarketService.CurrentPricePercentile(m.monitorWindow)
 	if err != nil {
 		m.logAndList(" e1:"+err.Error(), log.ErrorLevel)
 		return
 	}
-	pctVariation, err := m.MarketService.PctVariation(m.monitorWindow, &m.MarketService.MarketSnapshotsRecord)
+	pctVariation, err := m.MarketService.PctVariation(m.monitorWindow)
 	if err != nil {
 		m.logAndList(" e2:"+err.Error(), log.ErrorLevel)
 		return
@@ -168,12 +168,12 @@ func (m *MMStrategy) monitor() {
 		m.logAndList("Waiting for market...", log.InfoLevel)
 
 		for {
-			lastPricePercentile, err = m.MarketService.CurrentPricePercentile(m.monitorWindow, &m.MarketService.MarketSnapshotsRecord)
+			lastPricePercentile, err = m.MarketService.CurrentPricePercentile(m.monitorWindow)
 			if err != nil {
 				m.logAndList("e1: "+err.Error(), log.ErrorLevel)
 				return
 			}
-			pctVariation, err = m.MarketService.PctVariation(m.monitorWindow, &m.MarketService.MarketSnapshotsRecord)
+			pctVariation, err = m.MarketService.PctVariation(m.monitorWindow)
 			if err != nil {
 				m.logAndList("e2: "+err.Error(), log.ErrorLevel)
 				return
@@ -190,7 +190,7 @@ func (m *MMStrategy) monitor() {
 
 	m.logAndList("Time to buy", log.InfoLevel)
 
-	currentPrice := m.MarketService.CurrentPrice(&m.MarketService.MarketSnapshotsRecord)
+	currentPrice := m.MarketService.CurrentPrice()
 	m.buyRate = currentPrice * (1 - m.buyMargin)
 	balanceA := m.WalletService.GetTotalAssetsBalance(currentPrice)
 	m.buyAmount = balanceA * m.pctAmountToTrade / 100

@@ -15,15 +15,15 @@ type MarketService struct {
 }
 
 // Get maximum price within the last s seconds
-func (marketService *MarketService) MaxPrice(s int, marketSnapshot *[]models.MarketSnapshot) (float64, error) {
-	if s > len(*marketSnapshot) {
-		s = len(*marketSnapshot)
+func (marketService *MarketService) MaxPrice(s int) (float64, error) {
+	if s > len(marketService.MarketSnapshotsRecord) {
+		s = len(marketService.MarketSnapshotsRecord)
 	}
 
 	max := 0.0
-	for i := 0; i < s && i < len(*marketSnapshot); i++ {
-		if (*marketSnapshot)[i].CenterPrice > max {
-			max = (*marketSnapshot)[i].CenterPrice
+	for i := 0; i < s && i < len(marketService.MarketSnapshotsRecord); i++ {
+		if marketService.MarketSnapshotsRecord[i].CenterPrice > max {
+			max = marketService.MarketSnapshotsRecord[i].CenterPrice
 		}
 	}
 
@@ -31,51 +31,50 @@ func (marketService *MarketService) MaxPrice(s int, marketSnapshot *[]models.Mar
 }
 
 // Get minimum price within the last s seconds
-func (marketService *MarketService) MinPrice(s int, marketSnapshot *[]models.MarketSnapshot) (float64, error) {
-	if s > len(*marketSnapshot) {
-		s = len(*marketSnapshot)
+func (marketService *MarketService) MinPrice(s int) (float64, error) {
+	if s > len(marketService.MarketSnapshotsRecord) {
+		s = len(marketService.MarketSnapshotsRecord)
 	}
 
 	min := math.MaxFloat64
-	for i := 0; i < s && i < len(*marketSnapshot); i++ {
-		if (*marketSnapshot)[i].CenterPrice < min {
-			min = (*marketSnapshot)[i].CenterPrice
+	for i := 0; i < s && i < len(marketService.MarketSnapshotsRecord); i++ {
+		if marketService.MarketSnapshotsRecord[i].CenterPrice < min {
+			min = marketService.MarketSnapshotsRecord[i].CenterPrice
 		}
 	}
 
 	return min, nil
 }
 
-//TODO: No need marketSnapshot on the arguments since
-func (marketService *MarketService) CurrentPricePercentile(s int, marketSnapshot *[]models.MarketSnapshot) (float64, error) {
+func (marketService *MarketService) CurrentPricePercentile(s int) (float64, error) {
 
-	maxPrice, err := marketService.MaxPrice(s, marketSnapshot)
+	maxPrice, err := marketService.MaxPrice(s)
 	if err != nil {
 		return 0.0, err
 	}
-	minPrice, err := marketService.MinPrice(s, marketSnapshot)
+	minPrice, err := marketService.MinPrice(s)
 	if err != nil {
 		return 0.0, err
 	}
 
-	lastPrice := (*marketSnapshot)[0].CenterPrice
+	lastPrice := marketService.MarketSnapshotsRecord[0].CenterPrice
 	spread := maxPrice - minPrice
 	aboveMinPrice := lastPrice - minPrice
 
 	return aboveMinPrice * 100 / spread, nil
 }
 
-func (marketService *MarketService) CurrentPrice(marketSnapshot *[]models.MarketSnapshot) float64 {
-	return (*marketSnapshot)[0].CenterPrice
+func (marketService *MarketService) CurrentPrice() float64 {
+	return marketService.MarketSnapshotsRecord[0].CenterPrice
 }
 
-func (marketService *MarketService) PctVariation(s int, marketSnapshot *[]models.MarketSnapshot) (float64, error) {
-	if s > len(*marketSnapshot) {
-		s = len(*marketSnapshot)
+func (marketService *MarketService) PctVariation(s int) (float64, error) {
+	if s > len(marketService.MarketSnapshotsRecord) {
+		s = len(marketService.MarketSnapshotsRecord)
 	}
 
-	oldPrice := (*marketSnapshot)[((s - 1) / 2)].CenterPrice
-	newPrice := (*marketSnapshot)[0].CenterPrice
+	oldPrice := (marketService.MarketSnapshotsRecord)[((s - 1) / 2)].CenterPrice
+	newPrice := (marketService.MarketSnapshotsRecord)[0].CenterPrice
 
 	return 100 - (oldPrice * 100 / newPrice), nil
 }
