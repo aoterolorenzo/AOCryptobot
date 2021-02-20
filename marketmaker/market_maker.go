@@ -195,12 +195,17 @@ func (m *MMStrategy) monitor() {
 	balanceA := m.WalletService.GetTotalAssetsBalance(currentPrice)
 	m.buyAmount = balanceA * m.pctAmountToTrade / 100
 
-	buyOrder, err := m.BinanceService.MakeOrder(m.buyAmount, m.buyRate, binance.SideTypeBuy)
-	if err != nil {
-		m.logAndList("e3: "+err.Error(), log.ErrorLevel)
-		return
+	for {
+		buyOrder, err := m.BinanceService.MakeOrder(m.buyAmount, m.buyRate, binance.SideTypeBuy)
+		if err != nil {
+			m.logAndList("e3: "+err.Error(), log.ErrorLevel)
+			m.buyAmount *= 0.998
+			time.Sleep(500 * time.Millisecond)
+			continue
+		}
+		m.buyOrder = buyOrder
+		break
 	}
-	m.buyOrder = buyOrder
 
 	m.logAndList(fmt.Sprintf("Buy order #%d emitted: rate %4f %s, amount %4f %s", m.buyOrder.OrderID, m.buyRate, m.WalletService.Coin2,
 		m.buyAmount, m.WalletService.Coin2), log.InfoLevel)
@@ -217,7 +222,7 @@ func (m *MMStrategy) buying() {
 
 	order, err := m.BinanceService.GetOrderStatus(m.buyOrder.OrderID)
 	if err != nil {
-		//m.logAndList("e4: "+err.Error(), log.ErrorLevel)
+		m.logAndList("e4: "+err.Error(), log.ErrorLevel)
 		return
 	}
 
@@ -246,17 +251,17 @@ func (m *MMStrategy) buying() {
 		}
 
 		// If there is residue or any broken thread had left a position on the other side, bring it on the OCO order
-		if freeAsset < m.sellAmount+(m.sellAmount*0.6) || m.OrderBookService.OpenOrdersCount() == m.threadNumber-1 {
+		if freeAsset < m.sellAmount+(m.sellAmount*0.2) {
 			m.sellAmount = freeAsset * 0.999
 		}
 
 		for {
 			m.sellOCOOrder, err = m.BinanceService.MakeOCOOrder(m.sellAmount, m.sellRate, m.stopPrice, m.stopLimitPrice, binance.SideTypeSell)
-			time.Sleep(500 * time.Millisecond)
 			if err != nil {
 				m.logAndList("e5: "+err.Error(), log.ErrorLevel)
 				m.sellAmount *= 0.998
 				m.logAndList(fmt.Sprintf("try : %.4f", m.sellAmount), log.ErrorLevel)
+				time.Sleep(500 * time.Millisecond)
 				continue
 			}
 
