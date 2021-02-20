@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"github.com/gizak/termui/v3"
 	"github.com/gizak/termui/v3/widgets"
-	"gitlab.com/aoterocom/AOCryptobot/marketmaker/helpers"
-	"gitlab.com/aoterocom/AOCryptobot/marketmaker/models"
-	"gitlab.com/aoterocom/AOCryptobot/marketmaker/services"
-	"gitlab.com/aoterocom/AOCryptobot/marketmaker/services/binance"
+	"gitlab.com/aoterocom/AOCryptobot/helpers"
+	"gitlab.com/aoterocom/AOCryptobot/models"
+	"gitlab.com/aoterocom/AOCryptobot/services"
+	"gitlab.com/aoterocom/AOCryptobot/services/binance"
 	"time"
 )
 
@@ -18,7 +18,7 @@ type UserInterface struct {
 	MarketService    *services.MarketService
 	WalletService    *services.WalletService
 	OrderBookService *services.OrderBookService
-	initialWallet    *models.Wallet
+	initialWallet    *models.PairWallet
 	initialPrice     float64
 	logList          *[]string
 	initialBalance   float64
@@ -139,7 +139,7 @@ func (ui *UserInterface) UpdateUI() {
 	}
 
 	walletStatusParagraph := widgets.NewParagraph()
-	walletStatusParagraph.Block.Title = "Wallet"
+	walletStatusParagraph.Block.Title = "PairWallet"
 	walletStatusParagraph.Text = fmt.Sprintf("Balance %s: %.8f\n", ui.WalletService.Coin1, balanceCoin1)
 	walletStatusParagraph.Text += fmt.Sprintf("Balance %s: %.8f\n", ui.WalletService.Coin2, balanceCoin2)
 	walletStatusParagraph.SetRect(68, 0, 34, 4)

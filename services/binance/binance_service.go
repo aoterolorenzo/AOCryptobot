@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/adshao/go-binance/v2"
 	"github.com/joho/godotenv"
-	"gitlab.com/aoterocom/AOCryptobot/marketmaker/helpers"
+	"gitlab.com/aoterocom/AOCryptobot/helpers"
 	"os"
 	"strconv"
 )
@@ -21,7 +21,7 @@ type BinanceService struct {
 
 func init() {
 	cwd, _ := os.Getwd()
-	err := godotenv.Load(cwd + "/marketmaker/services/binance/conf.env")
+	err := godotenv.Load(cwd + "/services/binance/conf.env")
 	if err != nil {
 		logger.Fatalln("Error loading go.env file", err)
 	}

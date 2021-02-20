@@ -2,8 +2,8 @@ package services
 
 import (
 	"github.com/adshao/go-binance/v2"
-	"gitlab.com/aoterocom/AOCryptobot/marketmaker/helpers"
-	"gitlab.com/aoterocom/AOCryptobot/marketmaker/models"
+	"gitlab.com/aoterocom/AOCryptobot/helpers"
+	"gitlab.com/aoterocom/AOCryptobot/models"
 	"math"
 	"reflect"
 )
