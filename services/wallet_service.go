@@ -2,12 +2,12 @@ package services
 
 import (
 	"fmt"
-	"gitlab.com/aoterocom/AOCryptobot/marketmaker/models"
-	"gitlab.com/aoterocom/AOCryptobot/marketmaker/services/binance"
+	"gitlab.com/aoterocom/AOCryptobot/models"
+	"gitlab.com/aoterocom/AOCryptobot/services/binance"
 )
 
 type WalletService struct {
-	Wallet *models.Wallet
+	Wallet *models.PairWallet
 	Coin1  string
 	Coin2  string
 }
@@ -58,7 +58,7 @@ func (ws *WalletService) GetLockedAssetBalance(coin string) (float64, error) {
 }
 
 func (ws *WalletService) InitWallet() {
-	ws.Wallet = &models.Wallet{}
+	ws.Wallet = &models.PairWallet{}
 }
 
 func (ws *WalletService) UpdateWallet() error {

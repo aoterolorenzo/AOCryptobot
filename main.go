@@ -1,11 +1,11 @@
 package main
 
 import (
+	"gitlab.com/aoterocom/AOCryptobot/helpers"
 	"gitlab.com/aoterocom/AOCryptobot/marketmaker"
-	"gitlab.com/aoterocom/AOCryptobot/marketmaker/helpers"
-	"gitlab.com/aoterocom/AOCryptobot/marketmaker/services"
-	"gitlab.com/aoterocom/AOCryptobot/marketmaker/services/binance"
 	"gitlab.com/aoterocom/AOCryptobot/marketmaker/ui"
+	"gitlab.com/aoterocom/AOCryptobot/services"
+	"gitlab.com/aoterocom/AOCryptobot/services/binance"
 	"os"
 	"strconv"
 	"strings"
