@@ -332,9 +332,15 @@ func (m *MarketMakerService) holding() {
 	}
 
 	// CHECK SELL IS NOT TIMEOUT init + 2 dias = ahora
-	if m.sellingTimeout != 0 && m.state.Time+m.sellingTimeout < int(time.Now().Unix()) {
-		m.logAndList(fmt.Sprintf("Sell OCO order #%d/#%d timed out", m.sellOCOOrder.Orders[0].OrderID,
-			m.sellOCOOrder.Orders[1].OrderID), log.InfoLevel)
+	shouldExit := !m.strategy.ShouldExit(&m.MarketService.TimeSeries)
+	if m.sellingTimeout != 0 && m.state.Time+m.sellingTimeout < int(time.Now().Unix()) && !shouldExit {
+
+		if shouldExit {
+			m.logAndList(fmt.Sprintf("Exit strategy signal received"), log.InfoLevel)
+		} else {
+			m.logAndList(fmt.Sprintf("Sell OCO order #%d/#%d timed out", m.sellOCOOrder.Orders[0].OrderID,
+				m.sellOCOOrder.Orders[1].OrderID), log.InfoLevel)
+		}
 
 		orderA, err := m.ExchangeService.GetOrder(m.sellOCOOrder.Orders[0].OrderID)
 		if err != nil {
