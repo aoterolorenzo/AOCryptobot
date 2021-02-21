@@ -316,7 +316,7 @@ func (binanceService *BinanceService) ocoOrderResponseToOCOOrder(o binance.Creat
 		OCOOrder.Orders = append(OCOOrder.Orders, binanceService.ocoOrderToModelsOrder(*binOrder))
 	}
 
-	return models.OCOOrder{}
+	return OCOOrder
 }
 
 func (binanceService *BinanceService) wsKlineHandler(event *binance.WsKlineEvent) {

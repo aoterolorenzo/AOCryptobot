@@ -234,7 +234,7 @@ func (m *MarketMakerService) buying() {
 		//INICIAMOS ORDEN DE VENTA
 		m.sellRate = m.buyRate * (1 + m.buyMargin) * (1 + m.sellMargin)
 		m.sellAmount, _ = strconv.ParseFloat(order.ExecutedQuantity, 64)
-		m.stopPrice = m.sellRate * (1 - m.stopLossPct)
+		m.stopPrice = m.MarketService.CurrentPrice() * (1 - m.stopLossPct)
 		m.stopLimitPrice = m.stopPrice * (1 - 0.0007)
 
 		// Clean up the residues left by the decimals and broken thread amounts
@@ -260,8 +260,11 @@ func (m *MarketMakerService) buying() {
 				time.Sleep(500 * time.Millisecond)
 				continue
 			}
-
-			m.logAndList(fmt.Sprintf("Sell OCO order #%d/#%d emitted:", m.sellOCOOrder.Orders[0].OrderID,
+			logger.Errorln(&m.sellOCOOrder.Orders)
+			logger.Errorln(m.sellOCOOrder.Orders)
+			logger.Errorln(m.sellOCOOrder.Orders[1])
+			logger.Errorln(m.sellOCOOrder.Orders[1].OrderID)
+			m.logAndList(fmt.Sprintf("Sell OCO order #%d/#%d emitted:", &m.sellOCOOrder.Orders[1].OrderID,
 				m.sellOCOOrder.Orders[1].OrderID), log.InfoLevel)
 			m.logAndList(fmt.Sprintf("Rate %f %s, Quant %f %s, Stop-Loss %f %s ", m.sellRate,
 				m.WalletService.Coin2, m.sellAmount, m.WalletService.Coin1, m.stopPrice, m.WalletService.Coin2), log.InfoLevel)
