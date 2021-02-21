@@ -3,7 +3,7 @@ package services
 import (
 	"fmt"
 	"gitlab.com/aoterocom/AOCryptobot/models"
-	"gitlab.com/aoterocom/AOCryptobot/services/binance"
+	"gitlab.com/aoterocom/AOCryptobot/providers/binance"
 )
 
 type WalletService struct {

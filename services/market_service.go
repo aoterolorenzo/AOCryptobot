@@ -1,17 +1,15 @@
 package services
 
 import (
-	"github.com/adshao/go-binance/v2"
-	"gitlab.com/aoterocom/AOCryptobot/helpers"
+	"github.com/sdcoffey/techan"
 	"gitlab.com/aoterocom/AOCryptobot/models"
+	"gitlab.com/aoterocom/AOCryptobot/providers/binance"
 	"math"
-	"reflect"
 )
 
-var logger = helpers.Logger{}
-
 type MarketService struct {
-	MarketSnapshotsRecord []models.MarketSnapshot
+	MarketSnapshotsRecord []models.MarketDepth
+	TimeSeries            techan.TimeSeries
 }
 
 // Get maximum price within the last s seconds
@@ -79,50 +77,12 @@ func (marketService *MarketService) PctVariation(s int) (float64, error) {
 	return 100 - (oldPrice * 100 / newPrice), nil
 }
 
-// Adds a models.MarketSnapshot to the record's models.MarketSnapshot
-func (marketService *MarketService) AppendStatus(marketSnapshot *models.MarketSnapshot) {
-	reverseAny(marketService.MarketSnapshotsRecord)
-	marketService.MarketSnapshotsRecord = append(marketService.MarketSnapshotsRecord, *marketSnapshot)
-	reverseAny(marketService.MarketSnapshotsRecord)
-}
-
 func (marketService *MarketService) StartMonitor(pair string) {
-	go marketService.WsDepth(pair)
-}
+	binanceService := binance.BinanceService{}
+	binanceService.ConfigureClient()
+	binanceService.SetPair(pair)
 
-func (marketService *MarketService) WsDepth(pair string) {
-	//TODO: Use exchange logic from here and not on market services
-	doneC, _, err := binance.WsDepthServe(pair, marketService.WsDepthHandler, marketService.ErrHandler)
-	if err != nil {
-		logger.Errorln(err)
-		return
-	}
-	<-doneC
-}
+	go binanceService.DepthMonitor(&marketService.MarketSnapshotsRecord)
+	go binanceService.TimeSeriesMonitor("15m", &marketService.TimeSeries)
 
-func (marketService *MarketService) WsDepthHandler(event *binance.WsDepthEvent) {
-	marketSnapshot := models.MarketSnapshot{}
-	err := marketSnapshot.Set(event)
-	if err != nil {
-		marketService.ErrHandler(err)
-		return
-	}
-
-	// Grab the record only if there are 2 bid and ask groups
-	if marketSnapshot.WsDepthEvent != nil && marketSnapshot.WsDepthEvent.Bids != nil && marketSnapshot.WsDepthEvent.Asks != nil &&
-		len(marketSnapshot.WsDepthEvent.Bids) > 2 && len(marketSnapshot.WsDepthEvent.Asks) > 2 {
-		marketService.AppendStatus(&marketSnapshot)
-	}
-}
-
-func (marketService *MarketService) ErrHandler(err error) {
-	logger.Errorln(err)
-}
-
-func reverseAny(s interface{}) {
-	n := reflect.ValueOf(s).Len()
-	swap := reflect.Swapper(s)
-	for i, j := 0, n-1; i < j; i, j = i+1, j-1 {
-		swap(i, j)
-	}
 }

@@ -1,13 +1,9 @@
 package models
 
-import (
-	"github.com/adshao/go-binance/v2"
-)
-
 type OrderBook struct {
-	FilledOrders             []binance.Order
-	OpenOrders               []binance.Order
-	CanceledOrders           []binance.Order
+	FilledOrders             []Order
+	OpenOrders               []Order
+	CanceledOrders           []Order
 	InitialPairPrice         float64
 	InitialCoin1FreeAmount   float64
 	InitialCoin1LockedAmount float64

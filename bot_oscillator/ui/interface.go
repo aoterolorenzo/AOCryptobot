@@ -5,16 +5,16 @@ import (
 	"github.com/gizak/termui/v3"
 	"github.com/gizak/termui/v3/widgets"
 	"gitlab.com/aoterocom/AOCryptobot/helpers"
+	"gitlab.com/aoterocom/AOCryptobot/interfaces"
 	"gitlab.com/aoterocom/AOCryptobot/models"
 	"gitlab.com/aoterocom/AOCryptobot/services"
-	"gitlab.com/aoterocom/AOCryptobot/services/binance"
 	"time"
 )
 
 var logger = helpers.Logger{}
 
 type UserInterface struct {
-	ExchangeService  *binance.BinanceService
+	ExchangeService  interfaces.ExchangeService
 	MarketService    *services.MarketService
 	WalletService    *services.WalletService
 	OrderBookService *services.OrderBookService
@@ -27,11 +27,11 @@ type UserInterface struct {
 	totalPyLPct      float64
 }
 
-func (ui *UserInterface) SetExchangeService(exchangeService *binance.BinanceService) {
+func (ui *UserInterface) SetExchangeService(exchangeService interfaces.ExchangeService) {
 	ui.ExchangeService = exchangeService
 }
 
-func (ui *UserInterface) SetServices(exchangeService *binance.BinanceService, MarketService *services.MarketService,
+func (ui *UserInterface) SetServices(exchangeService interfaces.ExchangeService, MarketService *services.MarketService,
 	walletService *services.WalletService, orderBookService *services.OrderBookService) {
 	ui.ExchangeService = exchangeService
 	ui.MarketService = MarketService

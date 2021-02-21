@@ -1,7 +1,6 @@
 package services
 
 import (
-	"github.com/adshao/go-binance/v2"
 	"gitlab.com/aoterocom/AOCryptobot/models"
 	"sync"
 )
@@ -19,25 +18,25 @@ func (ob *OrderBookService) SetMutex(mutex *sync.Mutex) {
 	ob.mutex = mutex
 }
 
-func (ob *OrderBookService) AddFilledOrder(order binance.Order) {
+func (ob *OrderBookService) AddFilledOrder(order models.Order) {
 	ob.mutex.Lock()
 	ob.OrderBook.FilledOrders = append(ob.OrderBook.FilledOrders, order)
 	ob.mutex.Unlock()
 }
 
-func (ob *OrderBookService) AddOpenOrder(order binance.Order) {
+func (ob *OrderBookService) AddOpenOrder(order models.Order) {
 	ob.mutex.Lock()
 	ob.OrderBook.OpenOrders = append(ob.OrderBook.OpenOrders, order)
 	ob.mutex.Unlock()
 }
 
-func (ob *OrderBookService) AddCanceledOrder(order binance.Order) {
+func (ob *OrderBookService) AddCanceledOrder(order models.Order) {
 	ob.mutex.Lock()
 	ob.OrderBook.CanceledOrders = append(ob.OrderBook.CanceledOrders, order)
 	ob.mutex.Unlock()
 }
 
-func (ob *OrderBookService) RemoveOpenOrder(order binance.Order) {
+func (ob *OrderBookService) RemoveOpenOrder(order models.Order) {
 	ob.mutex.Lock()
 	for i, lOrder := range ob.OrderBook.OpenOrders {
 		if order == lOrder {

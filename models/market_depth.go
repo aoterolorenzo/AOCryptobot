@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-type MarketSnapshot struct {
+type MarketDepth struct {
 	WsDepthEvent   *binance.WsDepthEvent
 	LowerAskPrice  float64
 	HigherBidPrice float64
@@ -14,7 +14,7 @@ type MarketSnapshot struct {
 	CenterPrice    float64
 }
 
-func (s *MarketSnapshot) Set(depthEvent *binance.WsDepthEvent) error {
+func (s *MarketDepth) Set(depthEvent *binance.WsDepthEvent) error {
 	if len(depthEvent.Asks) > 0 && len(depthEvent.Bids) > 0 {
 		s.WsDepthEvent = depthEvent
 		return s.generateParameters()
@@ -22,7 +22,7 @@ func (s *MarketSnapshot) Set(depthEvent *binance.WsDepthEvent) error {
 	return nil
 }
 
-func (s *MarketSnapshot) generateParameters() error {
+func (s *MarketDepth) generateParameters() error {
 	lowerAskPrice, err := strconv.ParseFloat(s.WsDepthEvent.Asks[0].Price, 64)
 	if err != nil {
 		return err
