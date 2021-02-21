@@ -1,7 +1,6 @@
 package strategies
 
 import (
-	"fmt"
 	"github.com/sdcoffey/techan"
 	"gitlab.com/aoterocom/AOCryptobot/helpers"
 )
@@ -26,9 +25,6 @@ func (s *MACDCustomStrategy) ShouldEnter(timeSeries *techan.TimeSeries) bool {
 	)
 
 	record := &techan.TradingRecord{}
-	logger.Warnln(fmt.Sprintf("MACD(12,26,9): %.2f ", MACD.Calculate(len(timeSeries.Candles)-1).Float()))
-	logger.Warnln(fmt.Sprintf("MACDHistogram: %.2f ", MACDHistogram.Calculate(len(timeSeries.Candles)-1).Float()))
-	logger.Warnln(fmt.Sprintf("Should enter?? %t\n", entryRule.IsSatisfied(len(timeSeries.Candles)-1, record)))
 
 	return entryRule.IsSatisfied(len(timeSeries.Candles)-1, record)
 }
