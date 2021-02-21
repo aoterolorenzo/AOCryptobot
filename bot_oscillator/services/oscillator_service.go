@@ -260,10 +260,7 @@ func (m *MarketMakerService) buying() {
 				time.Sleep(500 * time.Millisecond)
 				continue
 			}
-			logger.Errorln(&m.sellOCOOrder.Orders)
-			logger.Errorln(m.sellOCOOrder.Orders)
-			logger.Errorln(m.sellOCOOrder.Orders[1])
-			logger.Errorln(m.sellOCOOrder.Orders[1].OrderID)
+
 			m.logAndList(fmt.Sprintf("Sell OCO order #%d/#%d emitted:", &m.sellOCOOrder.Orders[1].OrderID,
 				m.sellOCOOrder.Orders[1].OrderID), log.InfoLevel)
 			m.logAndList(fmt.Sprintf("Rate %f %s, Quant %f %s, Stop-Loss %f %s ", m.sellRate,
