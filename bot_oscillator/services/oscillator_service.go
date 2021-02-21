@@ -255,8 +255,6 @@ func (m *MarketMakerService) buying() {
 				m.logAndList("e5: "+err.Error(), log.ErrorLevel)
 				m.sellAmount *= 0.998
 				m.logAndList(fmt.Sprintf("try : %.4f", m.sellAmount), log.ErrorLevel)
-				m.logAndList(fmt.Sprintf("Rate %f %s, Quant %f %s, Stop-Loss %f %s ", m.sellRate,
-					m.WalletService.Coin2, m.sellAmount, m.WalletService.Coin1, m.stopPrice, m.WalletService.Coin2), log.InfoLevel)
 				time.Sleep(500 * time.Millisecond)
 				continue
 			}
