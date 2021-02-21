@@ -235,7 +235,7 @@ func (m *MarketMakerService) buying() {
 		m.sellRate = m.buyRate * (1 + m.buyMargin) * (1 + m.sellMargin)
 		m.sellAmount, _ = strconv.ParseFloat(order.ExecutedQuantity, 64)
 		m.stopPrice = m.sellRate * (1 - m.stopLossPct)
-		m.stopLimitPrice = m.stopPrice * (1 - 0.0005)
+		m.stopLimitPrice = m.stopPrice * (1 - 0.0007)
 
 		// Clean up the residues left by the decimals and broken thread amounts
 		freeAsset, err := m.WalletService.GetFreeAssetBalance(m.WalletService.Coin1)
