@@ -190,7 +190,7 @@ func (m *MarketMakerService) monitor() {
 	m.buyAmount = balanceA * m.pctAmountToTrade / 100
 
 	for {
-		buyOrder, err := m.ExchangeService.MakeOrder(m.buyAmount, m.buyRate, techan.BUY)
+		buyOrder, err := m.ExchangeService.MakeOrder(m.buyAmount, m.buyRate, models.OrderTypeLimit, techan.BUY)
 		if err != nil {
 			m.logAndList("e3: "+err.Error(), log.ErrorLevel)
 			m.buyAmount *= 0.998
@@ -234,8 +234,8 @@ func (m *MarketMakerService) buying() {
 		//INICIAMOS ORDEN DE VENTA
 		m.sellRate = m.buyRate * (1 + m.buyMargin) * (1 + m.sellMargin)
 		m.sellAmount, _ = strconv.ParseFloat(order.ExecutedQuantity, 64)
-		m.stopPrice = m.sellRate * (1 - m.stopLossPct)
-		m.stopLimitPrice = m.stopPrice * (1 - 0.00075)
+		m.stopPrice = m.MarketService.CurrentPrice() * (1 - m.stopLossPct)
+		m.stopLimitPrice = m.stopPrice * (1 - 0.0007)
 
 		// Clean up the residues left by the decimals and broken thread amounts
 		freeAsset, err := m.WalletService.GetFreeAssetBalance(m.WalletService.Coin1)
@@ -259,7 +259,7 @@ func (m *MarketMakerService) buying() {
 				continue
 			}
 
-			m.logAndList(fmt.Sprintf("Sell OCO order #%d/#%d emitted:", m.sellOCOOrder.Orders[0].OrderID,
+			m.logAndList(fmt.Sprintf("Sell OCO order #%d/#%d emitted:", &m.sellOCOOrder.Orders[1].OrderID,
 				m.sellOCOOrder.Orders[1].OrderID), log.InfoLevel)
 			m.logAndList(fmt.Sprintf("Rate %f %s, Quant %f %s, Stop-Loss %f %s ", m.sellRate,
 				m.WalletService.Coin2, m.sellAmount, m.WalletService.Coin1, m.stopPrice, m.WalletService.Coin2), log.InfoLevel)
@@ -332,20 +332,34 @@ func (m *MarketMakerService) holding() {
 	}
 
 	// CHECK SELL IS NOT TIMEOUT init + 2 dias = ahora
-	if m.sellingTimeout != 0 && m.state.Time+m.sellingTimeout < int(time.Now().Unix()) {
-		m.logAndList(fmt.Sprintf("Sell OCO order #%d/#%d timed out", m.sellOCOOrder.Orders[0].OrderID,
-			m.sellOCOOrder.Orders[1].OrderID), log.InfoLevel)
+	shouldExit := m.strategy.ShouldExit(&m.MarketService.TimeSeries)
+	if (m.sellingTimeout != 0 && m.state.Time+m.sellingTimeout < int(time.Now().Unix())) || shouldExit {
 
-		orderA, err := m.ExchangeService.GetOrder(m.sellOCOOrder.Orders[0].OrderID)
-		if err != nil {
-			m.logAndList("e7: "+err.Error(), log.ErrorLevel)
-			return
+		if shouldExit {
+			m.logAndList(fmt.Sprintf("Exit strategy signal received"), log.InfoLevel)
+		} else {
+			m.logAndList(fmt.Sprintf("Sell OCO order #%d/#%d timed out", m.sellOCOOrder.Orders[0].OrderID,
+				m.sellOCOOrder.Orders[1].OrderID), log.InfoLevel)
 		}
 
-		orderB, err := m.ExchangeService.GetOrder(m.sellOCOOrder.Orders[1].OrderID)
-		if err != nil {
-			m.logAndList("e8: "+err.Error(), log.ErrorLevel)
-			return
+		var orderA models.Order
+		var orderB models.Order
+		var err error
+		for {
+			orderA, err = m.ExchangeService.GetOrder(m.sellOCOOrder.Orders[0].OrderID)
+			if err != nil {
+				m.logAndList("e7: "+err.Error(), log.ErrorLevel)
+				time.Sleep(500 * time.Millisecond)
+				continue
+			}
+
+			orderB, err = m.ExchangeService.GetOrder(m.sellOCOOrder.Orders[1].OrderID)
+			if err != nil {
+				m.logAndList("e8: "+err.Error(), log.ErrorLevel)
+				time.Sleep(500 * time.Millisecond)
+				continue
+			}
+			break
 		}
 
 		if !(orderA.Status == models.OrderStatusTypePartiallyFilled) && !(orderA.Status == models.OrderStatusTypeFilled) &&
@@ -362,7 +376,7 @@ func (m *MarketMakerService) holding() {
 			m.OrderBookService.RemoveOpenOrder(m.sellOCOOrder.Orders[1])
 
 			order, err := m.ExchangeService.MakeOrder(m.sellAmount,
-				m.MarketService.MarketSnapshotsRecord[0].HigherBidPrice*(1-0.0005), techan.SELL)
+				m.MarketService.MarketSnapshotsRecord[0].HigherBidPrice*(1-0.0005), models.OrderTypeMarket, techan.SELL)
 			if err != nil {
 				m.logAndList("e10: "+err.Error(), log.ErrorLevel)
 				return
