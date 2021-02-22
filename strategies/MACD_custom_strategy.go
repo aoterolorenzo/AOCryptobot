@@ -56,7 +56,7 @@ func (s *MACDCustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSerie
 
 	exitRuleSetCheck :=
 		currentMACDHistogramValue > constant &&
-			currentMACDHistogramValue > lastMACDHistogramValue
+			currentMACDHistogramValue < lastMACDHistogramValue
 
 	return exitRuleSetCheck
 }
