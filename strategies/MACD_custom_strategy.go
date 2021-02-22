@@ -40,7 +40,7 @@ func (s *MACDCustomStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeSeri
 			currentMACDHistogramValue > lastMACDHistogramValue+trendPct &&
 			lastMACDHistogramValue > lastLastMACDHistogramValue+trendPct
 
-	return entryRuleSetCheck
+	return entryRuleSetCheck || true
 }
 
 func (s *MACDCustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSeries, constant float64) bool {
