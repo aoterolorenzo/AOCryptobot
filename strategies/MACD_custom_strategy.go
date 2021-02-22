@@ -14,7 +14,10 @@ func (s *MACDCustomStrategy) ShouldEnter(timeSeries *techan.TimeSeries) bool {
 
 	closePrices := techan.NewClosePriceIndicator(timeSeries)
 
-	// Check y last candle is about to end (last minute), if its not, return false
+	lastValueInclinationCondition := 0.05
+	lastlastValueInclinationCondition := 0.05
+
+	// Check y last candle is about to end
 	if time.Now().Unix()+60 < timeSeries.Candles[len(timeSeries.Candles)-1].Period.End.Unix() {
 		return false
 	}
@@ -24,8 +27,7 @@ func (s *MACDCustomStrategy) ShouldEnter(timeSeries *techan.TimeSeries) bool {
 
 	lastMACDHistogramValue := techan.NewConstantIndicator(MACDHistogram.Calculate(len(timeSeries.Candles) - 2).Float())
 	lastlastMACDHistogramValue := techan.NewConstantIndicator(MACDHistogram.Calculate(len(timeSeries.Candles) - 3).Float())
-	lastlastlastMACDHistogramValue := techan.NewConstantIndicator(MACDHistogram.Calculate(len(timeSeries.Candles) - 4).Float())
-	constant0dot15 := techan.NewConstantIndicator(0.46) // Was 0.1
+	constant0dot15 := techan.NewConstantIndicator(0.1) // Was 0.1
 
 	entryRule := techan.And(
 		techan.NewCrossUpIndicatorRule(lastMACDHistogramValue, MACDHistogram),
@@ -37,17 +39,13 @@ func (s *MACDCustomStrategy) ShouldEnter(timeSeries *techan.TimeSeries) bool {
 		techan.NewCrossUpIndicatorRule(lastlastMACDHistogramValue, MACDHistogram),
 	)
 
-	entryRule = techan.And(
-		entryRule,
-		techan.NewCrossUpIndicatorRule(lastlastlastMACDHistogramValue, MACDHistogram),
-	)
-
 	record := &techan.TradingRecord{}
 
-	entryCondition := MACDHistogram.Calculate(len(timeSeries.Candles)-1).Float() >
-		MACDHistogram.Calculate(len(timeSeries.Candles)-2).Float()+0.05
-
-	return entryRule.IsSatisfied(len(timeSeries.Candles)-1, record) && entryCondition
+	return entryRule.IsSatisfied(len(timeSeries.Candles)-1, record) &&
+		MACDHistogram.Calculate(len(timeSeries.Candles)-1).Float() >
+			MACDHistogram.Calculate(len(timeSeries.Candles)-2).Float()+lastValueInclinationCondition &&
+		MACDHistogram.Calculate(len(timeSeries.Candles)-2).Float() >
+			MACDHistogram.Calculate(len(timeSeries.Candles)-3).Float()+lastlastValueInclinationCondition
 
 }
 
