@@ -25,7 +25,7 @@ func (s *MACDCustomStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeSeri
 	lastCandleIndex := len(timeSeries.Candles) - 1
 	// Check y last candle is about to end
 	if time.Now().Unix()+60 < timeSeries.Candles[lastCandleIndex].Period.End.Unix() {
-		//return false
+		return false
 	}
 
 	MACD := techan.NewMACDIndicator(closePrices, 12, 26)
@@ -55,7 +55,7 @@ func (s *MACDCustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSerie
 	lastMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex - 1).Float()
 
 	exitRuleSetCheck :=
-		currentMACDHistogramValue > constant &&
+		currentMACDHistogramValue < constant &&
 			currentMACDHistogramValue < lastMACDHistogramValue
 
 	return exitRuleSetCheck
