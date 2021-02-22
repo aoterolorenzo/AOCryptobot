@@ -190,7 +190,7 @@ func (m *MarketMakerService) monitor() {
 	m.buyAmount = balanceA * m.pctAmountToTrade / 100
 
 	for {
-		buyOrder, err := m.ExchangeService.MakeOrder(m.buyAmount, m.buyRate, techan.BUY)
+		buyOrder, err := m.ExchangeService.MakeOrder(m.buyAmount, m.buyRate, models.OrderTypeLimit, techan.BUY)
 		if err != nil {
 			m.logAndList("e3: "+err.Error(), log.ErrorLevel)
 			m.buyAmount *= 0.998
@@ -342,16 +342,24 @@ func (m *MarketMakerService) holding() {
 				m.sellOCOOrder.Orders[1].OrderID), log.InfoLevel)
 		}
 
-		orderA, err := m.ExchangeService.GetOrder(m.sellOCOOrder.Orders[0].OrderID)
-		if err != nil {
-			m.logAndList("e7: "+err.Error(), log.ErrorLevel)
-			return
-		}
+		var orderA models.Order
+		var orderB models.Order
+		var err error
+		for {
+			orderA, err = m.ExchangeService.GetOrder(m.sellOCOOrder.Orders[0].OrderID)
+			if err != nil {
+				m.logAndList("e7: "+err.Error(), log.ErrorLevel)
+				time.Sleep(500 * time.Millisecond)
+				continue
+			}
 
-		orderB, err := m.ExchangeService.GetOrder(m.sellOCOOrder.Orders[1].OrderID)
-		if err != nil {
-			m.logAndList("e8: "+err.Error(), log.ErrorLevel)
-			return
+			orderB, err = m.ExchangeService.GetOrder(m.sellOCOOrder.Orders[1].OrderID)
+			if err != nil {
+				m.logAndList("e8: "+err.Error(), log.ErrorLevel)
+				time.Sleep(500 * time.Millisecond)
+				continue
+			}
+			break
 		}
 
 		if !(orderA.Status == models.OrderStatusTypePartiallyFilled) && !(orderA.Status == models.OrderStatusTypeFilled) &&
@@ -368,7 +376,7 @@ func (m *MarketMakerService) holding() {
 			m.OrderBookService.RemoveOpenOrder(m.sellOCOOrder.Orders[1])
 
 			order, err := m.ExchangeService.MakeOrder(m.sellAmount,
-				m.MarketService.MarketSnapshotsRecord[0].HigherBidPrice*(1-0.0005), techan.SELL)
+				m.MarketService.MarketSnapshotsRecord[0].HigherBidPrice*(1-0.0005), models.OrderTypeMarket, techan.SELL)
 			if err != nil {
 				m.logAndList("e10: "+err.Error(), log.ErrorLevel)
 				return
