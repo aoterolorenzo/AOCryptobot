@@ -18,7 +18,8 @@ func (s *MACDCustomStrategy) ShouldEnter(timeSeries *techan.TimeSeries) bool {
 
 	lastMACDHistogramValue := techan.NewConstantIndicator(MACDHistogram.Calculate(len(timeSeries.Candles) - 2).Float())
 	lastlastMACDHistogramValue := techan.NewConstantIndicator(MACDHistogram.Calculate(len(timeSeries.Candles) - 3).Float())
-	constant0dot15 := techan.NewConstantIndicator(0.10)
+	lastlastlastMACDHistogramValue := techan.NewConstantIndicator(MACDHistogram.Calculate(len(timeSeries.Candles) - 4).Float())
+	constant0dot15 := techan.NewConstantIndicator(0.46) // Was 0.1
 
 	entryRule := techan.And(
 		techan.NewCrossUpIndicatorRule(lastMACDHistogramValue, MACDHistogram),
@@ -28,6 +29,11 @@ func (s *MACDCustomStrategy) ShouldEnter(timeSeries *techan.TimeSeries) bool {
 	entryRule = techan.And(
 		entryRule,
 		techan.NewCrossUpIndicatorRule(lastlastMACDHistogramValue, MACDHistogram),
+	)
+
+	entryRule = techan.And(
+		entryRule,
+		techan.NewCrossUpIndicatorRule(lastlastlastMACDHistogramValue, MACDHistogram),
 	)
 
 	record := &techan.TradingRecord{}
@@ -42,13 +48,10 @@ func (s *MACDCustomStrategy) ShouldExit(timeSeries *techan.TimeSeries) bool {
 	MACD := techan.NewMACDIndicator(closePrices, 12, 26)
 	MACDHistogram := techan.NewMACDHistogramIndicator(MACD, 9)
 
-	lastMACDHistogramValue := techan.NewConstantIndicator(MACDHistogram.Calculate(len(timeSeries.Candles) - 2).Float())
-	constant0dot15 := techan.NewConstantIndicator(0.60)
+	//lastValue := MACDHistogram.Calculate(len(timeSeries.Candles) - 2).Float()
+	constant0dot15 := techan.NewConstantIndicator(1.34)
 
-	exitRule := techan.And(
-		techan.NewCrossDownIndicatorRule(lastMACDHistogramValue, MACDHistogram),
-		techan.NewCrossDownIndicatorRule(constant0dot15, MACDHistogram),
-	)
+	exitRule := techan.NewCrossDownIndicatorRule(constant0dot15, MACDHistogram)
 
 	record := &techan.TradingRecord{}
 	return exitRule.IsSatisfied(len(timeSeries.Candles)-1, record)
