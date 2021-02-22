@@ -3,6 +3,7 @@ package strategies
 import (
 	"github.com/sdcoffey/techan"
 	"gitlab.com/aoterocom/AOCryptobot/helpers"
+	"time"
 )
 
 type MACDCustomStrategy struct{}
@@ -12,6 +13,11 @@ var logger = helpers.Logger{}
 func (s *MACDCustomStrategy) ShouldEnter(timeSeries *techan.TimeSeries) bool {
 
 	closePrices := techan.NewClosePriceIndicator(timeSeries)
+
+	// Check y last candle is about to end (last minute), if its not, return false
+	if time.Now().Unix()+60 < timeSeries.Candles[len(timeSeries.Candles)-1].Period.End.Unix() {
+		return false
+	}
 
 	MACD := techan.NewMACDIndicator(closePrices, 12, 26)
 	MACDHistogram := techan.NewMACDHistogramIndicator(MACD, 9)
@@ -38,7 +44,11 @@ func (s *MACDCustomStrategy) ShouldEnter(timeSeries *techan.TimeSeries) bool {
 
 	record := &techan.TradingRecord{}
 
-	return entryRule.IsSatisfied(len(timeSeries.Candles)-1, record)
+	entryCondition := MACDHistogram.Calculate(len(timeSeries.Candles)-1).Float() >
+		MACDHistogram.Calculate(len(timeSeries.Candles)-2).Float()+0.05
+
+	return entryRule.IsSatisfied(len(timeSeries.Candles)-1, record) && entryCondition
+
 }
 
 func (s *MACDCustomStrategy) ShouldExit(timeSeries *techan.TimeSeries) bool {
@@ -49,9 +59,13 @@ func (s *MACDCustomStrategy) ShouldExit(timeSeries *techan.TimeSeries) bool {
 	MACDHistogram := techan.NewMACDHistogramIndicator(MACD, 9)
 
 	//lastValue := MACDHistogram.Calculate(len(timeSeries.Candles) - 2).Float()
-	constant0dot15 := techan.NewConstantIndicator(1.34)
+	lastMACDHistogramValue := techan.NewConstantIndicator(MACDHistogram.Calculate(len(timeSeries.Candles) - 2).Float())
+	constant0dot15 := techan.NewConstantIndicator(1.20)
 
-	exitRule := techan.NewCrossDownIndicatorRule(constant0dot15, MACDHistogram)
+	exitRule := techan.And(
+		techan.NewCrossDownIndicatorRule(lastMACDHistogramValue, MACDHistogram),
+		techan.NewCrossDownIndicatorRule(constant0dot15, MACDHistogram),
+	)
 
 	record := &techan.TradingRecord{}
 	return exitRule.IsSatisfied(len(timeSeries.Candles)-1, record)
