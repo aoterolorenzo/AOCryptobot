@@ -333,7 +333,7 @@ func (m *MarketMakerService) holding() {
 
 	// CHECK SELL IS NOT TIMEOUT init + 2 dias = ahora
 	shouldExit := !m.strategy.ShouldExit(&m.MarketService.TimeSeries)
-	if m.sellingTimeout != 0 && m.state.Time+m.sellingTimeout < int(time.Now().Unix()) && !shouldExit {
+	if (m.sellingTimeout != 0 && m.state.Time+m.sellingTimeout < int(time.Now().Unix())) || shouldExit {
 
 		if shouldExit {
 			m.logAndList(fmt.Sprintf("Exit strategy signal received"), log.InfoLevel)
