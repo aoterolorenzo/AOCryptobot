@@ -11,7 +11,7 @@ type ExchangeService interface {
 	GetTotalBalance(asset string) (float64, error)
 	GetAvailableBalance(asset string) (float64, error)
 	GetLockedBalance(asset string) (float64, error)
-	MakeOrder(quantity float64, rate float64, orderSide techan.OrderSide) (models.Order, error)
+	MakeOrder(quantity float64, rate float64, orderType models.OrderType, orderSide techan.OrderSide) (models.Order, error)
 	MakeOCOOrder(quantity float64, rate float64, stopPrice float64, stopLimitPrice float64,
 		orderSide techan.OrderSide) (models.OCOOrder, error)
 	GetOrder(orderId int64) (models.Order, error)

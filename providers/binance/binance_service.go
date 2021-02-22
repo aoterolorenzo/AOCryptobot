@@ -110,7 +110,7 @@ func (binanceService *BinanceService) GetLockedBalance(asset string) (float64, e
 }
 
 func (binanceService *BinanceService) MakeOrder(quantity float64, rate float64,
-	orderSide techan.OrderSide) (models.Order, error) {
+	orderType models.OrderType, orderSide techan.OrderSide) (models.Order, error) {
 
 	if orderSide == techan.BUY {
 		quantity = quantity / rate
@@ -124,16 +124,27 @@ func (binanceService *BinanceService) MakeOrder(quantity float64, rate float64,
 		sideType = binance.SideTypeSell
 	}
 
-	order, err := binanceService.binanceClient.NewCreateOrderService().Symbol(binanceService.pair).
-		Side(sideType).Type(binance.OrderTypeLimit).
-		TimeInForce(binance.TimeInForceTypeGTC).Quantity(fmt.Sprintf("%.5f", quantity)).
-		Price(fmt.Sprintf("%.2f", rate)).Do(context.Background())
+	//Convert models orderType to binance orderType
+	binanceOrderType := binance.OrderType(orderType)
 
-	if err != nil {
-		return models.Order{}, err
+	preparedOrder := binanceService.binanceClient.NewCreateOrderService().Symbol(binanceService.pair).
+		Side(sideType).Type(binanceOrderType).Quantity(fmt.Sprintf("%.5f", quantity))
+
+	if binanceOrderType == binance.OrderTypeLimit {
+		order, err := preparedOrder.
+			TimeInForce(binance.TimeInForceTypeGTC).Price(fmt.Sprintf("%.2f", rate)).Do(context.Background())
+		if err != nil {
+			return models.Order{}, err
+		}
+		return binanceService.orderResponseToOrder(*order), nil
+	} else {
+		order, err := preparedOrder.Do(context.Background())
+		if err != nil {
+			return models.Order{}, err
+		}
+		return binanceService.orderResponseToOrder(*order), nil
 	}
 
-	return binanceService.orderResponseToOrder(*order), nil
 }
 
 func (binanceService *BinanceService) MakeOCOOrder(quantity float64, rate float64, stopPrice float64, stopLimitPrice float64,
@@ -316,7 +327,7 @@ func (binanceService *BinanceService) ocoOrderResponseToOCOOrder(o binance.Creat
 		OCOOrder.Orders = append(OCOOrder.Orders, binanceService.ocoOrderToModelsOrder(*binOrder))
 	}
 
-	return models.OCOOrder{}
+	return OCOOrder
 }
 
 func (binanceService *BinanceService) wsKlineHandler(event *binance.WsKlineEvent) {
