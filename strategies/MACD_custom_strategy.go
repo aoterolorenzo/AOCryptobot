@@ -15,7 +15,7 @@ func (s *MACDCustomStrategy) ShouldEnter(timeSeries *techan.TimeSeries) bool {
 }
 
 func (s *MACDCustomStrategy) ShouldExit(timeSeries *techan.TimeSeries) bool {
-	return s.ParametrizedShouldExit(timeSeries, 0)
+	return s.ParametrizedShouldExit(timeSeries, 1.34)
 }
 
 func (s *MACDCustomStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeSeries, constant float64, trendPct float64) bool {
