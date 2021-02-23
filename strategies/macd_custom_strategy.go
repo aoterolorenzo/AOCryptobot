@@ -20,7 +20,7 @@ func (s *MACDCustomStrategy) ShouldExit(timeSeries *techan.TimeSeries) bool {
 	return s.ParametrizedShouldExit(timeSeries, 1.34)
 }
 
-func (s *MACDCustomStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeSeries, constant float64, trendPct float64) bool {
+func (s *MACDCustomStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeSeries, constants ...float64) bool {
 
 	closePrices := techan.NewClosePriceIndicator(timeSeries)
 
@@ -36,21 +36,16 @@ func (s *MACDCustomStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeSeri
 	currentMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex).Float()
 	lastMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex - 1).Float()
 	lastLastMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex - 2).Float()
-	lastLastLastMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex - 3).Float()
-	//lastLastLastLastMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex - 4).Float()
 
 	entryRuleSetCheck :=
-		(currentMACDHistogramValue > constant &&
-			currentMACDHistogramValue > lastMACDHistogramValue+trendPct &&
-			lastMACDHistogramValue > lastLastMACDHistogramValue+trendPct) ||
-			(currentMACDHistogramValue > lastMACDHistogramValue+trendPct/2 &&
-				lastMACDHistogramValue > lastLastMACDHistogramValue &&
-				lastLastLastMACDHistogramValue > lastLastLastMACDHistogramValue)
+		currentMACDHistogramValue > constants[0] &&
+			currentMACDHistogramValue > lastMACDHistogramValue+constants[1] &&
+			lastMACDHistogramValue > lastLastMACDHistogramValue+constants[1]
 
 	return entryRuleSetCheck
 }
 
-func (s *MACDCustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSeries, constant float64) bool {
+func (s *MACDCustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSeries, constants ...float64) bool {
 
 	closePrices := techan.NewClosePriceIndicator(timeSeries)
 	lastCandleIndex := len(timeSeries.Candles) - 1
@@ -66,8 +61,8 @@ func (s *MACDCustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSerie
 	currentMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex).Float()
 	lastMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex - 1).Float()
 
-	exitRuleSetCheck := (lastMACDHistogramValue > currentMACDHistogramValue) ||
-		currentMACDHistogramValue < constant
+	exitRuleSetCheck := currentMACDHistogramValue < lastMACDHistogramValue ||
+		currentMACDHistogramValue < constants[0]
 
 	return exitRuleSetCheck
 }

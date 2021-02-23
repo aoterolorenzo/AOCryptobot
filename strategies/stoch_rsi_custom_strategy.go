@@ -18,7 +18,7 @@ func (s *StochRSICustomStrategy) ShouldExit(timeSeries *techan.TimeSeries) bool 
 	return s.ParametrizedShouldExit(timeSeries, 0)
 }
 
-func (s *StochRSICustomStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeSeries, constant float64, trendPct float64) bool {
+func (s *StochRSICustomStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeSeries, constants ...float64) bool {
 	myRSI := techan.NewRelativeStrengthIndexIndicator(techan.NewClosePriceIndicator(timeSeries), 12)
 	stochRSI := Indicators.NewStochasticRelativeStrengthIndicator(myRSI, 12)
 	smoothK := techan.NewSimpleMovingAverage(stochRSI, 3)
@@ -39,10 +39,10 @@ func (s *StochRSICustomStrategy) ParametrizedShouldEnter(timeSeries *techan.Time
 	distanceLastLastKD := lastLastSmoothKValue - lastLastSmoothDValue
 
 	return lastSmoothKValue > lastSmoothDValue &&
-		distanceLastKD > distanceLastLastKD+constant
+		distanceLastKD > distanceLastLastKD+constants[0]
 }
 
-func (s *StochRSICustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSeries, constant float64) bool {
+func (s *StochRSICustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSeries, constants ...float64) bool {
 	myRSI := techan.NewRelativeStrengthIndexIndicator(techan.NewClosePriceIndicator(timeSeries), 12)
 	stochRSI := Indicators.NewStochasticRelativeStrengthIndicator(myRSI, 12)
 	smoothK := techan.NewSimpleMovingAverage(stochRSI, 3)
