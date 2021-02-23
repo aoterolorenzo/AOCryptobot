@@ -244,6 +244,29 @@ func (binanceService *BinanceService) TimeSeriesMonitor(interval string, timeSer
 	<-doneC
 }
 
+func (binanceService *BinanceService) GetSeries(interval string) (techan.TimeSeries, error) {
+	timeSeries := techan.TimeSeries{}
+	klines, err := binanceService.binanceClient.NewKlinesService().Symbol(binanceService.pair).
+		Interval(interval).Do(context.Background())
+	if err != nil {
+		return timeSeries, err
+	}
+
+	for _, k := range klines {
+		period := techan.NewTimePeriod(time.Unix(k.OpenTime/1000, 0), time.Minute*15)
+		candle := techan.NewCandle(period)
+		candle.OpenPrice = big.NewFromString(k.Open)
+		candle.ClosePrice = big.NewFromString(k.Close)
+		candle.MaxPrice = big.NewFromString(k.High)
+		candle.MinPrice = big.NewFromString(k.Low)
+		candle.TradeCount = uint(k.TradeNum)
+		candle.Volume = big.NewFromString(k.Volume)
+		timeSeries.AddCandle(candle)
+	}
+
+	return timeSeries, nil
+}
+
 func (binanceService *BinanceService) orderResponseToOrder(o binance.CreateOrderResponse) models.Order {
 	return models.Order{
 		Symbol:                   o.Symbol,
