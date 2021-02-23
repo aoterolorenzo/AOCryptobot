@@ -60,8 +60,10 @@ func (s *MACDCustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSerie
 
 	currentMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex).Float()
 	lastMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex - 1).Float()
+	lastLastMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex - 2).Float()
 
-	exitRuleSetCheck := currentMACDHistogramValue < lastMACDHistogramValue ||
+	exitRuleSetCheck := (lastMACDHistogramValue > currentMACDHistogramValue+0.05 &&
+		lastLastMACDHistogramValue > lastMACDHistogramValue) ||
 		currentMACDHistogramValue < constant
 
 	return exitRuleSetCheck
