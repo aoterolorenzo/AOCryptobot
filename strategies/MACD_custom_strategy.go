@@ -60,16 +60,14 @@ func (s *MACDCustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSerie
 
 	currentMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex).Float()
 	lastMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex - 1).Float()
-	lastLastMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex - 2).Float()
 
-	exitRuleSetCheck := (lastMACDHistogramValue > currentMACDHistogramValue+0.05 &&
-		lastLastMACDHistogramValue > lastMACDHistogramValue) ||
+	exitRuleSetCheck := (lastMACDHistogramValue > currentMACDHistogramValue+0.5) ||
 		currentMACDHistogramValue < constant
 
 	return exitRuleSetCheck
 }
 
-func (s *MACDCustomStrategy) PerformAnalysis(exchangeService interfaces.ExchangeService, pair string, interval string, constants []float64) (analytics.PairAnalysis, error) {
+func (s *MACDCustomStrategy) PerformAnalysis(exchangeService interfaces.ExchangeService, interval string) (analytics.PairAnalysis, error) {
 	pairAnalysis := analytics.PairAnalysis{}
 	series, err := exchangeService.GetSeries(interval)
 	if err != nil {
