@@ -6,6 +6,7 @@ import (
 	"gitlab.com/aoterocom/AOCryptobot/helpers"
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
 	"gitlab.com/aoterocom/AOCryptobot/models/analytics"
+	"time"
 )
 
 type MACDCustomStrategy struct{}
@@ -26,9 +27,9 @@ func (s *MACDCustomStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeSeri
 
 	lastCandleIndex := len(timeSeries.Candles) - 1
 	// Check y last candle is about to end
-	/*if time.Now().Unix()+60 < timeSeries.Candles[lastCandleIndex].Period.End.Unix() {
+	if time.Now().Unix()+60 < timeSeries.Candles[lastCandleIndex].Period.End.Unix() {
 		return false
-	}*/
+	}
 
 	MACD := techan.NewMACDIndicator(closePrices, 12, 26)
 	MACDHistogram := techan.NewMACDHistogramIndicator(MACD, 9)
@@ -70,7 +71,6 @@ func (s *MACDCustomStrategy) PerformAnalysis(exchangeService interfaces.Exchange
 	if err != nil {
 		return pairAnalysis, err
 	}
-
 	lastCandleIndex := len(series.Candles) - 1
 	lastVal := series.Candles[lastCandleIndex].ClosePrice.Float()
 	trendPctCondition := lastVal * 0.000034
