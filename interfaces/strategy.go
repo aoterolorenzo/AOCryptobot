@@ -10,5 +10,5 @@ type Strategy interface {
 	ShouldExit(timeSeries *techan.TimeSeries) bool
 	ParametrizedShouldExit(timeSeries *techan.TimeSeries, constant float64) bool
 	ParametrizedShouldEnter(timeSeries *techan.TimeSeries, constant float64, trendPct float64) bool
-	PerformAnalysis(exchangeService ExchangeService, pair string, interval string, constants []float64) (analytics.PairAnalysis, error)
+	PerformAnalysis(exchangeService ExchangeService, interval string, limit int, omit int, constants *[]float64) (analytics.PairAnalysis, error)
 }

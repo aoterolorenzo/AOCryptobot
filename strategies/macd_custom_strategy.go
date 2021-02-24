@@ -36,11 +36,16 @@ func (s *MACDCustomStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeSeri
 	currentMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex).Float()
 	lastMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex - 1).Float()
 	lastLastMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex - 2).Float()
+	lastLastLastMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex - 3).Float()
+	//lastLastLastLastMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex - 4).Float()
 
 	entryRuleSetCheck :=
-		currentMACDHistogramValue > constant &&
+		(currentMACDHistogramValue > constant &&
 			currentMACDHistogramValue > lastMACDHistogramValue+trendPct &&
-			lastMACDHistogramValue > lastLastMACDHistogramValue+trendPct
+			lastMACDHistogramValue > lastLastMACDHistogramValue+trendPct) ||
+			(currentMACDHistogramValue > lastMACDHistogramValue+trendPct/2 &&
+				lastMACDHistogramValue > lastLastMACDHistogramValue &&
+				lastLastLastMACDHistogramValue > lastLastLastMACDHistogramValue)
 
 	return entryRuleSetCheck
 }
@@ -50,7 +55,7 @@ func (s *MACDCustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSerie
 	closePrices := techan.NewClosePriceIndicator(timeSeries)
 	lastCandleIndex := len(timeSeries.Candles) - 1
 
-	// Check y last candle is about to end
+	// Left some margin after the candle start
 	if time.Now().Unix()-120 < timeSeries.Candles[lastCandleIndex].Period.Start.Unix() {
 		return false
 	}
@@ -61,18 +66,20 @@ func (s *MACDCustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSerie
 	currentMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex).Float()
 	lastMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex - 1).Float()
 
-	exitRuleSetCheck := (lastMACDHistogramValue > currentMACDHistogramValue+0.5) ||
+	exitRuleSetCheck := (lastMACDHistogramValue > currentMACDHistogramValue) ||
 		currentMACDHistogramValue < constant
 
 	return exitRuleSetCheck
 }
 
-func (s *MACDCustomStrategy) PerformAnalysis(exchangeService interfaces.ExchangeService, interval string) (analytics.PairAnalysis, error) {
+func (s *MACDCustomStrategy) PerformAnalysis(exchangeService interfaces.ExchangeService,
+	interval string, limit int, omit int, constants *[]float64) (analytics.PairAnalysis, error) {
 	pairAnalysis := analytics.PairAnalysis{}
-	series, err := exchangeService.GetSeries(interval)
+	series, err := exchangeService.GetSeries(interval, limit)
 	if err != nil {
 		return pairAnalysis, err
 	}
+	series.Candles = series.Candles[:len(series.Candles)-omit]
 	lastCandleIndex := len(series.Candles) - 1
 	lastVal := series.Candles[lastCandleIndex].ClosePrice.Float()
 	trendPctCondition := lastVal * 0.000034
@@ -94,27 +101,30 @@ func (s *MACDCustomStrategy) PerformAnalysis(exchangeService interfaces.Exchange
 	selectedEntryConstant := enterConstant
 	selectedExitConstant := exitConstant
 
+	if constants != nil {
+		selectedExitConstant = (*constants)[1]
+		enterConstant = (*constants)[0]
+		enterStop = enterConstant + 1
+		selectedEntryConstant = enterConstant
+		jump = lastVal
+	}
+
 	for {
 		for ; enterConstant < enterStop; enterConstant += jump {
 			balance = 1000.0
-			for i := 4; i < len(series.Candles); i++ {
+			for i := 5; i < len(series.Candles); i++ {
 				candles := series.Candles[:i]
 				newSeries := series
 				newSeries.Candles = candles
 
-				//fmt.Printf("%v\n", candles[i-1].Period.End.String())
 				if !open && len(candles) > 4 && s.ParametrizedShouldEnter(&newSeries, enterConstant, trendPctCondition) {
 					open = true
 					buyRate = candles[i-1].ClosePrice.Float()
-					//fmt.Printf("Buy at %f\n", buyRate)
 				} else if open && s.ParametrizedShouldExit(&newSeries, selectedExitConstant) {
 					open = false
 					sellRate = candles[i-1].ClosePrice.Float()
 					profitPct := sellRate * 1 / buyRate
 					balance *= profitPct * (1 - 0.00014)
-					/*fmt.Printf("Sell at %f\n", sellRate)
-					fmt.Printf("Profit %f\n", profitPct)
-					fmt.Printf("Balance %f\n", balance)*/
 				}
 
 			}
@@ -128,9 +138,12 @@ func (s *MACDCustomStrategy) PerformAnalysis(exchangeService interfaces.Exchange
 			//fmt.Printf("Entry Constant: %.8f Exit Constant %.8f Balance: %.8f\n", enterConstant, selectedExitConstant, balance)
 		}
 
+		if constants != nil {
+			break
+		}
 		for ; exitConstant > exitStop; exitConstant -= jump {
 			balance = 1000.0
-			for i := 4; i < len(series.Candles); i++ {
+			for i := 5; i < len(series.Candles); i++ {
 
 				candles := series.Candles[:i]
 				newSeries := series
@@ -158,8 +171,8 @@ func (s *MACDCustomStrategy) PerformAnalysis(exchangeService interfaces.Exchange
 			highestEnterConstant = selectedEntryConstant
 			highestExitConstant = selectedExitConstant
 		} else {
-			//fmt.Printf("%s: BEST CONSTANT COMBINATION FOUND: Entry Constant: %.8f Exit Constant %f Profit: %.4f%%\n",
-			//	pair, selectedEntryConstant, selectedExitConstant, highestBalance*100/1000-100)
+			//fmt.Printf("BEST CONSTANT COMBINATION FOUND: Entry Constant: %.8f Exit Constant %f Profit: %.4f%%\n",
+			//selectedEntryConstant, selectedExitConstant, highestBalance*100/1000-100)
 			break
 		}
 	}

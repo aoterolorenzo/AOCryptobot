@@ -244,10 +244,13 @@ func (binanceService *BinanceService) TimeSeriesMonitor(interval string, timeSer
 	<-doneC
 }
 
-func (binanceService *BinanceService) GetSeries(interval string) (techan.TimeSeries, error) {
+func (binanceService *BinanceService) GetSeries(interval string, limit int) (techan.TimeSeries, error) {
+	if limit == 0 {
+		limit = 1000
+	}
 	timeSeries := techan.TimeSeries{}
 	klines, err := binanceService.binanceClient.NewKlinesService().Symbol(binanceService.pair).
-		Interval(interval).Do(context.Background())
+		Interval(interval).Limit(limit).Do(context.Background())
 	if err != nil {
 		return timeSeries, err
 	}

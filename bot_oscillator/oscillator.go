@@ -77,7 +77,7 @@ func (mm *MarketMaker) Run() {
 func (mm *MarketMaker) runThread(threadName string, logListMutex *sync.Mutex, waitTime int) {
 	marketMakerService := marketMakerServices.MarketMakerService{}
 	marketMakerService.SetServices(mm.exchangeProvider, mm.marketService, mm.walletService, mm.orderBookService)
-	marketMakerService.SetStrategy(&strategies.MACDCustomStrategy{})
+	marketMakerService.SetStrategy(&strategies.StochRSICustomStrategy{})
 	marketMakerService.SetLogListAndMutex(&mm.logList, logListMutex)
 	marketMakerService.SetThreadName(threadName)
 	marketMakerService.Execute(waitTime)
