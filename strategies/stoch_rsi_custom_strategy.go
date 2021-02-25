@@ -1,6 +1,7 @@
 package strategies
 
 import (
+	"fmt"
 	"github.com/sdcoffey/techan"
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
 	"gitlab.com/aoterocom/AOCryptobot/models/analytics"
@@ -11,10 +12,12 @@ import (
 type StochRSICustomStrategy struct{}
 
 func (s *StochRSICustomStrategy) ShouldEnter(timeSeries *techan.TimeSeries) bool {
+	fmt.Printf("should enter %t\n", s.ParametrizedShouldEnter(timeSeries, 0.15, 0))
 	return s.ParametrizedShouldEnter(timeSeries, 0.15, 0)
 }
 
 func (s *StochRSICustomStrategy) ShouldExit(timeSeries *techan.TimeSeries) bool {
+	fmt.Printf("should exit %t\n", s.ParametrizedShouldExit(timeSeries, 0) && !s.ShouldEnter(timeSeries))
 	return s.ParametrizedShouldExit(timeSeries, 0) && !s.ShouldEnter(timeSeries)
 }
 
@@ -69,8 +72,8 @@ func (s *StochRSICustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeS
 		lastSmoothKValue < 90
 }
 
-func (s *StochRSICustomStrategy) PerformAnalysis(exchangeService interfaces.ExchangeService, interval string, limit int, omit int, constants *[]float64) (analytics.StrategyResult, error) {
-	strategyResults := analytics.StrategyResult{}
+func (s *StochRSICustomStrategy) PerformAnalysis(exchangeService interfaces.ExchangeService, interval string, limit int, omit int, constants *[]float64) (analytics.StrategySimulationResult, error) {
+	strategyResults := analytics.StrategySimulationResult{}
 	series, err := exchangeService.GetSeries(interval, limit)
 	if err != nil {
 		return strategyResults, err
