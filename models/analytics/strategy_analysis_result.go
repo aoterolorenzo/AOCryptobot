@@ -1,7 +1,7 @@
 package analytics
 
-type PairStrategyAnalysis struct {
-	StrategyResults []StrategyResult
+type StrategyAnalysisResult struct {
+	StrategyResults []StrategySimulationResult
 	IsBestStrategy  bool
 	Strategy        string
 	Pair            string

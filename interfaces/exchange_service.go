@@ -20,4 +20,5 @@ type ExchangeService interface {
 	DepthMonitor(marketSnapshotsRecord *[]models.MarketDepth)
 	TimeSeriesMonitor(interval string, timeSeries *techan.TimeSeries)
 	GetSeries(interval string, limit int) (techan.TimeSeries, error)
+	GetMarkets(coin string) []string
 }

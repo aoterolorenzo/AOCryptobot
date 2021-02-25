@@ -68,8 +68,8 @@ func (s *MACDCustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSerie
 	return exitRuleSetCheck
 }
 
-func (s *MACDCustomStrategy) PerformAnalysis(exchangeService interfaces.ExchangeService, interval string, limit int, omit int, constants *[]float64) (analytics.StrategyResult, error) {
-	strategyResults := analytics.StrategyResult{}
+func (s *MACDCustomStrategy) PerformAnalysis(exchangeService interfaces.ExchangeService, interval string, limit int, omit int, constants *[]float64) (analytics.StrategySimulationResult, error) {
+	strategyResults := analytics.StrategySimulationResult{}
 	series, err := exchangeService.GetSeries(interval, limit)
 	if err != nil {
 		return strategyResults, err

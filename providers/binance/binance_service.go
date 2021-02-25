@@ -12,6 +12,7 @@ import (
 	"os"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -268,6 +269,17 @@ func (binanceService *BinanceService) GetSeries(interval string, limit int) (tec
 	}
 
 	return timeSeries, nil
+}
+
+func (binanceService *BinanceService) GetMarkets(coin string) []string {
+	var pairList []string
+	info, _ := binanceService.binanceClient.NewExchangeInfoService().Do(context.Background())
+	for _, symbol := range info.Symbols {
+		if strings.Contains(symbol.Symbol, coin) {
+			pairList = append(pairList, symbol.Symbol)
+		}
+	}
+	return pairList
 }
 
 func (binanceService *BinanceService) orderResponseToOrder(o binance.CreateOrderResponse) models.Order {
