@@ -38,8 +38,9 @@ func (s *StochRSICustomStrategy) ParametrizedShouldEnter(timeSeries *techan.Time
 	lastLastSmoothDValue := smoothD.Calculate(lastCandleIndex - 1).Float()
 	distanceLastLastKD := lastLastSmoothKValue - lastLastSmoothDValue
 
-	return lastSmoothKValue > lastSmoothDValue &&
-		distanceLastKD > distanceLastLastKD+constants[0]
+	return (lastSmoothKValue > lastSmoothDValue+0.1 &&
+		distanceLastKD > distanceLastLastKD+constants[0]) ||
+		distanceLastKD < 0.16
 }
 
 func (s *StochRSICustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSeries, constants ...float64) bool {
@@ -51,7 +52,7 @@ func (s *StochRSICustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeS
 	lastCandleIndex := len(timeSeries.Candles) - 1
 
 	// Left some margin after the candle start
-	if time.Now().Unix()-120 < timeSeries.Candles[lastCandleIndex].Period.Start.Unix() {
+	if time.Now().Unix()-240 < timeSeries.Candles[lastCandleIndex].Period.Start.Unix() {
 		return false
 	}
 
