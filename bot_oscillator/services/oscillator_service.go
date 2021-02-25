@@ -151,6 +151,11 @@ func (m *MarketMakerService) Execute(waitTime int) {
 
 func (m *MarketMakerService) monitor() {
 
+	m.strategy.ShouldEnter(&m.MarketService.TimeSeries)
+	m.strategy.ShouldExit(&m.MarketService.TimeSeries)
+
+	return
+
 	pctVariation, err := m.MarketService.PctVariation(m.monitorWindow)
 	if err != nil {
 		m.logAndList(" e2:"+err.Error(), log.ErrorLevel)

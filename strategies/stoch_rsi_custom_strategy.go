@@ -1,7 +1,6 @@
 package strategies
 
 import (
-	"fmt"
 	"github.com/sdcoffey/techan"
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
 	"gitlab.com/aoterocom/AOCryptobot/models/analytics"
@@ -12,12 +11,12 @@ import (
 type StochRSICustomStrategy struct{}
 
 func (s *StochRSICustomStrategy) ShouldEnter(timeSeries *techan.TimeSeries) bool {
-	fmt.Printf("should enter %t\n", s.ParametrizedShouldEnter(timeSeries, 0.15, 0))
+	logger.Debugln("should enter %t\n", s.ParametrizedShouldEnter(timeSeries, 0.15, 0))
 	return s.ParametrizedShouldEnter(timeSeries, 0.15, 0)
 }
 
 func (s *StochRSICustomStrategy) ShouldExit(timeSeries *techan.TimeSeries) bool {
-	fmt.Printf("should exit %t\n", s.ParametrizedShouldExit(timeSeries, 0) && !s.ShouldEnter(timeSeries))
+	logger.Debugln("should exit %t\n", s.ParametrizedShouldExit(timeSeries, 0) && !s.ShouldEnter(timeSeries))
 	return s.ParametrizedShouldExit(timeSeries, 0) && !s.ShouldEnter(timeSeries)
 }
 
