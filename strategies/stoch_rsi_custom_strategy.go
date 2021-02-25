@@ -4,7 +4,7 @@ import (
 	"github.com/sdcoffey/techan"
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
 	"gitlab.com/aoterocom/AOCryptobot/models/analytics"
-	"gitlab.com/aoterocom/AOCryptobot/strategies/Indicators"
+	"gitlab.com/aoterocom/AOCryptobot/strategies/indicators"
 	"time"
 )
 
@@ -20,13 +20,13 @@ func (s *StochRSICustomStrategy) ShouldExit(timeSeries *techan.TimeSeries) bool 
 
 func (s *StochRSICustomStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeSeries, constants ...float64) bool {
 	myRSI := techan.NewRelativeStrengthIndexIndicator(techan.NewClosePriceIndicator(timeSeries), 12)
-	stochRSI := Indicators.NewStochasticRelativeStrengthIndicator(myRSI, 12)
+	stochRSI := indicators.NewStochasticRelativeStrengthIndicator(myRSI, 12)
 	smoothK := techan.NewSimpleMovingAverage(stochRSI, 3)
 	smoothD := techan.NewSimpleMovingAverage(smoothK, 3)
 	lastCandleIndex := len(timeSeries.Candles) - 1
 
-	// Check y last candle is about to end
-	if time.Now().Unix()+60 < timeSeries.Candles[lastCandleIndex].Period.End.Unix() {
+	// Left some margin after the candle start
+	if time.Now().Unix()-120 < timeSeries.Candles[lastCandleIndex].Period.Start.Unix() {
 		return false
 	}
 
@@ -44,7 +44,7 @@ func (s *StochRSICustomStrategy) ParametrizedShouldEnter(timeSeries *techan.Time
 
 func (s *StochRSICustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSeries, constants ...float64) bool {
 	myRSI := techan.NewRelativeStrengthIndexIndicator(techan.NewClosePriceIndicator(timeSeries), 12)
-	stochRSI := Indicators.NewStochasticRelativeStrengthIndicator(myRSI, 12)
+	stochRSI := indicators.NewStochasticRelativeStrengthIndicator(myRSI, 12)
 	smoothK := techan.NewSimpleMovingAverage(stochRSI, 3)
 	smoothD := techan.NewSimpleMovingAverage(smoothK, 3)
 
@@ -63,15 +63,14 @@ func (s *StochRSICustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeS
 	lastLastSmoothDValue := smoothD.Calculate(lastCandleIndex - 1).Float()
 	distanceLastLastKD := lastLastSmoothKValue - lastLastSmoothDValue
 
-	return distanceLastKD < distanceLastLastKD
+	return distanceLastKD < distanceLastLastKD && lastSmoothKValue < lastLastSmoothKValue && lastSmoothKValue < 90
 }
 
-func (s *StochRSICustomStrategy) PerformAnalysis(exchangeService interfaces.ExchangeService,
-	interval string, limit int, omit int, constants *[]float64) (analytics.PairAnalysis, error) {
-	pairAnalysis := analytics.PairAnalysis{}
+func (s *StochRSICustomStrategy) PerformAnalysis(exchangeService interfaces.ExchangeService, interval string, limit int, omit int, constants *[]float64) (analytics.StrategyResult, error) {
+	strategyResults := analytics.StrategyResult{}
 	series, err := exchangeService.GetSeries(interval, limit)
 	if err != nil {
-		return pairAnalysis, err
+		return strategyResults, err
 	}
 	series.Candles = series.Candles[:len(series.Candles)-omit]
 
@@ -119,7 +118,9 @@ func (s *StochRSICustomStrategy) PerformAnalysis(exchangeService interfaces.Exch
 		//fmt.Printf("Entry constant: %.8f Balance: %.8f\n", entryConstant, balance)
 	}
 
-	pairAnalysis.SimulatedProfit = highestBalance*100/1000 - 100
-	pairAnalysis.Constants = append(pairAnalysis.Constants, selectedEntryConstant)
-	return pairAnalysis, nil
+	strategyResults.Trend = series.Candles[len(series.Candles)-1].ClosePrice.Float() / series.Candles[0].ClosePrice.Float()
+	strategyResults.Profit = highestBalance*100/1000 - 100
+	strategyResults.Period = limit - omit
+	strategyResults.Constants = append(strategyResults.Constants, selectedEntryConstant)
+	return strategyResults, nil
 }

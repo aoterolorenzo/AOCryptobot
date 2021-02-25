@@ -25,8 +25,9 @@ func (s *MACDCustomStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeSeri
 	closePrices := techan.NewClosePriceIndicator(timeSeries)
 
 	lastCandleIndex := len(timeSeries.Candles) - 1
-	// Check y last candle is about to end
-	if time.Now().Unix()+60 < timeSeries.Candles[lastCandleIndex].Period.End.Unix() {
+
+	// Left some margin after the candle start
+	if time.Now().Unix()-120 < timeSeries.Candles[lastCandleIndex].Period.Start.Unix() {
 		return false
 	}
 
@@ -40,7 +41,7 @@ func (s *MACDCustomStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeSeri
 	entryRuleSetCheck :=
 		currentMACDHistogramValue > constants[0] &&
 			currentMACDHistogramValue > lastMACDHistogramValue+constants[1] &&
-			lastMACDHistogramValue > lastLastMACDHistogramValue+constants[1]
+			lastMACDHistogramValue > lastLastMACDHistogramValue
 
 	return entryRuleSetCheck
 }
@@ -61,23 +62,22 @@ func (s *MACDCustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSerie
 	currentMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex).Float()
 	lastMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex - 1).Float()
 
-	exitRuleSetCheck := currentMACDHistogramValue < lastMACDHistogramValue ||
+	exitRuleSetCheck := currentMACDHistogramValue < lastMACDHistogramValue-constants[1] ||
 		currentMACDHistogramValue < constants[0]
 
 	return exitRuleSetCheck
 }
 
-func (s *MACDCustomStrategy) PerformAnalysis(exchangeService interfaces.ExchangeService,
-	interval string, limit int, omit int, constants *[]float64) (analytics.PairAnalysis, error) {
-	pairAnalysis := analytics.PairAnalysis{}
+func (s *MACDCustomStrategy) PerformAnalysis(exchangeService interfaces.ExchangeService, interval string, limit int, omit int, constants *[]float64) (analytics.StrategyResult, error) {
+	strategyResults := analytics.StrategyResult{}
 	series, err := exchangeService.GetSeries(interval, limit)
 	if err != nil {
-		return pairAnalysis, err
+		return strategyResults, err
 	}
 	series.Candles = series.Candles[:len(series.Candles)-omit]
 	lastCandleIndex := len(series.Candles) - 1
 	lastVal := series.Candles[lastCandleIndex].ClosePrice.Float()
-	trendPctCondition := lastVal * 0.000034
+	trendPctCondition := lastVal * 0.0006
 	jump := lastVal * 0.00002
 
 	highestBalance := -1.0
@@ -115,7 +115,7 @@ func (s *MACDCustomStrategy) PerformAnalysis(exchangeService interfaces.Exchange
 				if !open && len(candles) > 4 && s.ParametrizedShouldEnter(&newSeries, enterConstant, trendPctCondition) {
 					open = true
 					buyRate = candles[i-1].ClosePrice.Float()
-				} else if open && s.ParametrizedShouldExit(&newSeries, selectedExitConstant) {
+				} else if open && s.ParametrizedShouldExit(&newSeries, selectedExitConstant, trendPctCondition) {
 					open = false
 					sellRate = candles[i-1].ClosePrice.Float()
 					profitPct := sellRate * 1 / buyRate
@@ -147,11 +147,11 @@ func (s *MACDCustomStrategy) PerformAnalysis(exchangeService interfaces.Exchange
 				if !open && len(candles) > 4 && s.ParametrizedShouldEnter(&newSeries, selectedEntryConstant, trendPctCondition) {
 					open = true
 					buyRate = candles[i-1].ClosePrice.Float()
-				} else if open && s.ParametrizedShouldExit(&newSeries, exitConstant) {
+				} else if open && s.ParametrizedShouldExit(&newSeries, exitConstant, trendPctCondition) {
 					open = false
 					sellRate = candles[i-1].ClosePrice.Float()
 					profitPct := sellRate * 1 / buyRate
-					balance *= profitPct * (1 - 0.00014)
+					balance *= profitPct * (1 - 0.001)
 				}
 			}
 			open = false
@@ -172,9 +172,9 @@ func (s *MACDCustomStrategy) PerformAnalysis(exchangeService interfaces.Exchange
 		}
 	}
 
-	pairAnalysis.SimulatedProfit = highestBalance*100/1000 - 100
-	pairAnalysis.Constants = append(pairAnalysis.Constants, selectedEntryConstant)
-	pairAnalysis.Constants = append(pairAnalysis.Constants, selectedExitConstant)
-
-	return pairAnalysis, nil
+	strategyResults.Profit = highestBalance*100/1000 - 100
+	strategyResults.Period = limit - omit
+	strategyResults.Constants = append(strategyResults.Constants, selectedEntryConstant)
+	strategyResults.Constants = append(strategyResults.Constants, selectedExitConstant)
+	return strategyResults, nil
 }

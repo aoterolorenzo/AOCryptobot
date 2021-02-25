@@ -1,12 +1,12 @@
 package analytics
 
-import (
-	"github.com/sdcoffey/techan"
-)
-
-type PairAnalysis struct {
+type PairStrategyAnalysis struct {
+	StrategyResults []StrategyResult
+	IsBestStrategy  bool
+	Strategy        string
 	Pair            string
-	SimulatedProfit float64
-	Constants       []float64
-	TimeSeries      *techan.TimeSeries
+	TradeSignal     bool
+	IsSelected      bool
+	Mean            float64
+	StdDev          float64
 }

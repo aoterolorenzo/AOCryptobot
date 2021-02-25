@@ -1,4 +1,4 @@
-package Indicators
+package indicators
 
 import (
 	"github.com/sdcoffey/big"
