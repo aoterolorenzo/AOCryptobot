@@ -15,7 +15,7 @@ func (s *StochRSICustomStrategy) ShouldEnter(timeSeries *techan.TimeSeries) bool
 }
 
 func (s *StochRSICustomStrategy) ShouldExit(timeSeries *techan.TimeSeries) bool {
-	return s.ParametrizedShouldExit(timeSeries, 0)
+	return s.ParametrizedShouldExit(timeSeries, 0) && !s.ShouldEnter(timeSeries)
 }
 
 func (s *StochRSICustomStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeSeries, constants ...float64) bool {
@@ -38,9 +38,9 @@ func (s *StochRSICustomStrategy) ParametrizedShouldEnter(timeSeries *techan.Time
 	lastLastSmoothDValue := smoothD.Calculate(lastCandleIndex - 1).Float()
 	distanceLastLastKD := lastLastSmoothKValue - lastLastSmoothDValue
 
-	return (lastSmoothKValue > lastSmoothDValue+0.1 &&
+	return ((lastSmoothKValue > lastSmoothDValue+0.1 &&
 		distanceLastKD > distanceLastLastKD+constants[0]) ||
-		distanceLastKD < 0.16
+		distanceLastKD < 0.16) && lastSmoothKValue < 40
 }
 
 func (s *StochRSICustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSeries, constants ...float64) bool {
@@ -64,7 +64,9 @@ func (s *StochRSICustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeS
 	lastLastSmoothDValue := smoothD.Calculate(lastCandleIndex - 1).Float()
 	distanceLastLastKD := lastLastSmoothKValue - lastLastSmoothDValue
 
-	return distanceLastKD < distanceLastLastKD && lastSmoothKValue < lastLastSmoothKValue && lastSmoothKValue < 90
+	return distanceLastKD < distanceLastLastKD &&
+		lastSmoothKValue < lastLastSmoothKValue &&
+		lastSmoothKValue < 90
 }
 
 func (s *StochRSICustomStrategy) PerformAnalysis(exchangeService interfaces.ExchangeService, interval string, limit int, omit int, constants *[]float64) (analytics.StrategyResult, error) {
