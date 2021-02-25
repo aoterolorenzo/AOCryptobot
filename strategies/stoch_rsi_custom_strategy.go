@@ -2,7 +2,6 @@ package strategies
 
 import (
 	"github.com/sdcoffey/techan"
-	"gitlab.com/aoterocom/AOCryptobot/helpers"
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
 	"gitlab.com/aoterocom/AOCryptobot/models/analytics"
 	"gitlab.com/aoterocom/AOCryptobot/strategies/indicators"
@@ -12,14 +11,10 @@ import (
 type StochRSICustomStrategy struct{}
 
 func (s *StochRSICustomStrategy) ShouldEnter(timeSeries *techan.TimeSeries) bool {
-	var logger = helpers.Logger{}
-	logger.Debugln("should enter %t\n", s.ParametrizedShouldEnter(timeSeries, 0.15, 0))
 	return s.ParametrizedShouldEnter(timeSeries, 0.15, 0)
 }
 
 func (s *StochRSICustomStrategy) ShouldExit(timeSeries *techan.TimeSeries) bool {
-	var logger = helpers.Logger{}
-	logger.Debugln("should exit %t\n", s.ParametrizedShouldExit(timeSeries, 0) && !s.ShouldEnter(timeSeries))
 	return s.ParametrizedShouldExit(timeSeries, 0)
 }
 
