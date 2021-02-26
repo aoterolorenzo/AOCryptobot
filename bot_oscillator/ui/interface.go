@@ -15,7 +15,7 @@ var logger = helpers.Logger{}
 
 type UserInterface struct {
 	ExchangeService  interfaces.ExchangeService
-	MarketService    *services.MarketService
+	MarketService    *services.MultiMarketService
 	WalletService    *services.WalletService
 	OrderBookService *services.OrderBookService
 	initialWallet    *models.PairWallet
@@ -31,7 +31,7 @@ func (ui *UserInterface) SetExchangeService(exchangeService interfaces.ExchangeS
 	ui.ExchangeService = exchangeService
 }
 
-func (ui *UserInterface) SetServices(exchangeService interfaces.ExchangeService, MarketService *services.MarketService,
+func (ui *UserInterface) SetServices(exchangeService interfaces.ExchangeService, MarketService *services.MultiMarketService,
 	walletService *services.WalletService, orderBookService *services.OrderBookService) {
 	ui.ExchangeService = exchangeService
 	ui.MarketService = MarketService

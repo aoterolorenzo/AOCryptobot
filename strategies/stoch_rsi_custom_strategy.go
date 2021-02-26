@@ -11,14 +11,14 @@ import (
 type StochRSICustomStrategy struct{}
 
 func (s *StochRSICustomStrategy) ShouldEnter(timeSeries *techan.TimeSeries) bool {
-	return s.ParametrizedShouldEnter(timeSeries, 0.15, 0)
+	return s.ParametrizedShouldEnter(timeSeries, []float64{0.15, 0})
 }
 
 func (s *StochRSICustomStrategy) ShouldExit(timeSeries *techan.TimeSeries) bool {
-	return s.ParametrizedShouldExit(timeSeries, 0)
+	return s.ParametrizedShouldExit(timeSeries, []float64{0.15, 0})
 }
 
-func (s *StochRSICustomStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeSeries, constants ...float64) bool {
+func (s *StochRSICustomStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeSeries, constants []float64) bool {
 	myRSI := techan.NewRelativeStrengthIndexIndicator(techan.NewClosePriceIndicator(timeSeries), 12)
 	stochRSI := indicators.NewStochasticRelativeStrengthIndicator(myRSI, 12)
 	smoothK := techan.NewSimpleMovingAverage(stochRSI, 3)
@@ -38,12 +38,11 @@ func (s *StochRSICustomStrategy) ParametrizedShouldEnter(timeSeries *techan.Time
 	lastLastSmoothDValue := smoothD.Calculate(lastCandleIndex - 1).Float()
 	distanceLastLastKD := lastLastSmoothKValue - lastLastSmoothDValue
 
-	return ((lastSmoothKValue > lastSmoothDValue+0.1 &&
-		distanceLastKD > distanceLastLastKD+constants[0]) ||
-		distanceLastKD > 0.16) && lastSmoothKValue < 40
+	return distanceLastKD > distanceLastLastKD+constants[0] &&
+		lastSmoothDValue < 0.20 && !(distanceLastKD < distanceLastLastKD-0.03)
 }
 
-func (s *StochRSICustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSeries, constants ...float64) bool {
+func (s *StochRSICustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSeries, constants []float64) bool {
 	myRSI := techan.NewRelativeStrengthIndexIndicator(techan.NewClosePriceIndicator(timeSeries), 12)
 	stochRSI := indicators.NewStochasticRelativeStrengthIndicator(myRSI, 12)
 	smoothK := techan.NewSimpleMovingAverage(stochRSI, 3)
@@ -64,9 +63,9 @@ func (s *StochRSICustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeS
 	lastLastSmoothDValue := smoothD.Calculate(lastCandleIndex - 1).Float()
 	distanceLastLastKD := lastLastSmoothKValue - lastLastSmoothDValue
 
-	return distanceLastKD < distanceLastLastKD &&
-		lastSmoothKValue < lastLastSmoothKValue &&
-		lastSmoothKValue < 90
+	exitRuleSetCheck := distanceLastKD < distanceLastLastKD-0.03
+
+	return exitRuleSetCheck
 }
 
 func (s *StochRSICustomStrategy) PerformAnalysis(exchangeService interfaces.ExchangeService, interval string, limit int, omit int, constants *[]float64) (analytics.StrategySimulationResult, error) {
@@ -101,16 +100,16 @@ func (s *StochRSICustomStrategy) PerformAnalysis(exchangeService interfaces.Exch
 			newSeries := series
 			newSeries.Candles = candles
 
-			if !open && len(candles) > 4 && s.ParametrizedShouldEnter(&newSeries, entryConstant, 0) {
+			if !open && len(candles) > 4 && s.ParametrizedShouldEnter(&newSeries, []float64{entryConstant, 0}) {
 				open = true
 				buyRate = candles[i-1].ClosePrice.Float()
-			} else if open && s.ParametrizedShouldExit(&newSeries, 0) {
+			} else if open && s.ParametrizedShouldExit(&newSeries, []float64{entryConstant, 0}) {
 				open = false
 				sellRate = candles[i-1].ClosePrice.Float()
 				profitPct := sellRate * 1 / buyRate
 				balance *= profitPct * (1 - 0.00014)
 			}
-
+			time.Sleep(2 * time.Millisecond)
 		}
 
 		open = false
@@ -120,6 +119,9 @@ func (s *StochRSICustomStrategy) PerformAnalysis(exchangeService interfaces.Exch
 		}
 		//fmt.Printf("Entry constant: %.8f Balance: %.8f\n", entryConstant, balance)
 	}
+
+	//fmt.Printf("BEST CONSTANT COMBINATION FOUND: Entry Constant: %.8f Profit: %.4f%%\n",
+	//	selectedEntryConstant, highestBalance*100/1000-100)
 
 	strategyResults.Trend = series.Candles[len(series.Candles)-1].ClosePrice.Float() / series.Candles[0].ClosePrice.Float()
 	strategyResults.Profit = highestBalance*100/1000 - 100

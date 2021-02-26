@@ -1,11 +1,9 @@
 package analytics
 
-type StrategyAnalysisResult struct {
+type StrategyAnalysis struct {
 	StrategyResults []StrategySimulationResult
-	IsBestStrategy  bool
-	Strategy        string
-	TradeSignal     bool
-	IsSelected      bool
+	Strategy        interface{}
+	IsCandidate     bool
 	Mean            float64
 	StdDev          float64
 }

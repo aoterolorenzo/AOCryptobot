@@ -216,7 +216,7 @@ func (binanceService *BinanceService) DepthMonitor(marketSnapshotsRecord *[]mode
 	<-doneC
 }
 
-func (binanceService *BinanceService) TimeSeriesMonitor(interval string, timeSeries *techan.TimeSeries) {
+func (binanceService *BinanceService) TimeSeriesMonitor(interval string, timeSeries *techan.TimeSeries, active *bool) {
 	binanceService.timeSeries = timeSeries
 
 	klines, err := binanceService.binanceClient.NewKlinesService().Symbol(binanceService.pair).
@@ -237,11 +237,21 @@ func (binanceService *BinanceService) TimeSeriesMonitor(interval string, timeSer
 		binanceService.timeSeries.AddCandle(candle)
 	}
 
-	doneC, _, err := binance.WsKlineServe(binanceService.pair, interval, binanceService.wsKlineHandler, binanceService.errHandler)
+	doneC, done, err := binance.WsKlineServe(binanceService.pair, interval, binanceService.wsKlineHandler, binanceService.errHandler)
 	if err != nil {
 		logger.Errorln(err)
 		return
 	}
+
+	go func() {
+		for *active {
+			logger.Infoln("activo")
+			time.Sleep(1 * time.Second)
+		}
+		logger.Infoln("out!")
+		done <- struct{}{}
+	}()
+
 	<-doneC
 }
 

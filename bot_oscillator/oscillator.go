@@ -19,7 +19,7 @@ var logger = helpers.Logger{}
 
 type MarketMaker struct {
 	exchangeProvider interfaces.ExchangeService
-	marketService    *services.MarketService
+	marketService    *services.MultiMarketService
 	walletService    *services.WalletService
 	orderBookService *services.OrderBookService
 	logList          []string
@@ -46,7 +46,7 @@ func (mm *MarketMaker) Run() {
 	mm.exchangeProvider.SetPair(pair)
 	mm.exchangeProvider.ConfigureClient()
 
-	mm.marketService = &services.MarketService{}
+	mm.marketService = &services.MultiMarketService{}
 	mm.walletService = &services.WalletService{Coin1: coin1, Coin2: coin2}
 	mm.walletService.InitWallet()
 	err = mm.walletService.UpdateWallet()

@@ -18,7 +18,7 @@ type ExchangeService interface {
 	CancelOrder(orderId int64) error
 	GetOrderStatus(orderId int64) (models.OrderStatusType, error)
 	DepthMonitor(marketSnapshotsRecord *[]models.MarketDepth)
-	TimeSeriesMonitor(interval string, timeSeries *techan.TimeSeries)
+	TimeSeriesMonitor(interval string, timeSeries *techan.TimeSeries, active *bool)
 	GetSeries(interval string, limit int) (techan.TimeSeries, error)
 	GetMarkets(coin string) []string
 }

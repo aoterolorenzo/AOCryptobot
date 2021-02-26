@@ -13,14 +13,14 @@ type MACDCustomStrategy struct{}
 var logger = helpers.Logger{}
 
 func (s *MACDCustomStrategy) ShouldEnter(timeSeries *techan.TimeSeries) bool {
-	return s.ParametrizedShouldEnter(timeSeries, 0.10, 0.05)
+	return s.ParametrizedShouldEnter(timeSeries, []float64{0.10, 0, 0.05})
 }
 
 func (s *MACDCustomStrategy) ShouldExit(timeSeries *techan.TimeSeries) bool {
-	return s.ParametrizedShouldExit(timeSeries, 1.34)
+	return s.ParametrizedShouldExit(timeSeries, []float64{0, 1.34})
 }
 
-func (s *MACDCustomStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeSeries, constants ...float64) bool {
+func (s *MACDCustomStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeSeries, constants []float64) bool {
 
 	closePrices := techan.NewClosePriceIndicator(timeSeries)
 
@@ -36,17 +36,17 @@ func (s *MACDCustomStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeSeri
 
 	currentMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex).Float()
 	lastMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex - 1).Float()
-	lastLastMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex - 2).Float()
+	//lastLastMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex - 2).Float()
 
 	entryRuleSetCheck :=
 		currentMACDHistogramValue > constants[0] &&
-			currentMACDHistogramValue > lastMACDHistogramValue+constants[1] &&
-			lastMACDHistogramValue > lastLastMACDHistogramValue
+			currentMACDHistogramValue > lastMACDHistogramValue+constants[2]
 
-	return entryRuleSetCheck
+	return entryRuleSetCheck && !(currentMACDHistogramValue > constants[1] &&
+		currentMACDHistogramValue < lastMACDHistogramValue)
 }
 
-func (s *MACDCustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSeries, constants ...float64) bool {
+func (s *MACDCustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSeries, constants []float64) bool {
 
 	closePrices := techan.NewClosePriceIndicator(timeSeries)
 	lastCandleIndex := len(timeSeries.Candles) - 1
@@ -62,9 +62,11 @@ func (s *MACDCustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSerie
 	currentMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex).Float()
 	lastMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex - 1).Float()
 
-	exitRuleSetCheck := currentMACDHistogramValue < lastMACDHistogramValue-constants[1] ||
-		currentMACDHistogramValue < constants[0]
+	exitRuleSetCheck :=
+		currentMACDHistogramValue > constants[1] &&
+			currentMACDHistogramValue < lastMACDHistogramValue
 
+	exitRuleSetCheck = exitRuleSetCheck && !s.ParametrizedShouldEnter(timeSeries, constants)
 	return exitRuleSetCheck
 }
 
@@ -90,7 +92,7 @@ func (s *MACDCustomStrategy) PerformAnalysis(exchangeService interfaces.Exchange
 	open := false
 	enterConstant := lastVal * -0.0002
 	exitConstant := lastVal * 0.001
-	enterStop := lastVal * 0.001
+	enterStop := lastVal * 0.0008
 	exitStop := lastVal * -0.0002
 
 	selectedEntryConstant := enterConstant
@@ -112,16 +114,16 @@ func (s *MACDCustomStrategy) PerformAnalysis(exchangeService interfaces.Exchange
 				newSeries := series
 				newSeries.Candles = candles
 
-				if !open && len(candles) > 4 && s.ParametrizedShouldEnter(&newSeries, enterConstant, trendPctCondition) {
+				if !open && len(candles) > 4 && s.ParametrizedShouldEnter(&newSeries, []float64{enterConstant, selectedExitConstant, trendPctCondition}) {
 					open = true
 					buyRate = candles[i-1].ClosePrice.Float()
-				} else if open && s.ParametrizedShouldExit(&newSeries, selectedExitConstant, trendPctCondition) {
+				} else if open && s.ParametrizedShouldExit(&newSeries, []float64{enterConstant, selectedExitConstant, trendPctCondition}) {
 					open = false
 					sellRate = candles[i-1].ClosePrice.Float()
 					profitPct := sellRate * 1 / buyRate
 					balance *= profitPct * (1 - 0.00014)
 				}
-
+				time.Sleep(1 * time.Millisecond)
 			}
 			open = false
 			//return pairAnalysis, nil
@@ -144,15 +146,16 @@ func (s *MACDCustomStrategy) PerformAnalysis(exchangeService interfaces.Exchange
 				newSeries := series
 				newSeries.Candles = candles
 
-				if !open && len(candles) > 4 && s.ParametrizedShouldEnter(&newSeries, selectedEntryConstant, trendPctCondition) {
+				if !open && len(candles) > 4 && s.ParametrizedShouldEnter(&newSeries, []float64{selectedEntryConstant, exitConstant, trendPctCondition}) {
 					open = true
 					buyRate = candles[i-1].ClosePrice.Float()
-				} else if open && s.ParametrizedShouldExit(&newSeries, exitConstant, trendPctCondition) {
+				} else if open && s.ParametrizedShouldExit(&newSeries, []float64{selectedEntryConstant, exitConstant, trendPctCondition}) {
 					open = false
 					sellRate = candles[i-1].ClosePrice.Float()
 					profitPct := sellRate * 1 / buyRate
 					balance *= profitPct * (1 - 0.001)
 				}
+				time.Sleep(1 * time.Millisecond)
 			}
 			open = false
 			if balance > highestBalance {
@@ -176,5 +179,6 @@ func (s *MACDCustomStrategy) PerformAnalysis(exchangeService interfaces.Exchange
 	strategyResults.Period = limit - omit
 	strategyResults.Constants = append(strategyResults.Constants, selectedEntryConstant)
 	strategyResults.Constants = append(strategyResults.Constants, selectedExitConstant)
+	strategyResults.Constants = append(strategyResults.Constants, trendPctCondition)
 	return strategyResults, nil
 }

@@ -25,7 +25,7 @@ const (
 
 type MarketMakerService struct {
 	ExchangeService      interfaces.ExchangeService
-	MarketService        *services.MarketService
+	MarketService        *services.SingleMarketService
 	WalletService        *services.WalletService
 	OrderBookService     *services.OrderBookService
 	strategy             interfaces.Strategy
@@ -72,7 +72,7 @@ func init() {
 	}
 }
 
-func (m *MarketMakerService) SetServices(exchangeService interfaces.ExchangeService, marketService *services.MarketService,
+func (m *MarketMakerService) SetServices(exchangeService interfaces.ExchangeService, marketService *services.SingleMarketService,
 	walletService *services.WalletService, orderBookService *services.OrderBookService) {
 	m.ExchangeService = exchangeService
 	m.MarketService = marketService
@@ -150,11 +150,6 @@ func (m *MarketMakerService) Execute(waitTime int) {
 }
 
 func (m *MarketMakerService) monitor() {
-
-	m.strategy.ShouldEnter(&m.MarketService.TimeSeries)
-	m.strategy.ShouldExit(&m.MarketService.TimeSeries)
-
-	return
 
 	pctVariation, err := m.MarketService.PctVariation(m.monitorWindow)
 	if err != nil {
