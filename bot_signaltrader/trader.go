@@ -68,6 +68,7 @@ func (t *Trader) Start() {
 
 				benefit := (tradeQuantityPerPosition * timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float() / enterPrice[pair]) - tradeQuantityPerPosition
 				balance += benefit
+				balance *= 0.0014
 				tradeQuantityPerPosition += benefit / 3
 				enterPrice[pair] = 0.0
 				fmt.Printf("%s: %s ! Exit signal\n", timeNow, pair)

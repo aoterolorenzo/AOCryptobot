@@ -39,7 +39,7 @@ func (s *StochRSICustomStrategy) ParametrizedShouldEnter(timeSeries *techan.Time
 	distanceLastLastKD := lastLastSmoothKValue - lastLastSmoothDValue
 
 	return distanceLastKD > distanceLastLastKD+constants[0] &&
-		lastSmoothDValue < 0.20 && !(distanceLastKD < distanceLastLastKD-0.03)
+		lastSmoothDValue < 0.20 && !(distanceLastKD < distanceLastLastKD-0.03) && lastSmoothDValue > 0.1
 }
 
 func (s *StochRSICustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSeries, constants []float64) bool {
@@ -107,7 +107,7 @@ func (s *StochRSICustomStrategy) PerformAnalysis(exchangeService interfaces.Exch
 				open = false
 				sellRate = candles[i-1].ClosePrice.Float()
 				profitPct := sellRate * 1 / buyRate
-				balance *= profitPct * (1 - 0.00014)
+				balance *= profitPct * (1 - 0.0014)
 			}
 			time.Sleep(2 * time.Millisecond)
 		}

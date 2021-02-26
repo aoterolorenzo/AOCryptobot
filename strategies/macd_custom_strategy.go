@@ -153,7 +153,7 @@ func (s *MACDCustomStrategy) PerformAnalysis(exchangeService interfaces.Exchange
 					open = false
 					sellRate = candles[i-1].ClosePrice.Float()
 					profitPct := sellRate * 1 / buyRate
-					balance *= profitPct * (1 - 0.001)
+					balance *= profitPct * (1 - 0.0014)
 				}
 				time.Sleep(1 * time.Millisecond)
 			}
