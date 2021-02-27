@@ -1,14 +1,11 @@
 package services
 
 import (
-	"gitlab.com/aoterocom/AOCryptobot/helpers"
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
 	"gitlab.com/aoterocom/AOCryptobot/models/analytics"
 	"math"
 	"sort"
 )
-
-var logger = helpers.Logger{}
 
 type MarketAnalysisService struct {
 	PairAnalysisResults *[]*analytics.PairAnalysis

@@ -3,6 +3,7 @@ package services
 import (
 	"fmt"
 	"github.com/sdcoffey/techan"
+	"gitlab.com/aoterocom/AOCryptobot/helpers"
 	"gitlab.com/aoterocom/AOCryptobot/models/analytics"
 	"time"
 )
@@ -11,6 +12,8 @@ type MultiMarketService struct {
 	SingleMarketServices []*SingleMarketService
 	PairAnalysisResults  []*analytics.PairAnalysis
 }
+
+var logger = helpers.Logger{}
 
 func NewMultiMarketService(pairAnalysisResults *[]*analytics.PairAnalysis) MultiMarketService {
 	mms := MultiMarketService{}
@@ -50,6 +53,7 @@ func (mms *MultiMarketService) StartMonitor() {
 }
 
 func (mms *MultiMarketService) startMonitor(pair string) {
+	fmt.Printf("%s: Start monitor\n", pair)
 	fmt.Printf("%s: %s Monitor start\n", time.Now().String(), pair)
 	logger.Infoln(fmt.Sprintf("%s: Start monitor. Estrategia apta detectada\n", pair))
 	for _, singleMarketService := range mms.SingleMarketServices {
@@ -61,6 +65,7 @@ func (mms *MultiMarketService) startMonitor(pair string) {
 }
 
 func (mms *MultiMarketService) stopMonitor(pair string) {
+	fmt.Printf("%s: Stop monitor\n", pair)
 	logger.Infoln(fmt.Sprintf("%s: Stop monitor. La estrategia ya no cumple los requisitos.\n", pair))
 	for _, singleMarketService := range mms.SingleMarketServices {
 		if singleMarketService.Pair == pair {
