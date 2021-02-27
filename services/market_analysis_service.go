@@ -140,8 +140,8 @@ func (mas *MarketAnalysisService) analyzeStrategy(strategy interfaces.Strategy) 
 	// If all profits are positive
 	if result15m1000.Profit > 0.0 && result15m500.Profit > 0.0 &&
 		strategyAnalysisResults.Mean/0.6 > strategyAnalysisResults.StdDev &&
-		positiveNegativeRatio(result15m1000.ProfitList) >= 1.05 &&
-		positiveNegativeRatio(result15m500.ProfitList) >= 1.05 {
+		(positiveNegativeRatio(result15m1000.ProfitList) >= 1.05 || len(result15m1000.ProfitList) == 0) &&
+		(positiveNegativeRatio(result15m500.ProfitList) >= 1.05 || len(result15m500.ProfitList) == 0) {
 		//mean > 25.0 && strategyResults150.Profit > 12.0 || {
 		strategyAnalysisResults.IsCandidate = true
 		//fmt.Printf("!candidata prof1000 %f prof500 %f mean/0.6 %f stddev %f ratio1000 %f ratio500 %f %v\n", result15m1000.Profit, result15m500.Profit,
