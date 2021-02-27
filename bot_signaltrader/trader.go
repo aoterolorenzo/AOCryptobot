@@ -2,7 +2,9 @@ package bot_signaltrader
 
 import (
 	"fmt"
+	"gitlab.com/aoterocom/AOCryptobot/helpers"
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
+	"gitlab.com/aoterocom/AOCryptobot/models"
 	"gitlab.com/aoterocom/AOCryptobot/providers/binance"
 	"gitlab.com/aoterocom/AOCryptobot/services"
 	"reflect"
@@ -13,7 +15,11 @@ import (
 type Trader struct {
 	MarketAnalysisService *services.MarketAnalysisService
 	MultiMarketService    *services.MultiMarketService
+	OpenPositions         *[]models.Position
+	MaxOpenPositions      int
 }
+
+var logger = helpers.Logger{}
 
 func NewTrader(marketAnalysisService *services.MarketAnalysisService, multiMarketService *services.MultiMarketService) Trader {
 	return Trader{
@@ -68,6 +74,13 @@ func (t *Trader) Start() {
 				fmt.Printf("%s: %s Constants %v\n", timeNow, pair, results.StrategyResults[0].Constants)
 				fmt.Printf("%s: %s Price %f\n\n", timeNow, pair, timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float())
 
+				logger.Infoln(
+					fmt.Sprintf("%s: ! Señal de entrada / Compra\n", pair) +
+						fmt.Sprintf("%s: Estrategia %s\n", pair, strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1)) +
+						fmt.Sprintf("%s: Constantes %v\n", pair, results.StrategyResults[0].Constants) +
+						fmt.Sprintf("%s: Precio de compra %f\n\n", pair, timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float()) +
+						fmt.Sprintf("%s: Saldo actualizado: %f\n", pair, balance))
+
 			} else if enterPrice[pair] > 0 && len(timeSeries.Candles) > 499 && strategy.ParametrizedShouldExit(timeSeries, results.StrategyResults[0].Constants) {
 
 				benefit := (tradeQuantityPerPosition * timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float() / enterPrice[pair]) - tradeQuantityPerPosition
@@ -81,6 +94,14 @@ func (t *Trader) Start() {
 				fmt.Printf("%s: %s Price %f\n", timeNow, pair, timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float())
 				fmt.Printf("%s: %s Updated balance %f\n", timeNow, pair, balance)
 				fmt.Printf("%s: %s Profit %f%%\n\n", timeNow, pair, benefit/100)
+
+				logger.Infoln(
+					fmt.Sprintf("%s: ! Señal de salida / Venta\n", pair) +
+						fmt.Sprintf("%s: Estrategia: %s\n", pair, strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1)) +
+						fmt.Sprintf("%s: Constantes: %v\n", pair, results.StrategyResults[0].Constants) +
+						fmt.Sprintf("%s: Precio de venta: %f\n", pair, timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float()) +
+						fmt.Sprintf("%s: Saldo actualizado: %f\n", pair, balance) +
+						fmt.Sprintf("%s: Beneficio de transacción: %f%%", pair, benefit/100))
 				t.UnLockPair(pair)
 				openPositions--
 			}
@@ -89,6 +110,9 @@ func (t *Trader) Start() {
 				if strategy.ParametrizedShouldExit(timeSeries, results.StrategyResults[0].Constants) {
 					firstExitTriggered[pair] = true
 					fmt.Printf("%s: %s First exit triggered\n", timeNow, pair)
+					logger.Infoln(
+						fmt.Sprintf("%s: Señal inicial de salida detectada. A partir de ahora se permite "+
+							"entrar al mercado en caso de señal de entrada", pair))
 				}
 			}
 
@@ -114,3 +138,5 @@ func (t *Trader) UnLockPair(pair string) {
 		}
 	}
 }
+
+func (t *Trader) InitPosition(pair string) {}
