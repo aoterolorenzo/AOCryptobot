@@ -2,6 +2,7 @@ package main
 
 import (
 	"gitlab.com/aoterocom/AOCryptobot/bot_signaltrader"
+	"gitlab.com/aoterocom/AOCryptobot/helpers"
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
 	"gitlab.com/aoterocom/AOCryptobot/models/analytics"
 	"gitlab.com/aoterocom/AOCryptobot/providers/binance"
@@ -9,9 +10,12 @@ import (
 	strategies2 "gitlab.com/aoterocom/AOCryptobot/strategies"
 )
 
+var logger = helpers.Logger{}
+
 func main() {
 	//bot := &bot_oscillator.MarketMaker{}
 	//rubBot(bot)
+	logger.Infoln("Hola :) Hora de forrarse!\n Bot iniciado.")
 
 	pairAnalysisResults := []*analytics.PairAnalysis{}
 	exchangeService := interfaces.ExchangeService(&binance.BinanceService{})
