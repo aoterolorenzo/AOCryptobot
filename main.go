@@ -18,7 +18,8 @@ func main() {
 	exchangeService.ConfigureClient()
 	strategies := []interfaces.Strategy{
 		&strategies2.StochRSICustomStrategy{},
-		//&strategies2.MACDCustomStrategy{},
+		&strategies2.NewStrategy{},
+		&strategies2.MACDCustomStrategy{},
 	}
 	marketAnalysisService := services.NewMarketAnalysisService(exchangeService, strategies, &pairAnalysisResults)
 	marketAnalysisService.PopulateWithPairs("EUR")
