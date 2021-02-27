@@ -15,7 +15,7 @@ var logger = helpers.Logger{}
 func main() {
 	//bot := &bot_oscillator.MarketMaker{}
 	//rubBot(bot)
-	logger.Infoln("Hola :)\nBot iniciado.")
+	logger.Infoln("Hola :)\nBot iniciado")
 
 	pairAnalysisResults := []*analytics.PairAnalysis{}
 	exchangeService := interfaces.ExchangeService(&binance.BinanceService{})

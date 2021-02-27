@@ -75,11 +75,11 @@ func (t *Trader) Start() {
 				fmt.Printf("%s: %s Price %f\n\n", timeNow, pair, timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float())
 
 				logger.Infoln(
-					fmt.Sprintf("%s: ! Señal de entrada / Compra\n", pair) +
-						fmt.Sprintf("%s: Estrategia %s\n", pair, strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1)) +
-						fmt.Sprintf("%s: Constantes %v\n", pair, results.StrategyResults[0].Constants) +
-						fmt.Sprintf("%s: Precio de compra %f\n\n", pair, timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float()) +
-						fmt.Sprintf("%s: Saldo actualizado: %f\n", pair, balance))
+					fmt.Sprintf("**%s: ! Señal de entrada / Compra**\n", pair) +
+						fmt.Sprintf("Estrategia %s\n", strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1)) +
+						fmt.Sprintf("Constantes %v\n", results.StrategyResults[0].Constants) +
+						fmt.Sprintf("Precio de compra %f\n\n", timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float()) +
+						fmt.Sprintf("Saldo actualizado: %f\n", balance))
 
 			} else if enterPrice[pair] > 0 && len(timeSeries.Candles) > 499 && strategy.ParametrizedShouldExit(timeSeries, results.StrategyResults[0].Constants) {
 
@@ -96,12 +96,12 @@ func (t *Trader) Start() {
 				fmt.Printf("%s: %s Profit %f%%\n\n", timeNow, pair, benefit/100)
 
 				logger.Infoln(
-					fmt.Sprintf("%s: ! Señal de salida / Venta\n", pair) +
-						fmt.Sprintf("%s: Estrategia: %s\n", pair, strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1)) +
-						fmt.Sprintf("%s: Constantes: %v\n", pair, results.StrategyResults[0].Constants) +
-						fmt.Sprintf("%s: Precio de venta: %f\n", pair, timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float()) +
-						fmt.Sprintf("%s: Saldo actualizado: %f\n", pair, balance) +
-						fmt.Sprintf("%s: Beneficio de transacción: %f%%", pair, benefit/100))
+					fmt.Sprintf("**%s: ! Señal de salida / Venta**\n", pair) +
+						fmt.Sprintf("Estrategia: %s\n", strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1)) +
+						fmt.Sprintf("Constantes: %v\n", results.StrategyResults[0].Constants) +
+						fmt.Sprintf("Precio de venta: %f\n", timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float()) +
+						fmt.Sprintf("Saldo actualizado: %f\n", balance) +
+						fmt.Sprintf("Beneficio de transacción: %f%%", benefit/100))
 				t.UnLockPair(pair)
 				openPositions--
 			}
