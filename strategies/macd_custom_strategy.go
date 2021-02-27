@@ -97,6 +97,7 @@ func (s *MACDCustomStrategy) PerformAnalysis(exchangeService interfaces.Exchange
 
 	selectedEntryConstant := enterConstant
 	selectedExitConstant := exitConstant
+	var bestProfitList []float64
 
 	if constants != nil {
 		selectedExitConstant = (*constants)[1]
@@ -109,7 +110,9 @@ func (s *MACDCustomStrategy) PerformAnalysis(exchangeService interfaces.Exchange
 	for {
 		for ; enterConstant < enterStop; enterConstant += jump {
 			balance = 1000.0
+			var profitList []float64
 			for i := 5; i < len(series.Candles); i++ {
+
 				candles := series.Candles[:i]
 				newSeries := series
 				newSeries.Candles = candles
@@ -122,6 +125,7 @@ func (s *MACDCustomStrategy) PerformAnalysis(exchangeService interfaces.Exchange
 					sellRate = candles[i-1].ClosePrice.Float()
 					profitPct := sellRate * 1 / buyRate
 					balance *= profitPct * (1 - 0.00014)
+					profitList = append(profitList, (profitPct*(1-0.0014))-1)
 				}
 				time.Sleep(1 * time.Millisecond)
 			}
@@ -131,6 +135,7 @@ func (s *MACDCustomStrategy) PerformAnalysis(exchangeService interfaces.Exchange
 			if balance > highestBalance {
 				highestBalance = balance
 				selectedEntryConstant = enterConstant
+				bestProfitList = profitList
 			}
 			//fmt.Printf("Entry Constant: %.8f Exit Constant %.8f Balance: %.8f\n", enterConstant, selectedExitConstant, balance)
 		}
@@ -138,6 +143,8 @@ func (s *MACDCustomStrategy) PerformAnalysis(exchangeService interfaces.Exchange
 		if constants != nil {
 			break
 		}
+
+		var profitList []float64
 		for ; exitConstant > exitStop; exitConstant -= jump {
 			balance = 1000.0
 			for i := 5; i < len(series.Candles); i++ {
@@ -154,6 +161,7 @@ func (s *MACDCustomStrategy) PerformAnalysis(exchangeService interfaces.Exchange
 					sellRate = candles[i-1].ClosePrice.Float()
 					profitPct := sellRate * 1 / buyRate
 					balance *= profitPct * (1 - 0.0014)
+					profitList = append(profitList, (profitPct*(1-0.0014))-1)
 				}
 				time.Sleep(1 * time.Millisecond)
 			}
@@ -161,6 +169,7 @@ func (s *MACDCustomStrategy) PerformAnalysis(exchangeService interfaces.Exchange
 			if balance > highestBalance {
 				highestBalance = balance
 				selectedExitConstant = exitConstant
+				bestProfitList = profitList
 			}
 			//fmt.Printf("Entry Constant: %.8f Exit constant: %.8f Balance: %.8f\n", selectedEntryConstant, exitConstant, balance)
 		}
@@ -177,6 +186,7 @@ func (s *MACDCustomStrategy) PerformAnalysis(exchangeService interfaces.Exchange
 
 	strategyResults.Profit = highestBalance*100/1000 - 100
 	strategyResults.Period = limit - omit
+	strategyResults.ProfitList = bestProfitList
 	strategyResults.Constants = append(strategyResults.Constants, selectedEntryConstant)
 	strategyResults.Constants = append(strategyResults.Constants, selectedExitConstant)
 	strategyResults.Constants = append(strategyResults.Constants, trendPctCondition)
