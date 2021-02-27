@@ -88,6 +88,10 @@ func (t *Trader) Start() {
 				}
 			}
 
+			if firstExitTriggered[pair] && !pairAnalysisResults.TradeSignal {
+				firstExitTriggered[pair] = false
+			}
+
 		}
 		time.Sleep(2 * time.Second)
 
