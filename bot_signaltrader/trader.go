@@ -39,6 +39,10 @@ func (t *Trader) Start() {
 			results := t.MarketAnalysisService.GetBestStrategyResults(pairAnalysisResults)
 			timeNow := time.Now().String()
 
+			if firstExitTriggered[pair] && !pairAnalysisResults.TradeSignal {
+				firstExitTriggered[pair] = false
+			}
+
 			if len(timeSeries.Candles) > 499 &&
 				(time.Now().Unix() < timeSeries.Candles[len(timeSeries.Candles)-1].Period.End.Unix()-180 ||
 					time.Now().Unix() < timeSeries.Candles[len(timeSeries.Candles)-1].Period.Start.Unix()+180) {
@@ -86,10 +90,6 @@ func (t *Trader) Start() {
 					firstExitTriggered[pair] = true
 					fmt.Printf("%s: %s First exit triggered\n", timeNow, pair)
 				}
-			}
-
-			if firstExitTriggered[pair] && !pairAnalysisResults.TradeSignal {
-				firstExitTriggered[pair] = false
 			}
 
 		}
