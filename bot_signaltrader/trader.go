@@ -26,7 +26,7 @@ func (t *Trader) Start() {
 
 	firstExitTriggered := make(map[string]bool)
 	enterPrice := make(map[string]float64)
-	balance := 1000.0
+	balance := 1006.26931
 	tradeQuantityPerPosition := 330.0
 	maxOpenPositions := 3
 	openPositions := 0
@@ -68,7 +68,7 @@ func (t *Trader) Start() {
 
 				benefit := (tradeQuantityPerPosition * timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float() / enterPrice[pair]) - tradeQuantityPerPosition
 				balance += benefit
-				balance *= 0.0014
+				balance *= 1 - 0.0014
 				tradeQuantityPerPosition += benefit / 3
 				enterPrice[pair] = 0.0
 				fmt.Printf("%s: %s ! Exit signal\n", timeNow, pair)
