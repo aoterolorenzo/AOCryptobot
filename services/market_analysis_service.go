@@ -140,13 +140,18 @@ func (mas *MarketAnalysisService) analyzeStrategy(strategy interfaces.Strategy) 
 	// If all profits are positive
 	if result15m1000.Profit > 0.0 && result15m500.Profit > 0.0 &&
 		strategyAnalysisResults.Mean/0.6 > strategyAnalysisResults.StdDev &&
-		positiveNegativeRatio(result15m1000.ProfitList) >= 1.5 &&
-		positiveNegativeRatio(result15m500.ProfitList) >= 1.5 {
+		positiveNegativeRatio(result15m1000.ProfitList) >= 1.2 &&
+		positiveNegativeRatio(result15m500.ProfitList) >= 1.2 {
 		//mean > 25.0 && strategyResults150.Profit > 12.0 || {
 		strategyAnalysisResults.IsCandidate = true
-
+		//fmt.Printf("!candidata prof1000 %f prof500 %f mean/0.6 %f stddev %f ratio1000 %f ratio500 %f %v\n", result15m1000.Profit, result15m500.Profit,
+		//	strategyAnalysisResults.Mean/0.6, strategyAnalysisResults.StdDev, positiveNegativeRatio(result15m1000.ProfitList),
+		//	positiveNegativeRatio(result15m500.ProfitList), result15m1000.ProfitList)
 	} else {
 		strategyAnalysisResults.IsCandidate = false
+		//fmt.Printf("no candidata prof1000 %f prof500 %f mean/0.6 %f stddev %f ratio1000 %f ratio500 %f %v\n", result15m1000.Profit, result15m500.Profit,
+		//	strategyAnalysisResults.Mean/0.6, strategyAnalysisResults.StdDev, positiveNegativeRatio(result15m1000.ProfitList),
+		//	positiveNegativeRatio(result15m500.ProfitList), result15m1000.ProfitList)
 	}
 
 	return &strategyAnalysisResults, nil
@@ -166,7 +171,7 @@ func positiveNegativeRatio(list []float64) float64 {
 	if countNegative == 0 {
 		return 0
 	}
-	return float64(countPositive / countNegative)
+	return float64(countPositive) / float64(countNegative)
 }
 
 func debugPrint(result analytics.StrategySimulationResult, expected float64) {
