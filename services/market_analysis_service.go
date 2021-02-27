@@ -112,30 +112,23 @@ func (mas *MarketAnalysisService) analyzeStrategy(strategy interfaces.Strategy) 
 
 	//D Printf("Analyzing %s\n", strategyAnalysisResults.Strategy)
 
-	result15m500, err := strategy.PerformAnalysis(mas.exchangeService, "15m", 500, 0, nil)
+	result15m1000, err := strategy.PerformAnalysis(mas.exchangeService, "15m", 1000, 0, nil)
+	if err != nil {
+		return nil, err
+	}
+	debugPrint(result15m1000, result15m1000.Profit)
+	strategyAnalysisResults.StrategyResults = append(strategyAnalysisResults.StrategyResults, result15m1000)
+
+	result15m500, err := strategy.PerformAnalysis(mas.exchangeService, "15m", 500, 0, &result15m1000.Constants)
 	if err != nil {
 		return nil, err
 	}
 	debugPrint(result15m500, result15m500.Profit)
 	strategyAnalysisResults.StrategyResults = append(strategyAnalysisResults.StrategyResults, result15m500)
 
-	result15m300, err := strategy.PerformAnalysis(mas.exchangeService, "15m", 300, 0, &result15m500.Constants)
-	if err != nil {
-		return nil, err
-	}
-	debugPrint(result15m300, result15m500.Profit/5*3)
-	strategyAnalysisResults.StrategyResults = append(strategyAnalysisResults.StrategyResults, result15m300)
-
-	result15m150, err := strategy.PerformAnalysis(mas.exchangeService, "15m", 150, 0, &result15m500.Constants)
-	if err != nil {
-		return nil, err
-	}
-	debugPrint(result15m150, result15m500.Profit/5*1.5)
-	strategyAnalysisResults.StrategyResults = append(strategyAnalysisResults.StrategyResults, result15m150)
 	data := []float64{
+		result15m1000.Profit,
 		result15m500.Profit,
-		result15m300.Profit / 3 * 5,
-		result15m150.Profit / 1.5 * 5,
 	}
 	sum := sum(data)
 	strategyAnalysisResults.Mean = sum / float64(len(data))
@@ -144,12 +137,11 @@ func (mas *MarketAnalysisService) analyzeStrategy(strategy interfaces.Strategy) 
 	//D strategyAnalysisResults.StdDev, strategyAnalysisResults.Mean / strategyAnalysisResults.StdDev)
 
 	// Check if strategy pass conditions
-
 	// If all profits are positive
-	if result15m500.Profit > 0.0 && result15m300.Profit > 0.0 &&
-		result15m150.Profit > 1.5 && result15m150.Profit < 15 &&
-		//result15m150.Profit > result15m300.Profit * 0.6 &&
-		strategyAnalysisResults.Mean/0.6 > strategyAnalysisResults.StdDev {
+	if result15m1000.Profit > 0.0 && result15m500.Profit > 0.0 &&
+		strategyAnalysisResults.Mean/0.6 > strategyAnalysisResults.StdDev &&
+		positiveNegativeRatio(result15m1000.ProfitList) >= 1.5 &&
+		positiveNegativeRatio(result15m500.ProfitList) >= 1.5 {
 		//mean > 25.0 && strategyResults150.Profit > 12.0 || {
 		strategyAnalysisResults.IsCandidate = true
 
@@ -158,6 +150,23 @@ func (mas *MarketAnalysisService) analyzeStrategy(strategy interfaces.Strategy) 
 	}
 
 	return &strategyAnalysisResults, nil
+}
+
+func positiveNegativeRatio(list []float64) float64 {
+	countPositive := 0
+	countNegative := 0
+	for _, item := range list {
+		if item > 0 {
+			countPositive++
+		} else {
+			countNegative++
+		}
+	}
+
+	if countNegative == 0 {
+		return 0
+	}
+	return float64(countPositive / countNegative)
 }
 
 func debugPrint(result analytics.StrategySimulationResult, expected float64) {
