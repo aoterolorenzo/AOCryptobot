@@ -1,7 +1,6 @@
 package strategies
 
 import (
-	"fmt"
 	"github.com/sdcoffey/techan"
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
 	"gitlab.com/aoterocom/AOCryptobot/models/analytics"
@@ -130,7 +129,7 @@ func (s *NewStrategy) PerformAnalysis(exchangeService interfaces.ExchangeService
 		//fmt.Printf("Entry constant: %.8f Balance: %.8f\n", entryConstant, balance)
 	}
 
-	fmt.Println(data2)
+	//fmt.Println(data2)
 	//fmt.Printf("BEST CONSTANT COMBINATION FOUND: Entry Constant: %.8f Profit: %.4f%%\n",
 	//	selectedEntryConstant, highestBalance*100/1000-100)
 
