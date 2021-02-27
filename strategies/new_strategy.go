@@ -107,7 +107,7 @@ func (s *NewStrategy) PerformAnalysis(exchangeService interfaces.ExchangeService
 				open = true
 				buyRate = candles[i-1].ClosePrice.Float()
 				if constants != nil {
-					fmt.Printf("IN %v\n", candles[i-1].Period.End)
+					//fmt.Printf("IN %v\n", candles[i-1].Period.End)
 				}
 			} else if open && s.ParametrizedShouldExit(&newSeries, []float64{entryConstant, 0}) {
 				open = false
@@ -115,7 +115,7 @@ func (s *NewStrategy) PerformAnalysis(exchangeService interfaces.ExchangeService
 				profitPct := sellRate * 1 / buyRate
 				balance *= profitPct * (1 - 0.0014)
 				if constants != nil {
-					fmt.Printf("OUT %v\n", candles[i-1].Period.End)
+					//fmt.Printf("OUT %v\n", candles[i-1].Period.End)
 				}
 				data2 = append(data2, profitPct*(1-0.0014)-1)
 			}
