@@ -63,7 +63,9 @@ func (s *StochRSICustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeS
 	lastLastSmoothDValue := smoothD.Calculate(lastCandleIndex - 1).Float()
 	distanceLastLastKD := lastLastSmoothKValue - lastLastSmoothDValue
 
-	exitRuleSetCheck := distanceLastKD < distanceLastLastKD-0.03
+	lastRsiValue := myRSI.Calculate(lastCandleIndex).Float()
+	lastLastRsiValue := myRSI.Calculate(lastCandleIndex - 1).Float()
+	exitRuleSetCheck := distanceLastKD < distanceLastLastKD-0.03 || lastRsiValue < lastLastRsiValue
 
 	return exitRuleSetCheck
 }
@@ -85,6 +87,7 @@ func (s *StochRSICustomStrategy) PerformAnalysis(exchangeService interfaces.Exch
 	entryStop := 0.3
 	jump := 0.005
 	selectedEntryConstant := 0.0
+	var data2 []float64
 
 	for ; entryConstant < entryStop; entryConstant += jump {
 
@@ -92,7 +95,7 @@ func (s *StochRSICustomStrategy) PerformAnalysis(exchangeService interfaces.Exch
 			entryConstant = (*constants)[0]
 			entryStop = -1.0
 		}
-
+		data2 = []float64{}
 		balance = 1000.0
 		for i := 5; i < len(series.Candles); i++ {
 
@@ -108,6 +111,7 @@ func (s *StochRSICustomStrategy) PerformAnalysis(exchangeService interfaces.Exch
 				sellRate = candles[i-1].ClosePrice.Float()
 				profitPct := sellRate * 1 / buyRate
 				balance *= profitPct * (1 - 0.0014)
+				data2 = append(data2, (profitPct*(1-0.0014))-1)
 			}
 			time.Sleep(2 * time.Millisecond)
 		}
@@ -125,6 +129,7 @@ func (s *StochRSICustomStrategy) PerformAnalysis(exchangeService interfaces.Exch
 
 	strategyResults.Trend = series.Candles[len(series.Candles)-1].ClosePrice.Float() / series.Candles[0].ClosePrice.Float()
 	strategyResults.Profit = highestBalance*100/1000 - 100
+	strategyResults.ProfitList = data2
 	strategyResults.Period = limit - omit
 	strategyResults.Constants = append(strategyResults.Constants, selectedEntryConstant)
 	return strategyResults, nil
