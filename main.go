@@ -10,19 +10,17 @@ import (
 	strategies2 "gitlab.com/aoterocom/AOCryptobot/strategies"
 )
 
-var logger = helpers.Logger{}
-
 func main() {
 	//bot := &bot_oscillator.MarketMaker{}
 	//rubBot(bot)
-	logger.Infoln("Hola :)\nBot iniciado")
+	helpers.Logger.Infoln("Hola :)\nBot iniciado")
 
 	pairAnalysisResults := []*analytics.PairAnalysis{}
 	exchangeService := interfaces.ExchangeService(&binance.BinanceService{})
 	exchangeService.ConfigureClient()
 	strategies := []interfaces.Strategy{
 		&strategies2.StochRSICustomStrategy{},
-		&strategies2.NewStrategy{},
+		&strategies2.StableStrategy{},
 		&strategies2.MACDCustomStrategy{},
 	}
 	marketAnalysisService := services.NewMarketAnalysisService(exchangeService, strategies, &pairAnalysisResults)

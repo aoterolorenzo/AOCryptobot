@@ -1,24 +1,28 @@
 package strategies
 
 import (
+	"fmt"
 	"github.com/sdcoffey/techan"
+	"gitlab.com/aoterocom/AOCryptobot/helpers"
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
 	"gitlab.com/aoterocom/AOCryptobot/models/analytics"
 	"gitlab.com/aoterocom/AOCryptobot/strategies/indicators"
+	"reflect"
+	"strings"
 	"time"
 )
 
-type NewStrategy struct{}
+type StableStrategy struct{}
 
-func (s *NewStrategy) ShouldEnter(timeSeries *techan.TimeSeries) bool {
+func (s *StableStrategy) ShouldEnter(timeSeries *techan.TimeSeries) bool {
 	return s.ParametrizedShouldEnter(timeSeries, []float64{0.15, 0})
 }
 
-func (s *NewStrategy) ShouldExit(timeSeries *techan.TimeSeries) bool {
+func (s *StableStrategy) ShouldExit(timeSeries *techan.TimeSeries) bool {
 	return s.ParametrizedShouldExit(timeSeries, []float64{0.15, 0})
 }
 
-func (s *NewStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeSeries, constants []float64) bool {
+func (s *StableStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeSeries, constants []float64) bool {
 
 	lastCandleIndex := len(timeSeries.Candles) - 1
 
@@ -40,7 +44,7 @@ func (s *NewStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeSeries, con
 	return distanceLastKD > distanceLastLastKD+constants[0] && myRSI.Calculate(lastCandleIndex).Float() > 40
 }
 
-func (s *NewStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSeries, constants []float64) bool {
+func (s *StableStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSeries, constants []float64) bool {
 	myRSI := techan.NewRelativeStrengthIndexIndicator(techan.NewClosePriceIndicator(timeSeries), 12)
 	stochRSI := indicators.NewStochasticRelativeStrengthIndicator(myRSI, 12)
 	smoothK := techan.NewSimpleMovingAverage(stochRSI, 3)
@@ -69,7 +73,7 @@ func (s *NewStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSeries, cons
 	return exitRuleSetCheck
 }
 
-func (s *NewStrategy) PerformAnalysis(exchangeService interfaces.ExchangeService, interval string, limit int, omit int, constants *[]float64) (analytics.StrategySimulationResult, error) {
+func (s *StableStrategy) PerformSimulation(exchangeService interfaces.ExchangeService, interval string, limit int, omit int, constants *[]float64) (analytics.StrategySimulationResult, error) {
 	strategyResults := analytics.StrategySimulationResult{}
 	series, err := exchangeService.GetSeries(interval, limit)
 	if err != nil {
@@ -139,4 +143,53 @@ func (s *NewStrategy) PerformAnalysis(exchangeService interfaces.ExchangeService
 	strategyResults.Period = limit - omit
 	strategyResults.Constants = append(strategyResults.Constants, selectedEntryConstant)
 	return strategyResults, nil
+}
+
+func (s *StableStrategy) Analyze(exchangeService interfaces.ExchangeService) (*analytics.StrategyAnalysis, error) {
+	strategyAnalysis := analytics.StrategyAnalysis{
+		IsCandidate: false,
+		Strategy:    s,
+	}
+
+	helpers.Logger.Debugln(fmt.Sprintf("Analyzing %s\n", strings.Replace(reflect.TypeOf(s).String(), "*strategies.", "", 1)))
+
+	// Analyze last 1000 candles
+	result15m1000, err := s.PerformSimulation(exchangeService, "15m", 1000, 0, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	// Analyze last 500 candles
+	strategyAnalysis.StrategyResults = append(strategyAnalysis.StrategyResults, result15m1000)
+	result15m500, err := s.PerformSimulation(exchangeService, "15m", 500, 0, &result15m1000.Constants)
+	if err != nil {
+		return nil, err
+	}
+	strategyAnalysis.StrategyResults = append(strategyAnalysis.StrategyResults, result15m500)
+
+	//Calculate profit mean and standard deviation
+	profits := []float64{result15m1000.Profit, result15m500.Profit}
+	sum := helpers.Sum(profits)
+	strategyAnalysis.Mean = sum / float64(len(profits))
+	strategyAnalysis.StdDev = helpers.StdDev(profits, strategyAnalysis.Mean)
+
+	// CONDITIONS: This is a very secure and stable Strategy, so is normal to not have any profit in a 500 or even
+	// 100 candles period. Because of that, we will select it as tradeable if it have ALL positive results
+	// and even it haven't any result on 500 candles
+	if len(result15m1000.ProfitList) > 0 &&
+		helpers.AllValuesPositive(result15m1000.ProfitList) &&
+		helpers.AllValuesPositive(result15m500.ProfitList) {
+
+		strategyAnalysis.IsCandidate = true
+		helpers.Logger.Debugln(fmt.Sprintf("✔️ Strategy is tradeable: 1000CandleProfit, %f 500CandleProfit %f, 60%% of the Mean %f, Std Deviation %f, 1000 Profit Ratio %f 500 Profit Ratio %f\n", result15m1000.Profit, result15m500.Profit,
+			strategyAnalysis.Mean/0.6, strategyAnalysis.StdDev, helpers.PositiveNegativeRatio(result15m1000.ProfitList),
+			helpers.PositiveNegativeRatio(result15m500.ProfitList)))
+	} else {
+		strategyAnalysis.IsCandidate = false
+		helpers.Logger.Debugln(fmt.Sprintf("❌️ Strategy is NOT tradeable: 1000CandleProfit, %f 500CandleProfit %f, 60%% of the Mean %f, Std Deviation %f, 1000 Profit Ratio %f 500 Profit Ratio %f\n", result15m1000.Profit, result15m500.Profit,
+			strategyAnalysis.Mean/0.6, strategyAnalysis.StdDev, helpers.PositiveNegativeRatio(result15m1000.ProfitList),
+			helpers.PositiveNegativeRatio(result15m500.ProfitList)))
+	}
+
+	return &strategyAnalysis, nil
 }

@@ -6,10 +6,11 @@ import (
 	"os"
 )
 
-type Logger struct { /* Your functions */
+type FileLogger struct { /* Your functions */
 }
 
 var defaultLogger *log.Logger
+var Logger = FileLogger{}
 
 func init() {
 	//TODO: got log filename onto env var
@@ -20,37 +21,38 @@ func init() {
 
 	plainFormatter := new(PlainFormatter)
 	plainFormatter.TimestampFormat = "2006-01-02 15:04:05"
-	plainFormatter.LevelDesc = []string{"PANC", "FATL", "E", "WARN", "INFO", "DEBG"}
+	plainFormatter.LevelDesc = []string{"PANIC", "FATAL", "ERROR", "WARN", "INFO", "DEBUG"}
 	defaultLogger = log.New()
 	defaultLogger.SetOutput(f)
 	defaultLogger.SetFormatter(plainFormatter)
+	defaultLogger.SetLevel(log.TraceLevel)
 }
 
-func (l *Logger) Errorln(args ...interface{}) {
+func (l *FileLogger) Errorln(args ...interface{}) {
 	defaultLogger.Errorln(args...)
 }
 
-func (l *Logger) Fatalln(args ...interface{}) {
+func (l *FileLogger) Fatalln(args ...interface{}) {
 	defaultLogger.Fatalln(args...)
 }
 
-func (l *Logger) Panicln(args ...interface{}) {
+func (l *FileLogger) Panicln(args ...interface{}) {
 	defaultLogger.Panicln(args...)
 }
 
-func (l *Logger) Warnln(args ...interface{}) {
+func (l *FileLogger) Warnln(args ...interface{}) {
 	defaultLogger.Warnln(args...)
 }
 
-func (l *Logger) Infoln(args ...interface{}) {
+func (l *FileLogger) Infoln(args ...interface{}) {
 	defaultLogger.Infoln(args...)
 }
 
-func (l *Logger) Traceln(args ...interface{}) {
+func (l *FileLogger) Traceln(args ...interface{}) {
 	defaultLogger.Traceln(args...)
 }
 
-func (l *Logger) Debugln(args ...interface{}) {
+func (l *FileLogger) Debugln(args ...interface{}) {
 	defaultLogger.Debugln(args...)
 }
 

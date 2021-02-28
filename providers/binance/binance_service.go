@@ -16,8 +16,6 @@ import (
 	"time"
 )
 
-var logger = helpers.Logger{}
-
 type BinanceService struct {
 	binanceClient         *binance.Client
 	timeSeries            *techan.TimeSeries
@@ -31,7 +29,7 @@ func init() {
 	cwd, _ := os.Getwd()
 	err := godotenv.Load(cwd + "/providers/binance/conf.env")
 	if err != nil {
-		logger.Fatalln("Error loading go.env file", err)
+		helpers.Logger.Fatalln("Error loading go.env file", err)
 	}
 }
 
@@ -210,7 +208,7 @@ func (binanceService *BinanceService) DepthMonitor(marketSnapshotsRecord *[]mode
 	binanceService.marketSnapshotsRecord = marketSnapshotsRecord
 	doneC, _, err := binance.WsDepthServe(binanceService.pair, binanceService.wsDepthHandler, binanceService.errHandler)
 	if err != nil {
-		logger.Errorln(err)
+		helpers.Logger.Errorln(err)
 		return
 	}
 	<-doneC
@@ -222,7 +220,7 @@ func (binanceService *BinanceService) TimeSeriesMonitor(interval string, timeSer
 	klines, err := binanceService.binanceClient.NewKlinesService().Symbol(binanceService.pair).
 		Interval(interval).Do(context.Background())
 	if err != nil {
-		logger.Fatalln("error getting klines: " + err.Error())
+		helpers.Logger.Fatalln("error getting klines: " + err.Error())
 	}
 
 	for _, k := range klines {
@@ -239,7 +237,7 @@ func (binanceService *BinanceService) TimeSeriesMonitor(interval string, timeSer
 
 	doneC, done, err := binance.WsKlineServe(binanceService.pair, interval, binanceService.wsKlineHandler, binanceService.errHandler)
 	if err != nil {
-		logger.Errorln(err)
+		helpers.Logger.Errorln(err)
 		return
 	}
 
@@ -416,7 +414,7 @@ func (binanceService *BinanceService) wsDepthHandler(event *binance.WsDepthEvent
 }
 
 func (binanceService *BinanceService) errHandler(err error) {
-	logger.Errorln(err)
+	helpers.Logger.Errorln(err)
 }
 
 func reverseAny(s interface{}) {

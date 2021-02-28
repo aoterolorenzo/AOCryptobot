@@ -1,10 +1,14 @@
 package strategies
 
 import (
+	"fmt"
 	"github.com/sdcoffey/techan"
+	"gitlab.com/aoterocom/AOCryptobot/helpers"
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
 	"gitlab.com/aoterocom/AOCryptobot/models/analytics"
 	"gitlab.com/aoterocom/AOCryptobot/strategies/indicators"
+	"reflect"
+	"strings"
 	"time"
 )
 
@@ -65,12 +69,12 @@ func (s *StochRSICustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeS
 
 	lastRsiValue := myRSI.Calculate(lastCandleIndex).Float()
 	lastLastRsiValue := myRSI.Calculate(lastCandleIndex - 1).Float()
-	exitRuleSetCheck := distanceLastKD < distanceLastLastKD-0.03 || lastRsiValue < lastLastRsiValue*0.9
+	exitRuleSetCheck := distanceLastKD < distanceLastLastKD-0.03 || lastRsiValue < lastLastRsiValue*0.85
 
 	return exitRuleSetCheck
 }
 
-func (s *StochRSICustomStrategy) PerformAnalysis(exchangeService interfaces.ExchangeService, interval string, limit int, omit int, constants *[]float64) (analytics.StrategySimulationResult, error) {
+func (s *StochRSICustomStrategy) PerformSimulation(exchangeService interfaces.ExchangeService, interval string, limit int, omit int, constants *[]float64) (analytics.StrategySimulationResult, error) {
 	strategyResults := analytics.StrategySimulationResult{}
 	series, err := exchangeService.GetSeries(interval, limit)
 	if err != nil {
@@ -138,4 +142,54 @@ func (s *StochRSICustomStrategy) PerformAnalysis(exchangeService interfaces.Exch
 	strategyResults.Period = limit - omit
 	strategyResults.Constants = append(strategyResults.Constants, selectedEntryConstant)
 	return strategyResults, nil
+}
+
+func (s *StochRSICustomStrategy) Analyze(exchangeService interfaces.ExchangeService) (*analytics.StrategyAnalysis, error) {
+	strategyAnalysis := analytics.StrategyAnalysis{
+		IsCandidate: false,
+		Strategy:    s,
+	}
+
+	helpers.Logger.Debugln(fmt.Sprintf("📐 Analyzing %s\n", strings.Replace(reflect.TypeOf(s).String(), "*strategies.", "", 1)))
+
+	// Analyze last 1000 candles
+	result15m1000, err := s.PerformSimulation(exchangeService, "15m", 1000, 0, nil)
+	if err != nil {
+		return nil, err
+	}
+	// Analyze last 500 candles
+	strategyAnalysis.StrategyResults = append(strategyAnalysis.StrategyResults, result15m1000)
+	result15m500, err := s.PerformSimulation(exchangeService, "15m", 500, 0, &result15m1000.Constants)
+	if err != nil {
+		return nil, err
+	}
+	strategyAnalysis.StrategyResults = append(strategyAnalysis.StrategyResults, result15m500)
+
+	//Calculate profit mean and standard deviation
+	profits := []float64{result15m1000.Profit, result15m500.Profit}
+	sum := helpers.Sum(profits)
+	strategyAnalysis.Mean = sum / float64(len(profits))
+	strategyAnalysis.StdDev = helpers.StdDev(profits, strategyAnalysis.Mean)
+
+	// Conditions: Very active strategy. Selecting only if:
+	// 1. Result at 1000 higher than 2.8 AND result at 500 higher than 1.5 (which implies that profit at 500 is
+	// higher than 1000 because the extrapolation)
+	// 2. At least 60% (x1.2) of positions at 1000 with profit, or no positions in period
+	// 3. At least 60% (x1.2) of positions at 500 with profit, or no positions in period
+	if result15m1000.Profit > 2.8 && result15m500.Profit > 1.5 &&
+		(helpers.PositiveNegativeRatio(result15m1000.ProfitList) >= 1.2 || len(result15m1000.ProfitList) == 0) &&
+		(helpers.PositiveNegativeRatio(result15m500.ProfitList) >= 1.2 || len(result15m500.ProfitList) == 0) {
+
+		strategyAnalysis.IsCandidate = true
+		helpers.Logger.Debugln(fmt.Sprintf("✔️ Strategy is tradeable: 1000CandleProfit, %f 500CandleProfit %f, 60%% of the Mean %f, Std Deviation %f, 1000 Profit Ratio %f 500 Profit Ratio %f\n", result15m1000.Profit, result15m500.Profit,
+			strategyAnalysis.Mean/0.6, strategyAnalysis.StdDev, helpers.PositiveNegativeRatio(result15m1000.ProfitList),
+			helpers.PositiveNegativeRatio(result15m500.ProfitList)))
+	} else {
+		strategyAnalysis.IsCandidate = false
+		helpers.Logger.Debugln(fmt.Sprintf("❌️ Strategy is NOT tradeable: 1000CandleProfit, %f 500CandleProfit %f, 60%% of the Mean %f, Std Deviation %f, 1000 Profit Ratio %f 500 Profit Ratio %f\n", result15m1000.Profit, result15m500.Profit,
+			strategyAnalysis.Mean/0.6, strategyAnalysis.StdDev, helpers.PositiveNegativeRatio(result15m1000.ProfitList),
+			helpers.PositiveNegativeRatio(result15m500.ProfitList)))
+	}
+
+	return &strategyAnalysis, nil
 }

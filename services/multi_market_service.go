@@ -13,8 +13,6 @@ type MultiMarketService struct {
 	PairAnalysisResults  []*analytics.PairAnalysis
 }
 
-var logger = helpers.Logger{}
-
 func NewMultiMarketService(pairAnalysisResults *[]*analytics.PairAnalysis) MultiMarketService {
 	mms := MultiMarketService{}
 	mms.PairAnalysisResults = *pairAnalysisResults
@@ -44,7 +42,6 @@ func (mms *MultiMarketService) StartMonitor() {
 			} else {
 				if isMonitoring && !*pairAnalysisResult.LockedMonitor {
 					mms.stopMonitor(pairAnalysisResult.Pair)
-					fmt.Printf("%s: %s Monitor stop\n", time.Now().String(), pairAnalysisResult.Pair)
 				}
 			}
 		}
@@ -53,9 +50,7 @@ func (mms *MultiMarketService) StartMonitor() {
 }
 
 func (mms *MultiMarketService) startMonitor(pair string) {
-	fmt.Printf("%s: Start monitor\n", pair)
-	fmt.Printf("%s: %s Monitor start\n", time.Now().String(), pair)
-	logger.Infoln(fmt.Sprintf("%s: Monitoreo iniciado. Estrategia válida detectada\n", pair))
+	helpers.Logger.Infoln(fmt.Sprintf("%s: Monitor started\n", pair))
 	for _, singleMarketService := range mms.SingleMarketServices {
 		if singleMarketService.Pair == pair {
 			singleMarketService.StartCandleMonitor(pair)
@@ -65,8 +60,7 @@ func (mms *MultiMarketService) startMonitor(pair string) {
 }
 
 func (mms *MultiMarketService) stopMonitor(pair string) {
-	fmt.Printf("%s: Stop monitor\n", pair)
-	logger.Infoln(fmt.Sprintf("%s: Monitoreo detenido. El mercado ya no cumple los requisitos.\n", pair))
+	helpers.Logger.Infoln(fmt.Sprintf("%s: Monitor stopped\n", pair))
 	for _, singleMarketService := range mms.SingleMarketServices {
 		if singleMarketService.Pair == pair {
 			singleMarketService.Active = false

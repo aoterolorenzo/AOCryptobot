@@ -20,8 +20,6 @@ type Trader struct {
 	MaxOpenPositions      int
 }
 
-var logger = helpers.Logger{}
-
 func NewTrader(marketAnalysisService *services.MarketAnalysisService, multiMarketService *services.MultiMarketService) Trader {
 	return Trader{
 		MarketAnalysisService: marketAnalysisService,
@@ -45,7 +43,6 @@ func (t *Trader) Start() {
 			pair := pairAnalysisResults.Pair
 			timeSeries := t.MultiMarketService.GetTimeSeries(pair)
 			results := t.MarketAnalysisService.GetBestStrategyResults(pairAnalysisResults)
-			timeNow := time.Now().String()
 
 			if firstExitTriggered[pair] && !pairAnalysisResults.TradeSignal {
 				firstExitTriggered[pair] = false
@@ -61,20 +58,21 @@ func (t *Trader) Start() {
 				balance *= 1 - 0.0014
 				tradeQuantityPerPosition += benefit / 3
 				enterPrice[pair] = 0.0
-				fmt.Printf("%s: %s ! Exit signal\n", timeNow, pair)
-				fmt.Printf("%s: %s Strategy %s\n", timeNow, pair, strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1))
-				fmt.Printf("%s: %s Constants %v\n", timeNow, pair, results.StrategyResults[0].Constants)
-				fmt.Printf("%s: %s Price %f\n", timeNow, pair, timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float())
-				fmt.Printf("%s: %s Updated balance %f\n", timeNow, pair, balance)
-				fmt.Printf("%s: %s Profit %f%%\n\n", timeNow, pair, benefit/100)
+				profitPct := benefit/100 - 1
+				var profitEmoji string
+				if profitPct >= 0 {
+					profitEmoji = "✅"
+				} else {
+					profitEmoji = "❌"
+				}
 
-				logger.Infoln(
-					fmt.Sprintf("**%s: ! Señal de salida / Venta**\n", pair) +
-						fmt.Sprintf("Estrategia: %s\n", strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1)) +
-						fmt.Sprintf("Constantes: %v\n", results.StrategyResults[0].Constants) +
-						fmt.Sprintf("Precio de venta: %f\n", timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float()) +
-						fmt.Sprintf("Saldo actualizado: %f\n", balance) +
-						fmt.Sprintf("Beneficio de transacción: %f%%", benefit/100))
+				helpers.Logger.Infoln(
+					fmt.Sprintf("📉 **%s: ❕ Exit signal**\n", pair) +
+						fmt.Sprintf("Strategy: %s\n", strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1)) +
+						fmt.Sprintf("Constants: %v\n", results.StrategyResults[0].Constants) +
+						fmt.Sprintf("Sell Price: %f\n", timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float()) +
+						fmt.Sprintf("Updated Balance: %f\n", balance) +
+						fmt.Sprintf("%s Profit: %f%%", profitEmoji, profitPct))
 				t.UnLockPair(pair)
 				candleCheck[pair] = timeSeries.Candles[len(timeSeries.Candles)-1].Period
 
@@ -94,17 +92,13 @@ func (t *Trader) Start() {
 				// Left some margin after the candle start
 				// Left some margin after the candle start
 				enterPrice[pair] = timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float()
-				fmt.Printf("%s: %s ! Entry signal\n", timeNow, pair)
-				fmt.Printf("%s: %s Strategy %s\n", timeNow, pair, strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1))
-				fmt.Printf("%s: %s Constants %v\n", timeNow, pair, results.StrategyResults[0].Constants)
-				fmt.Printf("%s: %s Price %f\n\n", timeNow, pair, timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float())
+				helpers.Logger.Infoln(
+					fmt.Sprintf("📈 **%s: ❕ Entry signal**\n", pair) +
+						fmt.Sprintf("Strategy: %s\n", strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1)) +
+						fmt.Sprintf("Constants: %v\n", results.StrategyResults[0].Constants) +
+						fmt.Sprintf("Buy Price: %f\n\n", timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float()) +
 
-				logger.Infoln(
-					fmt.Sprintf("**%s: ! Señal de entrada / Compra**\n", pair) +
-						fmt.Sprintf("Estrategia %s\n", strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1)) +
-						fmt.Sprintf("Constantes %v\n", results.StrategyResults[0].Constants) +
-						fmt.Sprintf("Precio de compra %f\n\n", timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float()) +
-						fmt.Sprintf("Saldo actualizado: %f\n", balance))
+						fmt.Sprintf("Updated balance: %f\n", balance))
 				candleCheck[pair] = timeSeries.Candles[len(timeSeries.Candles)-1].Period
 
 			}
@@ -112,9 +106,8 @@ func (t *Trader) Start() {
 			if !firstExitTriggered[pair] && len(timeSeries.Candles) > 499 {
 				if strategy.ParametrizedShouldExit(timeSeries, results.StrategyResults[0].Constants) {
 					firstExitTriggered[pair] = true
-					fmt.Printf("%s: %s First exit triggered\n", timeNow, pair)
-					logger.Infoln(
-						fmt.Sprintf("%s: Señal inicial de salida", pair))
+					helpers.Logger.Infoln(
+						fmt.Sprintf("%s: Initial exit signal. Time to trade\n", pair))
 				}
 			}
 
