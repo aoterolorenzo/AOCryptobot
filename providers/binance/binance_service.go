@@ -245,10 +245,8 @@ func (binanceService *BinanceService) TimeSeriesMonitor(interval string, timeSer
 
 	go func() {
 		for *active {
-			logger.Infoln("activo")
 			time.Sleep(1 * time.Second)
 		}
-		logger.Infoln("out!")
 		done <- struct{}{}
 	}()
 
