@@ -5,7 +5,9 @@ import (
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
 	"gitlab.com/aoterocom/AOCryptobot/models/analytics"
 	"math"
+	"reflect"
 	"sort"
+	"strings"
 )
 
 type MarketAnalysisService struct {
@@ -107,7 +109,7 @@ func (mas *MarketAnalysisService) analyzeStrategy(strategy interfaces.Strategy) 
 		Strategy:    strategy,
 	}
 
-	fmt.Printf("Analyzing %s\n", strategy)
+	fmt.Printf("Analyzing %s\n", strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1))
 	result15m1000, err := strategy.PerformAnalysis(mas.exchangeService, "15m", 1000, 0, nil)
 	if err != nil {
 		return nil, err
