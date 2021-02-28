@@ -81,18 +81,19 @@ func (mas *MarketAnalysisService) analyzePair(pair string) (analytics.PairAnalys
 func (mas *MarketAnalysisService) chooseStrategy(pairAnalysisResult analytics.PairAnalysis) interface{} {
 	var betterStrategy interface{}
 	betterStrategy = nil
-	betterMeanStdDevRelation := -10000.0
+	bestRatio := -10000.0
 	for _, strategy := range pairAnalysisResult.StrategiesAnalysis {
+		strategyRatio := strategy.Mean / strategy.StdDev
 		//D fmt.Printf("Strategy: %s Ratio: %.2f (Analyze %t)\n",strategy.Strategy, strategy.Mean / strategy.StdDev,  strategy.Analyze)
-		if strategy.IsCandidate && strategy.Mean/strategy.StdDev > betterMeanStdDevRelation {
+		if strategy.IsCandidate && strategyRatio > bestRatio {
 			//D fmt.Printf("Strategy %s with ratio %.2f%% is better than %.2f\n", strategy.Strategy,
-			//D 	strategy.Mean / strategy.StdDev, betterMeanStdDevRelation)
-			betterMeanStdDevRelation = strategy.Mean / strategy.StdDev
+			//D 	strategy.Mean / strategy.StdDev, bestRatio)
+			bestRatio = strategyRatio
 
 			betterStrategy = strategy.Strategy
 		} else {
 			//D fmt.Printf("Strategy %s with ratio %.2f%% is worst than %.2f\n", strategy.Strategy,
-			//D 	strategy.Mean / strategy.StdDev, betterMeanStdDevRelation)
+			//D 	strategy.Mean / strategy.StdDev, bestRatio)
 		}
 	}
 	//D fmt.Printf("Better Strategy: %s\n", betterStrategy)
