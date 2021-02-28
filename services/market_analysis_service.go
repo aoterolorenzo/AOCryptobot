@@ -48,12 +48,13 @@ func (mas *MarketAnalysisService) AnalyzeMarkets() {
 }
 
 func (mas *MarketAnalysisService) analyzePair(pair string) (analytics.PairAnalysis, error) {
+	varFalse := false
 	pairAnalysisResult := analytics.PairAnalysis{
 		StrategiesAnalysis: nil,
 		TradeSignal:        false,
+		LockedMonitor:      &varFalse,
 		Pair:               pair,
 	}
-	*pairAnalysisResult.LockedMonitor = false
 
 	helpers.Logger.Debugln("📐 " + pair + " Market")
 	// For each strategy in pair
