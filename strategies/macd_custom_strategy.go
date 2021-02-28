@@ -200,7 +200,7 @@ func (s *MACDCustomStrategy) Analyze(exchangeService interfaces.ExchangeService)
 		Strategy:    s,
 	}
 
-	helpers.Logger.Debugln(fmt.Sprintf("Analizing %s",
+	helpers.Logger.Debugln(fmt.Sprintf("→ Analizing %s",
 		strings.Replace(reflect.TypeOf(s).String(), "*strategies.", "", 1)))
 
 	// Analyze last 1000 candles
