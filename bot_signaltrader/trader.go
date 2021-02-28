@@ -111,8 +111,7 @@ func (t *Trader) Start() {
 					firstExitTriggered[pair] = true
 					fmt.Printf("%s: %s First exit triggered\n", timeNow, pair)
 					logger.Infoln(
-						fmt.Sprintf("%s: Señal inicial de salida detectada. A partir de ahora se permite "+
-							"entrar al mercado en caso de señal de entrada", pair))
+						fmt.Sprintf("%s: Señal inicial de salida", pair))
 				}
 			}
 
