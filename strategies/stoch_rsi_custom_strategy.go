@@ -181,12 +181,12 @@ func (s *StochRSICustomStrategy) Analyze(exchangeService interfaces.ExchangeServ
 		(helpers.PositiveNegativeRatio(result15m500.ProfitList) >= 1.2 || len(result15m500.ProfitList) == 0) {
 
 		strategyAnalysis.IsCandidate = true
-		helpers.Logger.Debugln(fmt.Sprintf("✔️ Strategy is tradeable: 1000CandleProfit, %f 500CandleProfit %f, 60%% of the Mean %f, Std Deviation %f, 1000 Profit Ratio %f 500 Profit Ratio %f\n", result15m1000.Profit, result15m500.Profit,
+		helpers.Logger.Debugln(fmt.Sprintf("✔️  Strategy is tradeable: 1000CandleProfit, %f 500CandleProfit %f, 60%% of the Mean %f, Std Deviation %f, 1000 Profit Ratio %f 500 Profit Ratio %f", result15m1000.Profit, result15m500.Profit,
 			strategyAnalysis.Mean/0.6, strategyAnalysis.StdDev, helpers.PositiveNegativeRatio(result15m1000.ProfitList),
 			helpers.PositiveNegativeRatio(result15m500.ProfitList)))
 	} else {
 		strategyAnalysis.IsCandidate = false
-		helpers.Logger.Debugln(fmt.Sprintf("❌️ Strategy is NOT tradeable: 1000CandleProfit, %f 500CandleProfit %f, 60%% of the Mean %f, Std Deviation %f, 1000 Profit Ratio %f 500 Profit Ratio %f\n", result15m1000.Profit, result15m500.Profit,
+		helpers.Logger.Debugln(fmt.Sprintf("❌️ Strategy is NOT tradeable: 1000CandleProfit, %f 500CandleProfit %f, 60%% of the Mean %f, Std Deviation %f, 1000 Profit Ratio %f 500 Profit Ratio %f", result15m1000.Profit, result15m500.Profit,
 			strategyAnalysis.Mean/0.6, strategyAnalysis.StdDev, helpers.PositiveNegativeRatio(result15m1000.ProfitList),
 			helpers.PositiveNegativeRatio(result15m500.ProfitList)))
 	}
