@@ -42,7 +42,7 @@ func (mms *MultiMarketService) StartMonitor() {
 					mms.startMonitor(pairAnalysisResult.Pair)
 				}
 			} else {
-				if isMonitoring && !pairAnalysisResult.LockedMonitor {
+				if isMonitoring && !*pairAnalysisResult.LockedMonitor {
 					mms.stopMonitor(pairAnalysisResult.Pair)
 					fmt.Printf("%s: %s Monitor stop\n", time.Now().String(), pairAnalysisResult.Pair)
 				}
