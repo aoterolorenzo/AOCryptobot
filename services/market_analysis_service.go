@@ -58,7 +58,7 @@ func (mas *MarketAnalysisService) analyzePair(pair string) (analytics.PairAnalys
 	for _, strategy := range mas.strategies {
 		//We analyze the strategy and set the results in pairAnalysisResult
 		mas.exchangeService.SetPair(pair)
-		helpers.Logger.Infoln(pair + " Market")
+		helpers.Logger.Debugln(pair + " Market")
 		strategyAnalysisResult, err := strategy.Analyze(mas.exchangeService)
 		if err != nil {
 			helpers.Logger.Errorln(err.Error())
