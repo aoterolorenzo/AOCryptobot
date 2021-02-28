@@ -54,11 +54,11 @@ func (mas *MarketAnalysisService) analyzePair(pair string) (analytics.PairAnalys
 		Pair:               pair,
 	}
 
+	helpers.Logger.Debugln("📐 " + pair + " Market")
 	// For each strategy in pair
 	for _, strategy := range mas.strategies {
 		//We analyze the strategy and set the results in pairAnalysisResult
 		mas.exchangeService.SetPair(pair)
-		helpers.Logger.Debugln(pair + " Market")
 		strategyAnalysisResult, err := strategy.Analyze(mas.exchangeService)
 		if err != nil {
 			helpers.Logger.Errorln(err.Error())
@@ -70,7 +70,7 @@ func (mas *MarketAnalysisService) analyzePair(pair string) (analytics.PairAnalys
 
 	//Once the results are set for the pair, we check the strategies and choose between them if they are valid
 	chosenStrategy := mas.chooseStrategy(pairAnalysisResult)
-	if chosenStrategy != nil {
+	if chosenStrategy != nil && !*pairAnalysisResult.LockedMonitor {
 		pairAnalysisResult.TradeSignal = true
 		pairAnalysisResult.BestStrategy = chosenStrategy
 	}

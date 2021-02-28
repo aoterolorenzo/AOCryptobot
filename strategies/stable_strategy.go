@@ -151,7 +151,7 @@ func (s *StableStrategy) Analyze(exchangeService interfaces.ExchangeService) (*a
 		Strategy:    s,
 	}
 
-	helpers.Logger.Debugln(fmt.Sprintf("Analyzing %s", strings.Replace(reflect.TypeOf(s).String(), "*strategies.", "", 1)))
+	helpers.Logger.Debugln(fmt.Sprintf("▶️ Analyzing %s", strings.Replace(reflect.TypeOf(s).String(), "*strategies.", "", 1)))
 
 	// Analyze last 1000 candles
 	result15m1000, err := s.PerformSimulation(exchangeService, "15m", 1000, 0, nil)
