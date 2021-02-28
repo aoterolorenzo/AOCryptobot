@@ -13,7 +13,7 @@ import (
 func main() {
 	//bot := &bot_oscillator.MarketMaker{}
 	//rubBot(bot)
-	helpers.Logger.Infoln("💹🖖🏻 Bot started")
+	helpers.Logger.Infoln("🖖🏻 Bot started")
 
 	pairAnalysisResults := []*analytics.PairAnalysis{}
 	exchangeService := interfaces.ExchangeService(&binance.BinanceService{})
