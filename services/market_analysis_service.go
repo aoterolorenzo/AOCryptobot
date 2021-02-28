@@ -53,6 +53,7 @@ func (mas *MarketAnalysisService) analyzePair(pair string) (analytics.PairAnalys
 		TradeSignal:        false,
 		Pair:               pair,
 	}
+	*pairAnalysisResult.LockedMonitor = false
 
 	helpers.Logger.Debugln("📐 " + pair + " Market")
 	// For each strategy in pair
