@@ -48,9 +48,9 @@ func (t *Trader) Start() {
 				firstExitTriggered[pair] = false
 			}
 
-			if enterPrice[pair] > 0 &&
+			if len(timeSeries.Candles) > 499 &&
+				enterPrice[pair] > 0 &&
 				candleCheck[pair] != timeSeries.Candles[len(timeSeries.Candles)-1].Period &&
-				len(timeSeries.Candles) > 499 &&
 				strategy.ParametrizedShouldExit(timeSeries, results.StrategyResults[0].Constants) {
 
 				benefit := (tradeQuantityPerPosition * timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float() / enterPrice[pair]) - tradeQuantityPerPosition
@@ -77,10 +77,10 @@ func (t *Trader) Start() {
 				candleCheck[pair] = timeSeries.Candles[len(timeSeries.Candles)-1].Period
 
 				openPositions--
-			} else if enterPrice[pair] == 0.0 &&
+			} else if len(timeSeries.Candles) > 499 &&
+				enterPrice[pair] == 0.0 &&
 				candleCheck[pair] != timeSeries.Candles[len(timeSeries.Candles)-1].Period &&
 				openPositions != maxOpenPositions &&
-				len(timeSeries.Candles) > 499 &&
 				firstExitTriggered[pair] &&
 				strategy.ParametrizedShouldEnter(timeSeries, results.StrategyResults[0].Constants) {
 
