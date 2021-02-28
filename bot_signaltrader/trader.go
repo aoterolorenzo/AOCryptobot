@@ -98,7 +98,7 @@ func (t *Trader) Start() {
 						fmt.Sprintf("Constants: %v\n", results.StrategyResults[0].Constants) +
 						fmt.Sprintf("Buy Price: %f\n\n", timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float()) +
 
-						fmt.Sprintf("Updated balance: %f\n", balance))
+						fmt.Sprintf("Updated balance: %f", balance))
 				candleCheck[pair] = timeSeries.Candles[len(timeSeries.Candles)-1].Period
 
 			}
@@ -107,7 +107,7 @@ func (t *Trader) Start() {
 				if strategy.ParametrizedShouldExit(timeSeries, results.StrategyResults[0].Constants) {
 					firstExitTriggered[pair] = true
 					helpers.Logger.Infoln(
-						fmt.Sprintf("%s: Initial exit signal. Time to trade\n", pair))
+						fmt.Sprintf("%s: Initial exit signal. Time to trade", pair))
 				}
 			}
 

@@ -50,7 +50,7 @@ func (mms *MultiMarketService) StartMonitor() {
 }
 
 func (mms *MultiMarketService) startMonitor(pair string) {
-	helpers.Logger.Infoln(fmt.Sprintf("%s: Monitor started\n", pair))
+	helpers.Logger.Infoln(fmt.Sprintf("%s: Monitor started", pair))
 	for _, singleMarketService := range mms.SingleMarketServices {
 		if singleMarketService.Pair == pair {
 			singleMarketService.StartCandleMonitor(pair)
@@ -60,7 +60,7 @@ func (mms *MultiMarketService) startMonitor(pair string) {
 }
 
 func (mms *MultiMarketService) stopMonitor(pair string) {
-	helpers.Logger.Infoln(fmt.Sprintf("%s: Monitor stopped\n", pair))
+	helpers.Logger.Infoln(fmt.Sprintf("%s: Monitor stopped", pair))
 	for _, singleMarketService := range mms.SingleMarketServices {
 		if singleMarketService.Pair == pair {
 			singleMarketService.Active = false

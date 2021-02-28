@@ -151,7 +151,7 @@ func (s *StableStrategy) Analyze(exchangeService interfaces.ExchangeService) (*a
 		Strategy:    s,
 	}
 
-	helpers.Logger.Debugln(fmt.Sprintf("Analyzing %s\n", strings.Replace(reflect.TypeOf(s).String(), "*strategies.", "", 1)))
+	helpers.Logger.Debugln(fmt.Sprintf("Analyzing %s", strings.Replace(reflect.TypeOf(s).String(), "*strategies.", "", 1)))
 
 	// Analyze last 1000 candles
 	result15m1000, err := s.PerformSimulation(exchangeService, "15m", 1000, 0, nil)
@@ -181,12 +181,12 @@ func (s *StableStrategy) Analyze(exchangeService interfaces.ExchangeService) (*a
 		helpers.AllValuesPositive(result15m500.ProfitList) {
 
 		strategyAnalysis.IsCandidate = true
-		helpers.Logger.Debugln(fmt.Sprintf("✔️ Strategy is tradeable: 1000CandleProfit, %f 500CandleProfit %f, 60%% of the Mean %f, Std Deviation %f, 1000 Profit Ratio %f 500 Profit Ratio %f\n", result15m1000.Profit, result15m500.Profit,
+		helpers.Logger.Debugln(fmt.Sprintf("✔️ Strategy is tradeable: 1000CandleProfit, %f 500CandleProfit %f, 60%% of the Mean %f, Std Deviation %f, 1000 Profit Ratio %f 500 Profit Ratio %f", result15m1000.Profit, result15m500.Profit,
 			strategyAnalysis.Mean/0.6, strategyAnalysis.StdDev, helpers.PositiveNegativeRatio(result15m1000.ProfitList),
 			helpers.PositiveNegativeRatio(result15m500.ProfitList)))
 	} else {
 		strategyAnalysis.IsCandidate = false
-		helpers.Logger.Debugln(fmt.Sprintf("❌️ Strategy is NOT tradeable: 1000CandleProfit, %f 500CandleProfit %f, 60%% of the Mean %f, Std Deviation %f, 1000 Profit Ratio %f 500 Profit Ratio %f\n", result15m1000.Profit, result15m500.Profit,
+		helpers.Logger.Debugln(fmt.Sprintf("❌️ Strategy is NOT tradeable: 1000CandleProfit, %f 500CandleProfit %f, 60%% of the Mean %f, Std Deviation %f, 1000 Profit Ratio %f 500 Profit Ratio %f", result15m1000.Profit, result15m500.Profit,
 			strategyAnalysis.Mean/0.6, strategyAnalysis.StdDev, helpers.PositiveNegativeRatio(result15m1000.ProfitList),
 			helpers.PositiveNegativeRatio(result15m500.ProfitList)))
 	}
