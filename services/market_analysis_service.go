@@ -1,13 +1,10 @@
 package services
 
 import (
-	"fmt"
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
 	"gitlab.com/aoterocom/AOCryptobot/models/analytics"
 	"math"
-	"reflect"
 	"sort"
-	"strings"
 )
 
 type MarketAnalysisService struct {
@@ -109,7 +106,7 @@ func (mas *MarketAnalysisService) analyzeStrategy(strategy interfaces.Strategy) 
 		Strategy:    strategy,
 	}
 
-	fmt.Printf("Analyzing %s\n", strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1))
+	//fmt.Printf("Analyzing %s\n", strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1))
 	result15m1000, err := strategy.PerformAnalysis(mas.exchangeService, "15m", 1000, 0, nil)
 	if err != nil {
 		return nil, err
@@ -129,25 +126,25 @@ func (mas *MarketAnalysisService) analyzeStrategy(strategy interfaces.Strategy) 
 	sum := sum(data)
 	strategyAnalysisResults.Mean = sum / float64(len(data))
 	strategyAnalysisResults.StdDev = stdDev(data, strategyAnalysisResults.Mean)
-	fmt.Printf("3 Mean: %f Deviation %f Ratio %f\n", strategyAnalysisResults.Mean,
-		strategyAnalysisResults.StdDev, strategyAnalysisResults.Mean/strategyAnalysisResults.StdDev)
+	//fmt.Printf("3 Mean: %f Deviation %f Ratio %f\n", strategyAnalysisResults.Mean,
+	//	strategyAnalysisResults.StdDev, strategyAnalysisResults.Mean/strategyAnalysisResults.StdDev)
 
 	// Check if strategy pass conditions
 	// If all profits are positive
-	if result15m1000.Profit > 0.0 && result15m500.Profit > 0.0 &&
-		strategyAnalysisResults.Mean/0.6 > strategyAnalysisResults.StdDev &&
-		(positiveNegativeRatio(result15m1000.ProfitList) >= 1.05 || len(result15m1000.ProfitList) == 0) &&
-		(positiveNegativeRatio(result15m500.ProfitList) >= 1.05 || len(result15m500.ProfitList) == 0) {
+	if result15m1000.Profit > 3.0 && result15m500.Profit > 1.5 &&
+		((strategyAnalysisResults.Mean*0.6 > strategyAnalysisResults.StdDev && result15m500.Profit > result15m1000.Profit/1.8) ||
+			(positiveNegativeRatio(result15m1000.ProfitList) >= 1.05 || len(result15m1000.ProfitList) == 0) &&
+				(positiveNegativeRatio(result15m500.ProfitList) >= 1.05 || len(result15m500.ProfitList) == 0)) {
 		//mean > 25.0 && strategyResults150.Profit > 12.0 || {
 		strategyAnalysisResults.IsCandidate = true
-		fmt.Printf("!candidata prof1000 %f prof500 %f mean/0.6 %f stddev %f ratio1000 %f ratio500 %f %v\n", result15m1000.Profit, result15m500.Profit,
-			strategyAnalysisResults.Mean/0.6, strategyAnalysisResults.StdDev, positiveNegativeRatio(result15m1000.ProfitList),
-			positiveNegativeRatio(result15m500.ProfitList), result15m1000.ProfitList)
+		//fmt.Printf("!candidata prof1000 %f prof500 %f mean/0.6 %f stddev %f ratio1000 %f ratio500 %f %v\n", result15m1000.Profit, result15m500.Profit,
+		//	strategyAnalysisResults.Mean/0.6, strategyAnalysisResults.StdDev, positiveNegativeRatio(result15m1000.ProfitList),
+		//	positiveNegativeRatio(result15m500.ProfitList), result15m1000.ProfitList)
 	} else {
 		strategyAnalysisResults.IsCandidate = false
-		fmt.Printf("no candidata prof1000 %f prof500 %f mean/0.6 %f stddev %f ratio1000 %f ratio500 %f %v\n", result15m1000.Profit, result15m500.Profit,
-			strategyAnalysisResults.Mean/0.6, strategyAnalysisResults.StdDev, positiveNegativeRatio(result15m1000.ProfitList),
-			positiveNegativeRatio(result15m500.ProfitList), result15m1000.ProfitList)
+		//fmt.Printf("no candidata prof1000 %f prof500 %f mean/0.6 %f stddev %f ratio1000 %f ratio500 %f %v\n", result15m1000.Profit, result15m500.Profit,
+		//	strategyAnalysisResults.Mean/0.6, strategyAnalysisResults.StdDev, positiveNegativeRatio(result15m1000.ProfitList),
+		//	positiveNegativeRatio(result15m500.ProfitList), result15m1000.ProfitList)
 	}
 
 	return &strategyAnalysisResults, nil
