@@ -111,7 +111,9 @@ func (t *Trader) Start() {
 				}
 			}
 
-			candleCheck[pair] = timeSeries.Candles[len(timeSeries.Candles)-1].Period
+			if len(timeSeries.Candles) > 499 {
+				candleCheck[pair] = timeSeries.Candles[len(timeSeries.Candles)-1].Period
+			}
 
 		}
 		time.Sleep(2 * time.Second)
