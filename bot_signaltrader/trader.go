@@ -54,11 +54,11 @@ func (t *Trader) Start() {
 				strategy.ParametrizedShouldExit(timeSeries, results.StrategyResults[0].Constants) {
 
 				benefit := (tradeQuantityPerPosition * timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float() / enterPrice[pair]) - tradeQuantityPerPosition
-				balance += benefit
-				balance *= 1 - 0.0014
+				commissionAmount := (tradeQuantityPerPosition + benefit) * (0.0007 * 2)
+				balance += benefit - commissionAmount
 				tradeQuantityPerPosition += benefit / 3
 				enterPrice[pair] = 0.0
-				profitPct := benefit/100 - 1
+				profitPct := benefit / 100
 				var profitEmoji string
 				if profitPct >= 0 {
 					profitEmoji = "✅"
@@ -110,6 +110,8 @@ func (t *Trader) Start() {
 						fmt.Sprintf("%s: Initial exit signal. Time to trade", pair))
 				}
 			}
+
+			candleCheck[pair] = timeSeries.Candles[len(timeSeries.Candles)-1].Period
 
 		}
 		time.Sleep(2 * time.Second)
