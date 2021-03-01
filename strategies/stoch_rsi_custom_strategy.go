@@ -177,7 +177,7 @@ func (s *StochRSICustomStrategy) Analyze(exchangeService interfaces.ExchangeServ
 	// higher than 1000 because the extrapolation)
 	// 2. At least 60% (x1.2) of positions at 1000 with profit, or no positions in period
 	// 3. At least 60% (x1.2) of positions at 500 with profit, or no positions in period
-	if true || result15m1000.Profit > 2.8 && result15m500.Profit > 1.5 &&
+	if result15m1000.Profit > 2.8 && result15m500.Profit > 1.5 &&
 		(helpers.PositiveNegativeRatio(result15m1000.ProfitList) >= 1.0 || len(result15m1000.ProfitList) == 0) &&
 		(helpers.PositiveNegativeRatio(result15m500.ProfitList) >= 1.0 || len(result15m500.ProfitList) == 0) {
 
