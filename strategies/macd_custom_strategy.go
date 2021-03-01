@@ -128,7 +128,7 @@ func (s *MACDCustomStrategy) PerformSimulation(exchangeService interfaces.Exchan
 					balance *= profitPct * (1 - 0.00014)
 					profitList = append(profitList, (profitPct*(1-0.0014))-1)
 				}
-				time.Sleep(1 * time.Millisecond)
+				time.Sleep(500 * time.Microsecond)
 			}
 			open = false
 			//return pairAnalysis, nil
@@ -164,7 +164,7 @@ func (s *MACDCustomStrategy) PerformSimulation(exchangeService interfaces.Exchan
 					balance *= profitPct * (1 - 0.0014)
 					profitList = append(profitList, (profitPct*(1-0.0014))-1)
 				}
-				time.Sleep(1 * time.Millisecond)
+				time.Sleep(500 * time.Microsecond)
 			}
 			open = false
 			if balance > highestBalance {

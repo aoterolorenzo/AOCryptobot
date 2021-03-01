@@ -19,9 +19,10 @@ func main() {
 	exchangeService := interfaces.ExchangeService(&binance.BinanceService{})
 	exchangeService.ConfigureClient()
 	strategies := []interfaces.Strategy{
+		&strategies2.Lun1MarCustomStrategy{},
 		&strategies2.StochRSICustomStrategy{},
-		&strategies2.StableStrategy{},
 		&strategies2.MACDCustomStrategy{},
+		&strategies2.StableStrategy{},
 	}
 	marketAnalysisService := services.NewMarketAnalysisService(exchangeService, strategies, &pairAnalysisResults)
 	marketAnalysisService.PopulateWithPairs("EUR")

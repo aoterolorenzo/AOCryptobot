@@ -12,53 +12,54 @@ import (
 	"time"
 )
 
-type StochRSICustomStrategy struct{}
+type Lun1MarCustomStrategy struct{}
 
-func (s *StochRSICustomStrategy) ShouldEnter(timeSeries *techan.TimeSeries) bool {
+func (s *Lun1MarCustomStrategy) ShouldEnter(timeSeries *techan.TimeSeries) bool {
 	return s.ParametrizedShouldEnter(timeSeries, []float64{0.15, 0})
 }
 
-func (s *StochRSICustomStrategy) ShouldExit(timeSeries *techan.TimeSeries) bool {
+func (s *Lun1MarCustomStrategy) ShouldExit(timeSeries *techan.TimeSeries) bool {
 	return s.ParametrizedShouldExit(timeSeries, []float64{0.15, 0})
 }
 
-func (s *StochRSICustomStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeSeries, constants []float64) bool {
+func (s *Lun1MarCustomStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeSeries, constants []float64) bool {
+	lastCandleIndex := len(timeSeries.Candles) - 1
+
 	myRSI := techan.NewRelativeStrengthIndexIndicator(techan.NewClosePriceIndicator(timeSeries), 12)
 	stochRSI := indicators.NewStochasticRelativeStrengthIndicator(myRSI, 12)
 	smoothK := techan.NewSimpleMovingAverage(stochRSI, 3)
 	smoothD := techan.NewSimpleMovingAverage(smoothK, 3)
-	lastCandleIndex := len(timeSeries.Candles) - 1
 
-	// Left some margin after the candle start
-	if time.Now().Unix()-120 < timeSeries.Candles[lastCandleIndex].Period.Start.Unix() {
-		return false
-	}
+	//currentRSIValue := myRSI.Calculate(lastCandleIndex).Float()
+	//lastRSIValue := myRSI.Calculate(lastCandleIndex-1).Float()
+	currentSmoothKValue := smoothK.Calculate(lastCandleIndex).Float()
+	currentSmoothDValue := smoothD.Calculate(lastCandleIndex).Float()
 
-	lastSmoothKValue := smoothK.Calculate(lastCandleIndex).Float()
-	lastSmoothDValue := smoothD.Calculate(lastCandleIndex).Float()
+	lastSmoothKValue := smoothK.Calculate(lastCandleIndex - 1).Float()
+	lastSmoothDValue := smoothD.Calculate(lastCandleIndex - 1).Float()
+	distanceCurrentKD := currentSmoothKValue - currentSmoothDValue
 	distanceLastKD := lastSmoothKValue - lastSmoothDValue
 
-	lastLastSmoothKValue := smoothK.Calculate(lastCandleIndex - 1).Float()
-	lastLastSmoothDValue := smoothD.Calculate(lastCandleIndex - 1).Float()
-	distanceLastLastKD := lastLastSmoothKValue - lastLastSmoothDValue
+	//closePrices := techan.NewClosePriceIndicator(timeSeries)
+	//MACD := techan.NewMACDIndicator(closePrices, 12, 26)
+	//MACDHistogram := techan.NewMACDHistogramIndicator(MACD, 9)
+	//
+	//currentMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex).Float()
+	//lastMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex - 1).Float()
+	//lastLastMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex - 2).Float()
 
-	return ((lastSmoothKValue > lastSmoothDValue+0.1 &&
-		distanceLastKD > distanceLastLastKD+constants[0]) ||
-		distanceLastKD > 0.16) && lastSmoothKValue < 40
+	return currentSmoothKValue > currentSmoothDValue &&
+		distanceCurrentKD > distanceLastKD+constants[0]
+
 }
 
-func (s *StochRSICustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSeries, constants []float64) bool {
+func (s *Lun1MarCustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSeries, constants []float64) bool {
 	myRSI := techan.NewRelativeStrengthIndexIndicator(techan.NewClosePriceIndicator(timeSeries), 12)
 	stochRSI := indicators.NewStochasticRelativeStrengthIndicator(myRSI, 12)
 	smoothK := techan.NewSimpleMovingAverage(stochRSI, 3)
 	smoothD := techan.NewSimpleMovingAverage(smoothK, 3)
 
 	lastCandleIndex := len(timeSeries.Candles) - 1
-
-	// Left some margin after the candle start
-	if time.Now().Unix()-240 < timeSeries.Candles[lastCandleIndex].Period.Start.Unix() {
-		return false
-	}
 
 	lastSmoothKValue := smoothK.Calculate(lastCandleIndex).Float()
 	lastSmoothDValue := smoothD.Calculate(lastCandleIndex).Float()
@@ -70,12 +71,12 @@ func (s *StochRSICustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeS
 
 	lastRsiValue := myRSI.Calculate(lastCandleIndex).Float()
 	lastLastRsiValue := myRSI.Calculate(lastCandleIndex - 1).Float()
-	exitRuleSetCheck := distanceLastKD < distanceLastLastKD-0.03 || lastRsiValue < lastLastRsiValue*0.85
+	exitRuleSetCheck := distanceLastKD < distanceLastLastKD-constants[0] || lastRsiValue < lastLastRsiValue*0.85
 
 	return exitRuleSetCheck
 }
 
-func (s *StochRSICustomStrategy) PerformSimulation(exchangeService interfaces.ExchangeService, interval string, limit int, omit int, constants *[]float64) (analytics.StrategySimulationResult, error) {
+func (s *Lun1MarCustomStrategy) PerformSimulation(exchangeService interfaces.ExchangeService, interval string, limit int, omit int, constants *[]float64) (analytics.StrategySimulationResult, error) {
 	strategyResults := analytics.StrategySimulationResult{}
 	series, err := exchangeService.GetSeries(interval, limit)
 	if err != nil {
@@ -145,7 +146,7 @@ func (s *StochRSICustomStrategy) PerformSimulation(exchangeService interfaces.Ex
 	return strategyResults, nil
 }
 
-func (s *StochRSICustomStrategy) Analyze(exchangeService interfaces.ExchangeService) (*analytics.StrategyAnalysis, error) {
+func (s *Lun1MarCustomStrategy) Analyze(exchangeService interfaces.ExchangeService) (*analytics.StrategyAnalysis, error) {
 	strategyAnalysis := analytics.StrategyAnalysis{
 		IsCandidate: false,
 		Strategy:    s,
@@ -177,7 +178,7 @@ func (s *StochRSICustomStrategy) Analyze(exchangeService interfaces.ExchangeServ
 	// higher than 1000 because the extrapolation)
 	// 2. At least 60% (x1.2) of positions at 1000 with profit, or no positions in period
 	// 3. At least 60% (x1.2) of positions at 500 with profit, or no positions in period
-	if true || result15m1000.Profit > 2.8 && result15m500.Profit > 1.5 &&
+	if result15m1000.Profit > 2.8 && result15m500.Profit > 1.5 &&
 		(helpers.PositiveNegativeRatio(result15m1000.ProfitList) >= 1.0 || len(result15m1000.ProfitList) == 0) &&
 		(helpers.PositiveNegativeRatio(result15m500.ProfitList) >= 1.0 || len(result15m500.ProfitList) == 0) {
 
