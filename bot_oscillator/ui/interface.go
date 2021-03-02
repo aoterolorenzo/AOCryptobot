@@ -11,11 +11,9 @@ import (
 	"time"
 )
 
-var logger = helpers.Logger{}
-
 type UserInterface struct {
 	ExchangeService  interfaces.ExchangeService
-	MarketService    *services.MultiMarketService
+	MarketService    *services.SingleMarketService
 	WalletService    *services.WalletService
 	OrderBookService *services.OrderBookService
 	initialWallet    *models.PairWallet
@@ -31,7 +29,7 @@ func (ui *UserInterface) SetExchangeService(exchangeService interfaces.ExchangeS
 	ui.ExchangeService = exchangeService
 }
 
-func (ui *UserInterface) SetServices(exchangeService interfaces.ExchangeService, MarketService *services.MultiMarketService,
+func (ui *UserInterface) SetServices(exchangeService interfaces.ExchangeService, MarketService *services.SingleMarketService,
 	walletService *services.WalletService, orderBookService *services.OrderBookService) {
 	ui.ExchangeService = exchangeService
 	ui.MarketService = MarketService
@@ -40,7 +38,7 @@ func (ui *UserInterface) SetServices(exchangeService interfaces.ExchangeService,
 	ui.initialWallet = ui.WalletService.Wallet
 	err := ui.WalletService.UpdateWallet()
 	if err != nil {
-		logger.Errorln("ui: " + err.Error())
+		helpers.Logger.Errorln("ui: " + err.Error())
 		return
 	}
 	ui.initialBalance = ui.WalletService.GetTotalAssetsBalance(ui.MarketService.CurrentPrice())
@@ -51,7 +49,7 @@ func (ui *UserInterface) SetServices(exchangeService interfaces.ExchangeService,
 func (ui *UserInterface) UpdatePyL() {
 	err := ui.WalletService.UpdateWallet()
 	if err != nil {
-		logger.Errorln("ui: " + err.Error())
+		helpers.Logger.Errorln("ui: " + err.Error())
 		return
 	}
 	ui.currentBalance = ui.WalletService.GetTotalAssetsBalance(ui.MarketService.CurrentPrice())
@@ -64,7 +62,7 @@ func (ui *UserInterface) SetLogList(logList *[]string) {
 }
 func (ui *UserInterface) Run() {
 	if err := termui.Init(); err != nil {
-		logger.Errorln(fmt.Sprintf("failed to initialize termui: %v", err))
+		helpers.Logger.Errorln(fmt.Sprintf("failed to initialize termui: %v", err))
 		return
 	}
 	defer termui.Close()
@@ -79,7 +77,7 @@ func (ui *UserInterface) Run() {
 			case e := <-uiEvents:
 				switch e.ID {
 				case "q", "<C-c>":
-					logger.Infoln("Exited by keyboard interrupt")
+					helpers.Logger.Infoln("Exited by keyboard interrupt")
 					return
 				}
 			case <-ticker:
@@ -92,17 +90,17 @@ func (ui *UserInterface) Run() {
 func (ui *UserInterface) UpdateUI() {
 	maxPrice, err := ui.MarketService.MaxPrice(60)
 	if err != nil {
-		logger.Errorln("ui: " + err.Error())
+		helpers.Logger.Errorln("ui: " + err.Error())
 		return
 	}
 	minPrice, err := ui.MarketService.MinPrice(60)
 	if err != nil {
-		logger.Errorln("ui: " + err.Error())
+		helpers.Logger.Errorln("ui: " + err.Error())
 		return
 	}
 	oscillation, err := ui.MarketService.PctVariation(60)
 	if err != nil {
-		logger.Errorln("ui: " + err.Error())
+		helpers.Logger.Errorln("ui: " + err.Error())
 		return
 	}
 	lowerAsk := ui.MarketService.MarketSnapshotsRecord[0].LowerAskPrice
@@ -110,7 +108,7 @@ func (ui *UserInterface) UpdateUI() {
 	higherBid := ui.MarketService.MarketSnapshotsRecord[0].HigherBidPrice
 	percentil, err := ui.MarketService.CurrentPricePercentile(60)
 	if err != nil {
-		logger.Errorln("ui: " + err.Error())
+		helpers.Logger.Errorln("ui: " + err.Error())
 		return
 	}
 
@@ -129,12 +127,12 @@ func (ui *UserInterface) UpdateUI() {
 
 	balanceCoin1, err := ui.WalletService.GetAssetBalance(ui.WalletService.Coin1)
 	if err != nil {
-		logger.Errorln("ui: " + err.Error())
+		helpers.Logger.Errorln("ui: " + err.Error())
 		return
 	}
 	balanceCoin2, err := ui.WalletService.GetAssetBalance(ui.WalletService.Coin2)
 	if err != nil {
-		logger.Errorln("ui: " + err.Error())
+		helpers.Logger.Errorln("ui: " + err.Error())
 		return
 	}
 

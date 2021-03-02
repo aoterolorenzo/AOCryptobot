@@ -15,11 +15,9 @@ import (
 	"time"
 )
 
-var logger = helpers.Logger{}
-
 type MarketMaker struct {
 	exchangeProvider interfaces.ExchangeService
-	marketService    *services.MultiMarketService
+	marketService    *services.SingleMarketService
 	walletService    *services.WalletService
 	orderBookService *services.OrderBookService
 	logList          []string
@@ -33,7 +31,7 @@ func (mm *MarketMaker) Run() {
 	threadNumber, err := strconv.Atoi(os.Getenv("threadNumber"))
 	monitorWindow, err := strconv.Atoi(os.Getenv("monitorWindow"))
 	if err != nil {
-		logger.Fatalln("Error parsing threadNumber from strategy.env")
+		helpers.Logger.Fatalln("Error parsing threadNumber from strategy.env")
 	}
 
 	logListMutex := sync.Mutex{}
@@ -46,18 +44,18 @@ func (mm *MarketMaker) Run() {
 	mm.exchangeProvider.SetPair(pair)
 	mm.exchangeProvider.ConfigureClient()
 
-	mm.marketService = &services.MultiMarketService{}
+	mm.marketService = &services.SingleMarketService{}
 	mm.walletService = &services.WalletService{Coin1: coin1, Coin2: coin2}
 	mm.walletService.InitWallet()
 	err = mm.walletService.UpdateWallet()
 	if err != nil {
-		logger.Fatalln("Error initially updating wallet" + err.Error())
+		helpers.Logger.Fatalln("Error initially updating wallet" + err.Error())
 	}
 	mm.orderBookService = &services.OrderBookService{}
 	mm.orderBookService.SetMutex(&orderBookMutex)
 	mm.orderBookService.Init()
 
-	mm.marketService.StartMonitor(pair)
+	mm.marketService.StartMultiMonitor(pair)
 	for {
 		time.Sleep(1 * time.Second)
 		if len(mm.marketService.MarketSnapshotsRecord) > 0 {

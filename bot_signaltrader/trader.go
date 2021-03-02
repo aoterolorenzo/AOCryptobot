@@ -5,8 +5,6 @@ import (
 	"github.com/sdcoffey/techan"
 	"gitlab.com/aoterocom/AOCryptobot/helpers"
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
-	"gitlab.com/aoterocom/AOCryptobot/models"
-	"gitlab.com/aoterocom/AOCryptobot/providers/binance"
 	"gitlab.com/aoterocom/AOCryptobot/services"
 	"reflect"
 	"strings"
@@ -14,10 +12,14 @@ import (
 )
 
 type Trader struct {
-	MarketAnalysisService *services.MarketAnalysisService
-	MultiMarketService    *services.MultiMarketService
-	OpenPositions         *[]models.Position
-	MaxOpenPositions      int
+	MarketAnalysisService    *services.MarketAnalysisService
+	MultiMarketService       *services.MultiMarketService
+	OpenPositions            int
+	MaxOpenPositions         int
+	enterPrice               map[string]float64
+	balance                  float64
+	tradeQuantityPerPosition float64
+	firstExitTriggered       map[string]bool
 }
 
 func NewTrader(marketAnalysisService *services.MarketAnalysisService, multiMarketService *services.MultiMarketService) Trader {
@@ -29,92 +31,45 @@ func NewTrader(marketAnalysisService *services.MarketAnalysisService, multiMarke
 
 func (t *Trader) Start() {
 
-	firstExitTriggered := make(map[string]bool)
-	enterPrice := make(map[string]float64)
-	candleCheck := make(map[string]techan.TimePeriod)
-	balance := 1006.26931
-	tradeQuantityPerPosition := 330.0
-	maxOpenPositions := 3
-	openPositions := 0
+	t.firstExitTriggered = make(map[string]bool)
+	t.enterPrice = make(map[string]float64)
+	t.balance = 1000
+	t.MaxOpenPositions = 3
+	t.OpenPositions = 0
 
 	for {
+		t.tradeQuantityPerPosition = t.balance / 3.04
+
 		for _, pairAnalysisResults := range t.MarketAnalysisService.GetTradeSignaledMarketsByInvStdDev() {
 			strategy := pairAnalysisResults.BestStrategy.(interfaces.Strategy)
 			pair := pairAnalysisResults.Pair
 			timeSeries := t.MultiMarketService.GetTimeSeries(pair)
 			results := t.MarketAnalysisService.GetBestStrategyResults(pairAnalysisResults)
 
-			if firstExitTriggered[pair] && !pairAnalysisResults.TradeSignal {
-				firstExitTriggered[pair] = false
+			if t.firstExitTriggered[pair] && !pairAnalysisResults.TradeSignal {
+				t.firstExitTriggered[pair] = false
 			}
 
-			if len(timeSeries.Candles) > 499 &&
-				enterPrice[pair] > 0 &&
-				candleCheck[pair] != timeSeries.Candles[len(timeSeries.Candles)-1].Period &&
+			if len(timeSeries.Candles) > 499 && t.enterPrice[pair] > 0 &&
 				strategy.ParametrizedShouldExit(timeSeries, results.StrategyResults[0].Constants) {
 
-				benefit := (tradeQuantityPerPosition * timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float() / enterPrice[pair]) - tradeQuantityPerPosition
-				commissionAmount := (tradeQuantityPerPosition + benefit) * (0.0007 * 2)
-				balance += benefit - commissionAmount
-				tradeQuantityPerPosition += benefit / 3
-				enterPrice[pair] = 0.0
-				profitPct := benefit / 100
-				var profitEmoji string
-				if profitPct >= 0 {
-					profitEmoji = "✅"
-				} else {
-					profitEmoji = "❌"
-				}
+				t.LockPair(pair)
+				go t.DelayedExitCheck(pair, strategy, timeSeries, results.StrategyResults[0].Constants, 180)
 
-				helpers.Logger.Infoln(
-					fmt.Sprintf("📉 **%s: ❕ Exit signal**\n", pair) +
-						fmt.Sprintf("Strategy: %s\n", strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1)) +
-						fmt.Sprintf("Constants: %v\n", results.StrategyResults[0].Constants) +
-						fmt.Sprintf("Sell Price: %f\n", timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float()) +
-						fmt.Sprintf("Updated Balance: %f\n", balance) +
-						fmt.Sprintf("%s Profit: %f%%", profitEmoji, profitPct))
-				t.UnLockPair(pair)
-				candleCheck[pair] = timeSeries.Candles[len(timeSeries.Candles)-1].Period
-
-				openPositions--
-			} else if len(timeSeries.Candles) > 499 &&
-				enterPrice[pair] == 0.0 &&
-				candleCheck[pair] != timeSeries.Candles[len(timeSeries.Candles)-1].Period &&
-				openPositions != maxOpenPositions &&
-				firstExitTriggered[pair] &&
+			} else if len(timeSeries.Candles) > 499 && t.enterPrice[pair] == 0.0 &&
+				t.OpenPositions != t.MaxOpenPositions && t.firstExitTriggered[pair] &&
 				strategy.ParametrizedShouldEnter(timeSeries, results.StrategyResults[0].Constants) {
 
-				t.LockPair(pair)
-				openPositions++
-				bs := binance.BinanceService{}
-				bs.ConfigureClient()
-				bs.SetPair(pairAnalysisResults.Pair)
-				// Left some margin after the candle start
-				// Left some margin after the candle start
-				enterPrice[pair] = timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float()
-				helpers.Logger.Infoln(
-					fmt.Sprintf("📈 **%s: ❕ Entry signal**\n", pair) +
-						fmt.Sprintf("Strategy: %s\n", strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1)) +
-						fmt.Sprintf("Constants: %v\n", results.StrategyResults[0].Constants) +
-						fmt.Sprintf("Buy Price: %f\n\n", timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float()) +
-
-						fmt.Sprintf("Updated balance: %f", balance))
-				candleCheck[pair] = timeSeries.Candles[len(timeSeries.Candles)-1].Period
-
+				go t.DelayedEntryCheck(pair, strategy, timeSeries, results.StrategyResults[0].Constants, 180)
 			}
 
-			if !firstExitTriggered[pair] && len(timeSeries.Candles) > 499 {
+			if !t.firstExitTriggered[pair] && len(timeSeries.Candles) > 499 {
 				if strategy.ParametrizedShouldExit(timeSeries, results.StrategyResults[0].Constants) {
-					firstExitTriggered[pair] = true
+					t.firstExitTriggered[pair] = true
 					helpers.Logger.Infoln(
 						fmt.Sprintf("%s: Initial exit signal. Time to trade", pair))
 				}
 			}
-
-			if len(timeSeries.Candles) > 499 {
-				candleCheck[pair] = timeSeries.Candles[len(timeSeries.Candles)-1].Period
-			}
-
 		}
 		time.Sleep(2 * time.Second)
 
@@ -138,4 +93,50 @@ func (t *Trader) UnLockPair(pair string) {
 	}
 }
 
-func (t *Trader) InitPosition(pair string) {}
+func (t *Trader) DelayedEntryCheck(pair string, strategy interfaces.Strategy,
+	timeSeries *techan.TimeSeries, constants []float64, delay int) {
+	time.Sleep(time.Duration(delay) * time.Second)
+	if strategy.ParametrizedShouldEnter(timeSeries, constants) && t.enterPrice[pair] == 0.0 &&
+		t.OpenPositions != t.MaxOpenPositions && t.firstExitTriggered[pair] {
+		t.OpenPositions++
+		t.enterPrice[pair] = timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float()
+		helpers.Logger.Infoln(
+			fmt.Sprintf("📈 **%s: ❕ Entry signal**\n", pair) +
+				fmt.Sprintf("Strategy: %s\n", strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1)) +
+				fmt.Sprintf("Constants: %v\n", constants) +
+				fmt.Sprintf("Buy Price: %f\n\n", timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float()) +
+				fmt.Sprintf("Updated balance: %f", t.balance))
+	} else {
+		t.UnLockPair(pair)
+	}
+}
+
+func (t *Trader) DelayedExitCheck(pair string, strategy interfaces.Strategy,
+	timeSeries *techan.TimeSeries, constants []float64, delay int) {
+	time.Sleep(time.Duration(delay) * time.Second)
+	if strategy.ParametrizedShouldExit(timeSeries, constants) && t.enterPrice[pair] > 0 {
+		benefit := (t.tradeQuantityPerPosition * timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float() / t.enterPrice[pair]) - t.tradeQuantityPerPosition
+		commissionAmount := (t.tradeQuantityPerPosition + benefit) * (0.0007 * 2)
+		t.balance += benefit - commissionAmount
+		t.tradeQuantityPerPosition += benefit / 3
+		t.enterPrice[pair] = 0.0
+		profitPct := benefit / 100
+		var profitEmoji string
+		if profitPct >= 0 {
+			profitEmoji = "✅"
+		} else {
+			profitEmoji = "❌"
+		}
+
+		helpers.Logger.Infoln(
+			fmt.Sprintf("📉 **%s: ❕ Exit signal**\n", pair) +
+				fmt.Sprintf("Strategy: %s\n", strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1)) +
+				fmt.Sprintf("Constants: %v\n", constants) +
+				fmt.Sprintf("Sell Price: %f\n", timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float()) +
+				fmt.Sprintf("Updated Balance: %f\n", t.balance) +
+				fmt.Sprintf("%s Profit: %f%%", profitEmoji, profitPct))
+		t.OpenPositions--
+		t.UnLockPair(pair)
+	} else {
+	}
+}
