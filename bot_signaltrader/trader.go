@@ -108,7 +108,7 @@ func (t *Trader) DelayedEntryCheck(pair string, strategy interfaces.Strategy,
 				fmt.Sprintf("Constants: %v\n", constants) +
 				fmt.Sprintf("Buy Price: %f\n\n", timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float()) +
 				fmt.Sprintf("Updated balance: %f", t.balance))
-	} else {
+	} else if t.enterPrice[pair] == 0.0 {
 		//helpers.Logger.Infoln(fmt.Sprintf("👎🏻 %s: Double entry check fails", pair))
 		t.UnLockPair(pair)
 	}
