@@ -43,8 +43,7 @@ func (s *MACDCustomStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeSeri
 		currentMACDHistogramValue > constants[0] &&
 			currentMACDHistogramValue > lastMACDHistogramValue+constants[2]
 
-	return entryRuleSetCheck && !(currentMACDHistogramValue > constants[1] &&
-		currentMACDHistogramValue < lastMACDHistogramValue)
+	return entryRuleSetCheck //&& !(currentMACDHistogramValue < lastMACDHistogramValue - constants[1])
 }
 
 func (s *MACDCustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSeries, constants []float64) bool {
@@ -63,12 +62,9 @@ func (s *MACDCustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSerie
 	currentMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex).Float()
 	lastMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex - 1).Float()
 
-	exitRuleSetCheck :=
-		currentMACDHistogramValue > constants[1] &&
-			currentMACDHistogramValue < lastMACDHistogramValue
+	exitRuleSetCheck := currentMACDHistogramValue < lastMACDHistogramValue-constants[1]
 
-	exitRuleSetCheck = exitRuleSetCheck && !s.ParametrizedShouldEnter(timeSeries, constants)
-	return exitRuleSetCheck
+	return exitRuleSetCheck && !s.ParametrizedShouldEnter(timeSeries, constants)
 }
 
 func (s *MACDCustomStrategy) PerformSimulation(exchangeService interfaces.ExchangeService, interval string, limit int, omit int, constants *[]float64) (analytics.StrategySimulationResult, error) {
