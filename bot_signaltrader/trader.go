@@ -54,12 +54,14 @@ func (t *Trader) Start() {
 				strategy.ParametrizedShouldExit(timeSeries, results.StrategyResults[0].Constants) {
 
 				t.LockPair(pair)
-				go t.DelayedExitCheck(pair, strategy, timeSeries, results.StrategyResults[0].Constants, 180)
+				//helpers.Logger.Infoln(fmt.Sprintf("📈 **%s: ❕ Entry signal**\nPrepared doublecheck in 3 minutes", pair))
+				go t.DelayedExitCheck(pair, strategy, timeSeries, results.StrategyResults[0].Constants, 90)
 
 			} else if len(timeSeries.Candles) > 499 && t.enterPrice[pair] == 0.0 &&
 				t.OpenPositions != t.MaxOpenPositions && t.firstExitTriggered[pair] &&
 				strategy.ParametrizedShouldEnter(timeSeries, results.StrategyResults[0].Constants) {
 
+				//helpers.Logger.Infoln(fmt.Sprintf("📈 **%s: ❕ Entry signal**\nPrepared doublecheck in 3 minutes", pair))
 				go t.DelayedEntryCheck(pair, strategy, timeSeries, results.StrategyResults[0].Constants, 180)
 			}
 
@@ -107,6 +109,7 @@ func (t *Trader) DelayedEntryCheck(pair string, strategy interfaces.Strategy,
 				fmt.Sprintf("Buy Price: %f\n\n", timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float()) +
 				fmt.Sprintf("Updated balance: %f", t.balance))
 	} else {
+		//helpers.Logger.Infoln(fmt.Sprintf("👎🏻 %s: Double entry check fails", pair))
 		t.UnLockPair(pair)
 	}
 }
@@ -138,5 +141,6 @@ func (t *Trader) DelayedExitCheck(pair string, strategy interfaces.Strategy,
 		t.OpenPositions--
 		t.UnLockPair(pair)
 	} else {
+		//helpers.Logger.Infoln(fmt.Sprintf("👎🏻 %s: Double exit check fails", pair))
 	}
 }
