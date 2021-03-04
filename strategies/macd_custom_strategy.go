@@ -6,6 +6,7 @@ import (
 	"gitlab.com/aoterocom/AOCryptobot/helpers"
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
 	"gitlab.com/aoterocom/AOCryptobot/models/analytics"
+	"gitlab.com/aoterocom/AOCryptobot/strategies/indicators"
 	"reflect"
 	"strings"
 	"time"
@@ -38,12 +39,17 @@ func (s *MACDCustomStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeSeri
 	currentMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex).Float()
 	lastMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex - 1).Float()
 	//lastLastMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex - 2).Float()
+	myRSI := techan.NewRelativeStrengthIndexIndicator(techan.NewClosePriceIndicator(timeSeries), 12)
+	stochRSI := indicators.NewStochasticRelativeStrengthIndicator(myRSI, 12)
+	smoothK := techan.NewSimpleMovingAverage(stochRSI, 3)
+
+	lastSmoothKValue := smoothK.Calculate(lastCandleIndex).Float()
 
 	entryRuleSetCheck :=
 		currentMACDHistogramValue > constants[0] &&
 			currentMACDHistogramValue > lastMACDHistogramValue+constants[2]
 
-	return entryRuleSetCheck //&& !(currentMACDHistogramValue < lastMACDHistogramValue - constants[1])
+	return entryRuleSetCheck && lastSmoothKValue < 50 //&& !(currentMACDHistogramValue < lastMACDHistogramValue - constants[1])
 }
 
 func (s *MACDCustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSeries, constants []float64) bool {
