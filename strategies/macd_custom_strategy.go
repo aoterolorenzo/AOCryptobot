@@ -46,9 +46,9 @@ func (s *MACDCustomStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeSeri
 	lastSmoothKValue := smoothK.Calculate(lastCandleIndex).Float()
 
 	entryRuleSetCheck :=
-		currentMACDHistogramValue > lastMACDHistogramValue+constants[0] && lastSmoothKValue < 50
+		currentMACDHistogramValue > lastMACDHistogramValue+constants[0]
 
-	return entryRuleSetCheck //&& !(currentMACDHistogramValue < lastMACDHistogramValue - constants[1])
+	return entryRuleSetCheck && lastSmoothKValue < 50 //&& !(currentMACDHistogramValue < lastMACDHistogramValue - constants[1])
 }
 
 func (s *MACDCustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSeries, constants []float64) bool {

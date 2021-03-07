@@ -72,7 +72,7 @@ func (s *StochRSICustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeS
 	lastLastRsiValue := myRSI.Calculate(lastCandleIndex - 1).Float()
 	exitRuleSetCheck := distanceLastKD < distanceLastLastKD-0.03 || lastRsiValue < lastLastRsiValue*0.85
 
-	return exitRuleSetCheck
+	return exitRuleSetCheck && !s.ParametrizedShouldExit(timeSeries, constants)
 }
 
 func (s *StochRSICustomStrategy) PerformSimulation(exchangeService interfaces.ExchangeService, interval string, limit int, omit int, constants *[]float64) (analytics.StrategySimulationResult, error) {
