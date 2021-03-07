@@ -46,10 +46,9 @@ func (s *MACDCustomStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeSeri
 	lastSmoothKValue := smoothK.Calculate(lastCandleIndex).Float()
 
 	entryRuleSetCheck :=
-		currentMACDHistogramValue > constants[0] &&
-			currentMACDHistogramValue > lastMACDHistogramValue+constants[2]
+		currentMACDHistogramValue > lastMACDHistogramValue+constants[0] && lastSmoothKValue < 50
 
-	return entryRuleSetCheck && lastSmoothKValue < 50 //&& !(currentMACDHistogramValue < lastMACDHistogramValue - constants[1])
+	return entryRuleSetCheck //&& !(currentMACDHistogramValue < lastMACDHistogramValue - constants[1])
 }
 
 func (s *MACDCustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSeries, constants []float64) bool {
@@ -67,8 +66,10 @@ func (s *MACDCustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSerie
 
 	currentMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex).Float()
 	lastMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex - 1).Float()
+	myRSI := techan.NewRelativeStrengthIndexIndicator(closePrices, 12)
+	currentRSIValue := myRSI.Calculate(lastCandleIndex).Float()
 
-	exitRuleSetCheck := currentMACDHistogramValue < lastMACDHistogramValue-constants[1]
+	exitRuleSetCheck := currentMACDHistogramValue < lastMACDHistogramValue-constants[1] || currentRSIValue < 50
 
 	return exitRuleSetCheck && !s.ParametrizedShouldEnter(timeSeries, constants)
 }
@@ -93,7 +94,7 @@ func (s *MACDCustomStrategy) PerformSimulation(exchangeService interfaces.Exchan
 	var buyRate float64
 	var sellRate float64
 	open := false
-	enterConstant := lastVal * -0.0002
+	enterConstant := 0.0
 	exitConstant := lastVal * 0.001
 	enterStop := lastVal * 0.0008
 	exitStop := lastVal * -0.0002
