@@ -6,6 +6,7 @@ import (
 	"gitlab.com/aoterocom/AOCryptobot/helpers"
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
 	"gitlab.com/aoterocom/AOCryptobot/services"
+	"gitlab.com/aoterocom/AOCryptobot/strategies"
 	"reflect"
 	"strings"
 	"time"
@@ -18,6 +19,7 @@ type Trader struct {
 	MaxOpenPositions         int
 	enterPrice               map[string]float64
 	balance                  float64
+	stopLoss                 float64
 	tradeQuantityPerPosition float64
 	firstExitTriggered       map[string]bool
 }
@@ -34,6 +36,7 @@ func (t *Trader) Start() {
 	t.firstExitTriggered = make(map[string]bool)
 	t.enterPrice = make(map[string]float64)
 	t.balance = 1000.0
+	t.stopLoss = 0.02
 	t.MaxOpenPositions = 3
 	t.OpenPositions = 0
 
@@ -50,12 +53,18 @@ func (t *Trader) Start() {
 				t.firstExitTriggered[pair] = false
 			}
 
-			if len(timeSeries.Candles) > 499 && t.enterPrice[pair] > 0 &&
-				strategy.ParametrizedShouldExit(timeSeries, results.StrategyResults[0].Constants) {
+			if len(timeSeries.Candles) > 499 && t.enterPrice[pair] > 0 {
 
-				t.LockPair(pair)
-				//helpers.Logger.Infoln(fmt.Sprintf("📈 **%s: ❕ Entry signal**\nPrepared doublecheck in 3 minutes", pair))
-				go t.DelayedExitCheck(pair, strategy, timeSeries, results.StrategyResults[0].Constants, 90)
+				if strategy.ParametrizedShouldExit(timeSeries, results.StrategyResults[0].Constants) {
+					t.LockPair(pair)
+					//helpers.Logger.Infoln(fmt.Sprintf("📈 **%s: ❕ Entry signal**\nPrepared doublecheck in 3 minutes", pair))
+					go t.DelayedExitCheck(pair, strategy, timeSeries, results.StrategyResults[0].Constants, 90)
+				} else {
+					if timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float() < t.enterPrice[pair]*(1-t.stopLoss) {
+						helpers.Logger.Infoln(fmt.Sprintf("📈 **%s: --> Stop Loss **\n", pair))
+						t.DelayedEntryCheck(pair, &strategies.AlwaysTrueStrategy{}, timeSeries, results.StrategyResults[0].Constants, 0)
+					}
+				}
 
 			} else if len(timeSeries.Candles) > 499 && t.enterPrice[pair] == 0.0 &&
 				t.OpenPositions != t.MaxOpenPositions && t.firstExitTriggered[pair] &&
