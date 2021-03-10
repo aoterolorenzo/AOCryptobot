@@ -62,7 +62,7 @@ func (t *Trader) Start() {
 				} else {
 					if timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float() < t.enterPrice[pair]*(1-t.stopLoss) {
 						helpers.Logger.Infoln(fmt.Sprintf("📈 **%s: --> Stop Loss **\n", pair))
-						t.DelayedEntryCheck(pair, &strategies.AlwaysTrueStrategy{}, timeSeries, results.StrategyResults[0].Constants, 0)
+						t.DelayedExitCheck(pair, &strategies.AlwaysTrueStrategy{}, timeSeries, results.StrategyResults[0].Constants, 0)
 					}
 				}
 
