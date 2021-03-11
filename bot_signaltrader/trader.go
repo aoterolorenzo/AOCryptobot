@@ -36,7 +36,7 @@ func (t *Trader) Start() {
 	t.firstExitTriggered = make(map[string]bool)
 	t.enterPrice = make(map[string]float64)
 	t.balance = 1016.859613
-	t.stopLoss = 0.00025
+	t.stopLoss = 0.0025
 	t.MaxOpenPositions = 3
 	t.OpenPositions = 0
 
