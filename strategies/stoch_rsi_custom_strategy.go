@@ -14,6 +14,10 @@ import (
 
 type StochRSICustomStrategy struct{}
 
+func NewStochRSICustomStrategy() StochRSICustomStrategy {
+	return StochRSICustomStrategy{}
+}
+
 func (s *StochRSICustomStrategy) ShouldEnter(timeSeries *techan.TimeSeries) bool {
 	return s.ParametrizedShouldEnter(timeSeries, []float64{0.15, 0})
 }
@@ -76,7 +80,7 @@ func (s *StochRSICustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeS
 }
 
 func (s *StochRSICustomStrategy) PerformSimulation(exchangeService interfaces.ExchangeService, interval string, limit int, omit int, constants *[]float64) (analytics.StrategySimulationResult, error) {
-	strategyResults := analytics.StrategySimulationResult{}
+	strategyResults := analytics.NewStrategySimulationResult()
 	series, err := exchangeService.GetSeries(interval, limit)
 	if err != nil {
 		return strategyResults, err
@@ -146,10 +150,8 @@ func (s *StochRSICustomStrategy) PerformSimulation(exchangeService interfaces.Ex
 }
 
 func (s *StochRSICustomStrategy) Analyze(exchangeService interfaces.ExchangeService) (*analytics.StrategyAnalysis, error) {
-	strategyAnalysis := analytics.StrategyAnalysis{
-		IsCandidate: false,
-		Strategy:    s,
-	}
+	strategyAnalysis := analytics.NewStrategyAnalysis()
+	strategyAnalysis.Strategy = s
 
 	helpers.Logger.Debugln(fmt.Sprintf("→ Analyzing %s", strings.Replace(reflect.TypeOf(s).String(), "*strategies.", "", 1)))
 
@@ -172,11 +174,7 @@ func (s *StochRSICustomStrategy) Analyze(exchangeService interfaces.ExchangeServ
 	strategyAnalysis.Mean = sum / float64(len(profits))
 	strategyAnalysis.StdDev = helpers.StdDev(profits, strategyAnalysis.Mean)
 
-	// Conditions: Very active strategy. Selecting only if:
-	// 1. Result at 1000 higher than 2.8 AND result at 500 higher than 1.5 (which implies that profit at 500 is
-	// higher than 1000 because the extrapolation)
-	// 2. At least 60% (x1.2) of positions at 1000 with profit, or no positions in period
-	// 3. At least 60% (x1.2) of positions at 500 with profit, or no positions in period
+	// Conditions to accept strategy:
 	if result15m500.Profit > 1.5 &&
 		(helpers.PositiveNegativeRatio(result15m500.ProfitList) >= 0.8 || len(result15m500.ProfitList) == 0) {
 

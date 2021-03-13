@@ -16,13 +16,19 @@ func main() {
 	helpers.Logger.Infoln("🖖🏻 Bot started")
 
 	pairAnalysisResults := []*analytics.PairAnalysis{}
-	exchangeService := interfaces.ExchangeService(&binance.BinanceService{})
+	bs := binance.NewBinanceService()
+	exchangeService := interfaces.ExchangeService(&bs)
 	exchangeService.ConfigureClient()
+	lun1MarCustomStrategy := strategies2.NewLun1MarCustomStrategy()
+	MACDCustomStrategy := strategies2.NewMACDCustomStrategy()
+	stableStrategy := strategies2.NewStableStrategy()
+	stochRSICustomStrategy := strategies2.NewStochRSICustomStrategy()
+
 	strategies := []interfaces.Strategy{
-		&strategies2.Lun1MarCustomStrategy{},
-		&strategies2.StochRSICustomStrategy{},
-		&strategies2.MACDCustomStrategy{},
-		&strategies2.StableStrategy{},
+		&lun1MarCustomStrategy,
+		&stochRSICustomStrategy,
+		&MACDCustomStrategy,
+		&stableStrategy,
 	}
 	marketAnalysisService := services.NewMarketAnalysisService(exchangeService, strategies, &pairAnalysisResults)
 	marketAnalysisService.PopulateWithPairs("EUR")

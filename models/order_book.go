@@ -10,3 +10,7 @@ type OrderBook struct {
 	InitialCoin2FreeAmount   float64
 	InitialCoin2LockedAmount float64
 }
+
+func NewOrderBook() OrderBook {
+	return OrderBook{}
+}

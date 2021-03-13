@@ -14,6 +14,10 @@ import (
 
 type StableStrategy struct{}
 
+func NewStableStrategy() StableStrategy {
+	return StableStrategy{}
+}
+
 func (s *StableStrategy) ShouldEnter(timeSeries *techan.TimeSeries) bool {
 	return s.ParametrizedShouldEnter(timeSeries, []float64{0.15, 0})
 }
@@ -74,7 +78,7 @@ func (s *StableStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSeries, c
 }
 
 func (s *StableStrategy) PerformSimulation(exchangeService interfaces.ExchangeService, interval string, limit int, omit int, constants *[]float64) (analytics.StrategySimulationResult, error) {
-	strategyResults := analytics.StrategySimulationResult{}
+	strategyResults := analytics.NewStrategySimulationResult()
 	series, err := exchangeService.GetSeries(interval, limit)
 	if err != nil {
 		return strategyResults, err
@@ -146,10 +150,8 @@ func (s *StableStrategy) PerformSimulation(exchangeService interfaces.ExchangeSe
 }
 
 func (s *StableStrategy) Analyze(exchangeService interfaces.ExchangeService) (*analytics.StrategyAnalysis, error) {
-	strategyAnalysis := analytics.StrategyAnalysis{
-		IsCandidate: false,
-		Strategy:    s,
-	}
+	strategyAnalysis := analytics.NewStrategyAnalysis()
+	strategyAnalysis.Strategy = s
 
 	helpers.Logger.Debugln(fmt.Sprintf("→ Analyzing %s", strings.Replace(reflect.TypeOf(s).String(), "*strategies.", "", 1)))
 
@@ -173,9 +175,7 @@ func (s *StableStrategy) Analyze(exchangeService interfaces.ExchangeService) (*a
 	strategyAnalysis.Mean = sum / float64(len(profits))
 	strategyAnalysis.StdDev = helpers.StdDev(profits, strategyAnalysis.Mean)
 
-	// CONDITIONS: This is a very secure and stable Strategy, so is normal to not have any profit in a 500 or even
-	// 100 candles period. Because of that, we will select it as tradeable if it have ALL positive results
-	// and even it haven't any result on 500 candles
+	// Conditions to accept strategy:
 	if len(result15m1000.ProfitList) > 0 &&
 		helpers.AllValuesPositive(result15m1000.ProfitList) &&
 		helpers.AllValuesPositive(result15m500.ProfitList) {

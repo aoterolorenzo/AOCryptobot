@@ -25,6 +25,10 @@ type BinanceService struct {
 	pair                  string
 }
 
+func NewBinanceService() BinanceService {
+	return BinanceService{}
+}
+
 func init() {
 	cwd, _ := os.Getwd()
 	err := godotenv.Load(cwd + "/providers/binance/conf.env")
@@ -133,13 +137,13 @@ func (binanceService *BinanceService) MakeOrder(quantity float64, rate float64,
 		order, err := preparedOrder.
 			TimeInForce(binance.TimeInForceTypeGTC).Price(fmt.Sprintf("%.2f", rate)).Do(context.Background())
 		if err != nil {
-			return models.Order{}, err
+			return models.NewEmptyOrder(), err
 		}
 		return binanceService.orderResponseToOrder(*order), nil
 	} else {
 		order, err := preparedOrder.Do(context.Background())
 		if err != nil {
-			return models.Order{}, err
+			return models.NewEmptyOrder(), err
 		}
 		return binanceService.orderResponseToOrder(*order), nil
 	}
@@ -179,7 +183,7 @@ func (binanceService *BinanceService) GetOrder(orderId int64) (models.Order, err
 	order, err := binanceService.binanceClient.NewGetOrderService().Symbol(binanceService.pair).
 		OrderID(orderId).Do(context.Background())
 	if err != nil {
-		return models.Order{}, err
+		return models.NewEmptyOrder(), err
 	}
 
 	return binanceService.orderToModelsOrder(*order), nil
@@ -289,63 +293,21 @@ func (binanceService *BinanceService) GetMarkets(coin string) []string {
 }
 
 func (binanceService *BinanceService) orderResponseToOrder(o binance.CreateOrderResponse) models.Order {
-	return models.Order{
-		Symbol:                   o.Symbol,
-		OrderID:                  o.OrderID,
-		ClientOrderID:            o.ClientOrderID,
-		Price:                    o.Price,
-		OrigQuantity:             o.OrigQuantity,
-		ExecutedQuantity:         o.ExecutedQuantity,
-		CummulativeQuoteQuantity: o.CummulativeQuoteQuantity,
-		Status:                   models.OrderStatusType(o.Status),
-		Type:                     models.OrderType(o.Type),
-		Side:                     models.SideType(o.Side),
-		StopPrice:                "",
-		IcebergQuantity:          "",
-		Time:                     o.TransactTime,
-		UpdateTime:               0,
-		IsWorking:                false,
-	}
+	return models.NewOrder(o.Symbol, o.OrderID, o.ClientOrderID, o.Price, o.OrigQuantity, o.ExecutedQuantity,
+		o.CummulativeQuoteQuantity, models.OrderStatusType(o.Status), models.OrderType(o.Type), models.SideType(o.Side),
+		o.TransactTime, 0, false, false)
 }
 
 func (binanceService *BinanceService) orderToModelsOrder(o binance.Order) models.Order {
-	return models.Order{
-		Symbol:                   o.Symbol,
-		OrderID:                  o.OrderID,
-		ClientOrderID:            o.ClientOrderID,
-		Price:                    o.Price,
-		OrigQuantity:             o.OrigQuantity,
-		ExecutedQuantity:         o.ExecutedQuantity,
-		CummulativeQuoteQuantity: o.CummulativeQuoteQuantity,
-		Status:                   models.OrderStatusType(o.Status),
-		Type:                     models.OrderType(o.Type),
-		Side:                     models.SideType(o.Side),
-		StopPrice:                "",
-		IcebergQuantity:          "",
-		UpdateTime:               0,
-		IsWorking:                false,
-	}
+	return models.NewOrder(o.Symbol, o.OrderID, o.ClientOrderID, o.Price, o.OrigQuantity, o.ExecutedQuantity,
+		o.CummulativeQuoteQuantity, models.OrderStatusType(o.Status), models.OrderType(o.Type), models.SideType(o.Side),
+		0, 0, false, false)
 }
 
 func (binanceService *BinanceService) ocoOrderToModelsOrder(o binance.OCOOrder) models.Order {
-	return models.Order{
-		Symbol:                   o.Symbol,
-		OrderID:                  o.OrderID,
-		ClientOrderID:            o.ClientOrderID,
-		Price:                    "",
-		OrigQuantity:             "",
-		ExecutedQuantity:         "",
-		CummulativeQuoteQuantity: "",
-		Status:                   "",
-		Type:                     "",
-		Side:                     "",
-		StopPrice:                "",
-		IcebergQuantity:          "",
-		Time:                     0,
-		UpdateTime:               0,
-		IsWorking:                false,
-		IsIsolated:               false,
-	}
+	return models.NewOrder(o.Symbol, o.OrderID, o.ClientOrderID, "", "", "",
+		"", "", "", "",
+		0, 0, false, false)
 }
 
 func (binanceService *BinanceService) orderListToModelsOrderList(ol []*binance.Order) []models.Order {
@@ -357,15 +319,8 @@ func (binanceService *BinanceService) orderListToModelsOrderList(ol []*binance.O
 }
 
 func (binanceService *BinanceService) ocoOrderResponseToOCOOrder(o binance.CreateOCOResponse) models.OCOOrder {
-	OCOOrder := models.OCOOrder{
-		OrderListID:       o.OrderListID,
-		ContingencyType:   o.ContingencyType,
-		ListStatusType:    o.ListStatusType,
-		ListOrderStatus:   o.ListOrderStatus,
-		ListClientOrderID: o.ListClientOrderID,
-		TransactionTime:   o.TransactionTime,
-		Symbol:            o.Symbol,
-	}
+	OCOOrder := models.NewOCOOrder(o.OrderListID, o.ContingencyType, o.ListStatusType, o.ListOrderStatus,
+		o.ListClientOrderID, o.TransactionTime, o.Symbol)
 
 	for _, binOrder := range o.Orders {
 		OCOOrder.Orders = append(OCOOrder.Orders, binanceService.ocoOrderToModelsOrder(*binOrder))
@@ -394,7 +349,7 @@ func (binanceService *BinanceService) wsKlineHandler(event *binance.WsKlineEvent
 }
 
 func (binanceService *BinanceService) wsDepthHandler(event *binance.WsDepthEvent) {
-	marketSnapshot := models.MarketDepth{}
+	marketSnapshot := models.NewMarketDepth()
 	err := marketSnapshot.Set(event)
 	if err != nil {
 		binanceService.errHandler(err)

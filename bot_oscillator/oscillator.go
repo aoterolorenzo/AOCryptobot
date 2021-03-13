@@ -1,6 +1,7 @@
 package bot_oscillator
 
 import (
+	"github.com/sdcoffey/techan"
 	marketMakerServices "gitlab.com/aoterocom/AOCryptobot/bot_oscillator/services"
 	"gitlab.com/aoterocom/AOCryptobot/bot_oscillator/ui"
 	"gitlab.com/aoterocom/AOCryptobot/helpers"
@@ -36,7 +37,9 @@ func (mm *MarketMaker) Run() {
 
 	logListMutex := sync.Mutex{}
 	orderBookMutex := sync.Mutex{}
-	mm.exchangeProvider = &binance.BinanceService{}
+
+	bs := binance.NewBinanceService()
+	mm.exchangeProvider = &bs
 
 	coin1 := strings.Split(os.Getenv("pair"), "-")[0]
 	coin2 := strings.Split(os.Getenv("pair"), "-")[1]
@@ -44,8 +47,10 @@ func (mm *MarketMaker) Run() {
 	mm.exchangeProvider.SetPair(pair)
 	mm.exchangeProvider.ConfigureClient()
 
-	mm.marketService = &services.SingleMarketService{}
-	mm.walletService = &services.WalletService{Coin1: coin1, Coin2: coin2}
+	sms := services.NewSingleMarketService(*techan.NewTimeSeries(), pair)
+	mm.marketService = &sms
+	ws := services.NewWalletService(coin1, coin2)
+	mm.walletService = &ws
 	mm.walletService.InitWallet()
 	err = mm.walletService.UpdateWallet()
 	if err != nil {

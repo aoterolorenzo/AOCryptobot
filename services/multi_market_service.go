@@ -20,12 +20,7 @@ func NewMultiMarketService(pairAnalysisResults *[]*analytics.PairAnalysis) Multi
 	mms.PairAnalysisResults = *pairAnalysisResults
 
 	for _, pairAnalysisResult := range *pairAnalysisResults {
-		sms := SingleMarketService{
-			MarketSnapshotsRecord: nil,
-			TimeSeries:            *techan.NewTimeSeries(),
-			Pair:                  pairAnalysisResult.Pair,
-			Active:                false,
-		}
+		sms := NewSingleMarketService(*techan.NewTimeSeries(), pairAnalysisResult.Pair)
 
 		mms.SingleMarketServices = append(mms.SingleMarketServices, &sms)
 	}

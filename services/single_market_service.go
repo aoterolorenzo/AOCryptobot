@@ -15,6 +15,15 @@ type SingleMarketService struct {
 	Active                bool
 }
 
+func NewSingleMarketService(timeSeries techan.TimeSeries, pair string) SingleMarketService {
+	return SingleMarketService{
+		MarketSnapshotsRecord: nil,
+		TimeSeries:            timeSeries,
+		Pair:                  pair,
+		Active:                false,
+	}
+}
+
 // Get maximum price within the last s seconds
 func (sms *SingleMarketService) MaxPrice(s int) (float64, error) {
 	if s > len(sms.MarketSnapshotsRecord) {
@@ -83,7 +92,7 @@ func (sms *SingleMarketService) PctVariation(s int) (float64, error) {
 func (sms *SingleMarketService) StartMultiMonitor(pair string) {
 	sms.Pair = pair
 	sms.Active = true
-	binanceService := binance.BinanceService{}
+	binanceService := binance.NewBinanceService()
 	binanceService.ConfigureClient()
 	binanceService.SetPair(pair)
 
@@ -95,7 +104,7 @@ func (sms *SingleMarketService) StartMultiMonitor(pair string) {
 func (sms *SingleMarketService) StartCandleMonitor(pair string) {
 	sms.Pair = pair
 	sms.Active = true
-	binanceService := binance.BinanceService{}
+	binanceService := binance.NewBinanceService()
 	binanceService.ConfigureClient()
 	binanceService.SetPair(pair)
 

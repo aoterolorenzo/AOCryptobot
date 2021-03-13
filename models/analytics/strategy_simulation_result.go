@@ -7,3 +7,7 @@ type StrategySimulationResult struct {
 	Trend      float64
 	Constants  []float64
 }
+
+func NewStrategySimulationResult() StrategySimulationResult {
+	return StrategySimulationResult{}
+}

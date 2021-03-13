@@ -11,7 +11,7 @@ type OrderBookService struct {
 }
 
 func (ob *OrderBookService) Init() {
-	ob.OrderBook = models.OrderBook{}
+	ob.OrderBook = models.NewOrderBook()
 }
 
 func (ob *OrderBookService) SetMutex(mutex *sync.Mutex) {

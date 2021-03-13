@@ -25,14 +25,12 @@ func (s *AlwaysTrueStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSerie
 }
 
 func (s *AlwaysTrueStrategy) PerformSimulation(exchangeService interfaces.ExchangeService, interval string, limit int, omit int, constants *[]float64) (analytics.StrategySimulationResult, error) {
-	strategyResults := analytics.StrategySimulationResult{}
+	strategyResults := analytics.NewStrategySimulationResult()
 	return strategyResults, nil
 }
 
 func (s *AlwaysTrueStrategy) Analyze(exchangeService interfaces.ExchangeService) (*analytics.StrategyAnalysis, error) {
-	strategyAnalysis := analytics.StrategyAnalysis{
-		IsCandidate: false,
-		Strategy:    s,
-	}
+	strategyAnalysis := analytics.NewStrategyAnalysis()
+	strategyAnalysis.Strategy = s
 	return &strategyAnalysis, nil
 }

@@ -7,3 +7,9 @@ type PairAnalysis struct {
 	BestStrategy       interface{}
 	Pair               string
 }
+
+func NewPairAnalysis(pair string) PairAnalysis {
+	return PairAnalysis{
+		Pair: pair,
+	}
+}
