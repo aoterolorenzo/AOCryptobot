@@ -95,7 +95,7 @@ func (s *MACDCustomStrategy) PerformSimulation(exchangeService interfaces.Exchan
 	var sellRate float64
 	open := false
 	enterConstant := 0.0
-	exitConstant := lastVal * 0.001
+	exitConstant := lastVal * 0.0006
 	enterStop := lastVal * 0.0008
 	exitStop := lastVal * -0.0002
 

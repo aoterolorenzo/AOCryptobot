@@ -88,8 +88,8 @@ func (s *StochRSICustomStrategy) PerformSimulation(exchangeService interfaces.Ex
 	var buyRate float64
 	var sellRate float64
 	open := false
-	entryConstant := 0.1
-	entryStop := 0.3
+	entryConstant := 0.0
+	entryStop := 0.2
 	jump := 0.005
 	selectedEntryConstant := 0.0
 	var bestProfitList []float64
