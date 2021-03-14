@@ -75,7 +75,9 @@ func (s *Lun1MarCustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSe
 
 	lastRsiValue := myRSI.Calculate(lastCandleIndex).Float()
 	lastLastRsiValue := myRSI.Calculate(lastCandleIndex - 1).Float()
-	exitRuleSetCheck := distanceLastKD < distanceLastLastKD-constants[0] || lastRsiValue < lastLastRsiValue*0.85
+	exitRuleSetCheck := distanceLastKD < distanceLastLastKD-constants[0] ||
+		lastRsiValue < lastLastRsiValue*0.85 ||
+		lastSmoothKValue < lastSmoothDValue-0.03
 
 	return exitRuleSetCheck
 }

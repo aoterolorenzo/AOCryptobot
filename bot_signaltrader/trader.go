@@ -58,7 +58,7 @@ func (t *Trader) Start() {
 				if strategy.ParametrizedShouldExit(timeSeries, results.StrategyResults[0].Constants) {
 					t.LockPair(pair)
 					//helpers.Logger.Infoln(fmt.Sprintf("📈 **%s: ❕ Entry signal**\nPrepared doublecheck in 3 minutes", pair))
-					go t.DelayedExitCheck(pair, strategy, timeSeries, results.StrategyResults[0].Constants, 90)
+					go t.DelayedExitCheck(pair, strategy, timeSeries, results.StrategyResults[0].Constants, 300)
 				} else {
 					if timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float() < t.enterPrice[pair]*(1-t.stopLoss) {
 						helpers.Logger.Infoln(fmt.Sprintf("📈 **%s: --> Stop Loss **\n", pair))
