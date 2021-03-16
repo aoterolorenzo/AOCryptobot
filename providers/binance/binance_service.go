@@ -22,11 +22,14 @@ type BinanceService struct {
 	marketSnapshotsRecord *[]models.MarketDepth
 	apiKey                string
 	apiSecret             string
-	pair                  string
 }
 
 func NewBinanceService() BinanceService {
-	return BinanceService{}
+	binanceService := BinanceService{}
+	binanceService.apiKey = os.Getenv("apiKey")
+	binanceService.apiSecret = os.Getenv("apiSecret")
+	binanceService.binanceClient = binance.NewClient(binanceService.apiKey, binanceService.apiSecret)
+	return binanceService
 }
 
 func init() {
@@ -35,16 +38,6 @@ func init() {
 	if err != nil {
 		helpers.Logger.Fatalln("Error loading go.env file", err)
 	}
-}
-
-func (binanceService *BinanceService) SetPair(pair string) {
-	binanceService.pair = pair
-}
-
-func (binanceService *BinanceService) ConfigureClient() {
-	binanceService.apiKey = os.Getenv("apiKey")
-	binanceService.apiSecret = os.Getenv("apiSecret")
-	binanceService.binanceClient = binance.NewClient(binanceService.apiKey, binanceService.apiSecret)
 }
 
 func (binanceService *BinanceService) GetTotalBalance(asset string) (float64, error) {
@@ -112,16 +105,16 @@ func (binanceService *BinanceService) GetLockedBalance(asset string) (float64, e
 	return -1.0, fmt.Errorf("error: unknown error getting through the balances")
 }
 
-func (binanceService *BinanceService) MakeOrder(quantity float64, rate float64,
-	orderType models.OrderType, orderSide techan.OrderSide) (models.Order, error) {
+func (binanceService *BinanceService) MakeOrder(pair string, quantity float64, rate float64,
+	orderType models.OrderType, orderSide models.OrderSide) (models.Order, error) {
 
-	if orderSide == techan.BUY {
+	if orderSide == models.BUY {
 		quantity = quantity / rate
 	}
 
 	//Convert techan orderSide to binance SideType
 	var sideType binance.SideType
-	if orderSide == techan.BUY {
+	if orderSide == models.BUY {
 		sideType = binance.SideTypeBuy
 	} else {
 		sideType = binance.SideTypeSell
@@ -130,7 +123,7 @@ func (binanceService *BinanceService) MakeOrder(quantity float64, rate float64,
 	//Convert models orderType to binance orderType
 	binanceOrderType := binance.OrderType(orderType)
 
-	preparedOrder := binanceService.binanceClient.NewCreateOrderService().Symbol(binanceService.pair).
+	preparedOrder := binanceService.binanceClient.NewCreateOrderService().Symbol(pair).
 		Side(sideType).Type(binanceOrderType).Quantity(fmt.Sprintf("%.5f", quantity))
 
 	if binanceOrderType == binance.OrderTypeLimit {
@@ -150,22 +143,22 @@ func (binanceService *BinanceService) MakeOrder(quantity float64, rate float64,
 
 }
 
-func (binanceService *BinanceService) MakeOCOOrder(quantity float64, rate float64, stopPrice float64, stopLimitPrice float64,
-	orderSide techan.OrderSide) (models.OCOOrder, error) {
+func (binanceService *BinanceService) MakeOCOOrder(pair string, quantity float64, rate float64, stopPrice float64, stopLimitPrice float64,
+	orderSide models.OrderSide) (models.OCOOrder, error) {
 
-	if orderSide == techan.BUY {
+	if orderSide == models.BUY {
 		quantity = quantity / rate
 	}
 
-	//Convert techan orderSide to binance SideType
+	//Convert orderSide to binance SideType
 	var sideType binance.SideType
-	if orderSide == techan.BUY {
+	if orderSide == models.BUY {
 		sideType = binance.SideTypeBuy
 	} else {
 		sideType = binance.SideTypeSell
 	}
 
-	order, err := binanceService.binanceClient.NewCreateOCOService().Symbol(binanceService.pair).Side(sideType).
+	order, err := binanceService.binanceClient.NewCreateOCOService().Symbol(pair).Side(sideType).
 		Price(fmt.Sprintf("%.2f", rate)).
 		StopPrice(fmt.Sprintf("%.2f", stopPrice)).
 		StopLimitPrice(fmt.Sprintf("%.2f", stopLimitPrice)).
@@ -179,19 +172,19 @@ func (binanceService *BinanceService) MakeOCOOrder(quantity float64, rate float6
 	return binanceService.ocoOrderResponseToOCOOrder(*order), nil
 }
 
-func (binanceService *BinanceService) GetOrder(orderId int64) (models.Order, error) {
-	order, err := binanceService.binanceClient.NewGetOrderService().Symbol(binanceService.pair).
-		OrderID(orderId).Do(context.Background())
+func (binanceService *BinanceService) GetOrder(order models.Order) (models.Order, error) {
+	responseOrder, err := binanceService.binanceClient.NewGetOrderService().Symbol(order.Symbol).
+		OrderID(order.OrderID).Do(context.Background())
 	if err != nil {
 		return models.NewEmptyOrder(), err
 	}
 
-	return binanceService.orderToModelsOrder(*order), nil
+	return binanceService.orderToModelsOrder(*responseOrder), nil
 }
 
-func (binanceService *BinanceService) CancelOrder(orderId int64) error {
-	_, err := binanceService.binanceClient.NewCancelOrderService().Symbol(binanceService.pair).
-		OrderID(orderId).Do(context.Background())
+func (binanceService *BinanceService) CancelOrder(order models.Order) error {
+	_, err := binanceService.binanceClient.NewCancelOrderService().Symbol(order.Symbol).
+		OrderID(order.OrderID).Do(context.Background())
 	if err != nil {
 		return err
 	}
@@ -199,18 +192,18 @@ func (binanceService *BinanceService) CancelOrder(orderId int64) error {
 	return nil
 }
 
-func (binanceService *BinanceService) GetOrderStatus(orderId int64) (models.OrderStatusType, error) {
-	order, err := binanceService.GetOrder(orderId)
+func (binanceService *BinanceService) GetOrderStatus(order models.Order) (models.OrderStatusType, error) {
+	responseOrder, err := binanceService.GetOrder(order)
 	if err != nil {
 		return models.OrderStatusTypeNew, err
 	}
 
-	return order.Status, err
+	return responseOrder.Status, err
 }
 
-func (binanceService *BinanceService) DepthMonitor(marketSnapshotsRecord *[]models.MarketDepth) {
+func (binanceService *BinanceService) DepthMonitor(pair string, marketSnapshotsRecord *[]models.MarketDepth) {
 	binanceService.marketSnapshotsRecord = marketSnapshotsRecord
-	doneC, _, err := binance.WsDepthServe(binanceService.pair, binanceService.wsDepthHandler, binanceService.errHandler)
+	doneC, _, err := binance.WsDepthServe(pair, binanceService.wsDepthHandler, binanceService.errHandler)
 	if err != nil {
 		helpers.Logger.Errorln(err)
 		return
@@ -218,10 +211,10 @@ func (binanceService *BinanceService) DepthMonitor(marketSnapshotsRecord *[]mode
 	<-doneC
 }
 
-func (binanceService *BinanceService) TimeSeriesMonitor(interval string, timeSeries *techan.TimeSeries, active *bool) {
+func (binanceService *BinanceService) TimeSeriesMonitor(pair, interval string, timeSeries *techan.TimeSeries, active *bool) {
 	binanceService.timeSeries = timeSeries
 
-	klines, err := binanceService.binanceClient.NewKlinesService().Symbol(binanceService.pair).
+	klines, err := binanceService.binanceClient.NewKlinesService().Symbol(pair).
 		Interval(interval).Do(context.Background())
 	if err != nil {
 		helpers.Logger.Fatalln("error getting klines: " + err.Error())
@@ -239,7 +232,7 @@ func (binanceService *BinanceService) TimeSeriesMonitor(interval string, timeSer
 		binanceService.timeSeries.AddCandle(candle)
 	}
 
-	doneC, done, err := binance.WsKlineServe(binanceService.pair, interval, binanceService.wsKlineHandler, binanceService.errHandler)
+	doneC, done, err := binance.WsKlineServe(pair, interval, binanceService.wsKlineHandler, binanceService.errHandler)
 	if err != nil {
 		helpers.Logger.Errorln(err)
 		return
@@ -255,12 +248,12 @@ func (binanceService *BinanceService) TimeSeriesMonitor(interval string, timeSer
 	<-doneC
 }
 
-func (binanceService *BinanceService) GetSeries(interval string, limit int) (techan.TimeSeries, error) {
+func (binanceService *BinanceService) GetSeries(pair string, interval string, limit int) (techan.TimeSeries, error) {
 	if limit == 0 {
 		limit = 1000
 	}
 	timeSeries := techan.TimeSeries{}
-	klines, err := binanceService.binanceClient.NewKlinesService().Symbol(binanceService.pair).
+	klines, err := binanceService.binanceClient.NewKlinesService().Symbol(pair).
 		Interval(interval).Limit(limit).Do(context.Background())
 	if err != nil {
 		return timeSeries, err

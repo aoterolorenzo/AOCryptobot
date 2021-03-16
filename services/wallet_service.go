@@ -70,9 +70,8 @@ func (ws *WalletService) InitWallet() {
 }
 
 func (ws *WalletService) UpdateWallet() error {
+	// TODO: remove binance in favor of generic service
 	marketService := binance.NewBinanceService()
-	marketService.SetPair(ws.Coin1 + ws.Coin2)
-	marketService.ConfigureClient()
 
 	coin1FreeBalance, err := marketService.GetAvailableBalance(ws.Coin1)
 	if err != nil {

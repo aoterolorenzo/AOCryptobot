@@ -5,7 +5,7 @@ import (
 	"gitlab.com/aoterocom/AOCryptobot/helpers"
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
 	"gitlab.com/aoterocom/AOCryptobot/models/analytics"
-	"gitlab.com/aoterocom/AOCryptobot/providers/binance"
+	paper "gitlab.com/aoterocom/AOCryptobot/providers/paper"
 	"gitlab.com/aoterocom/AOCryptobot/services"
 	strategies2 "gitlab.com/aoterocom/AOCryptobot/strategies"
 )
@@ -16,9 +16,8 @@ func main() {
 	helpers.Logger.Infoln("🖖🏻 Bot started")
 
 	pairAnalysisResults := []*analytics.PairAnalysis{}
-	bs := binance.NewBinanceService()
-	exchangeService := interfaces.ExchangeService(&bs)
-	exchangeService.ConfigureClient()
+	bs := paper.NewPaperService()
+	exchangeService := interfaces.ExchangeService(bs)
 	lun1MarCustomStrategy := strategies2.NewLun1MarCustomStrategy()
 	MACDCustomStrategy := strategies2.NewMACDCustomStrategy()
 	stableStrategy := strategies2.NewStableStrategy()
@@ -38,7 +37,7 @@ func main() {
 	go mms.StartMonitor()
 
 	// trade on pairAnalysisResults
-	trader := bot_signaltrader.NewTrader(&marketAnalysisService, &mms)
+	trader := bot_signaltrader.NewTraderB(&marketAnalysisService, &mms)
 	trader.Start()
 }
 

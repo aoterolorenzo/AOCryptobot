@@ -44,8 +44,6 @@ func (mm *MarketMaker) Run() {
 	coin1 := strings.Split(os.Getenv("pair"), "-")[0]
 	coin2 := strings.Split(os.Getenv("pair"), "-")[1]
 	pair := strings.ReplaceAll(os.Getenv("pair"), "-", "")
-	mm.exchangeProvider.SetPair(pair)
-	mm.exchangeProvider.ConfigureClient()
 
 	sms := services.NewSingleMarketService(*techan.NewTimeSeries(), pair)
 	mm.marketService = &sms

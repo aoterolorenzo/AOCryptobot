@@ -11,7 +11,7 @@ type (
 		ShouldExit(timeSeries *techan.TimeSeries) bool
 		ParametrizedShouldExit(timeSeries *techan.TimeSeries, constants []float64) bool
 		ParametrizedShouldEnter(timeSeries *techan.TimeSeries, constants []float64) bool
-		PerformSimulation(exchangeService ExchangeService, interval string, limit int, omit int, constants *[]float64) (analytics.StrategySimulationResult, error)
-		Analyze(exchangeService ExchangeService) (*analytics.StrategyAnalysis, error)
+		PerformSimulation(pair string, exchangeService ExchangeService, interval string, limit int, omit int, constants *[]float64) (analytics.StrategySimulationResult, error)
+		Analyze(pair string, exchangeService ExchangeService) (*analytics.StrategyAnalysis, error)
 	}
 )

@@ -5,6 +5,7 @@ import (
 	"github.com/sdcoffey/techan"
 	"gitlab.com/aoterocom/AOCryptobot/helpers"
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
+	"gitlab.com/aoterocom/AOCryptobot/models"
 	"gitlab.com/aoterocom/AOCryptobot/services"
 	"gitlab.com/aoterocom/AOCryptobot/strategies"
 	"reflect"
@@ -17,6 +18,7 @@ type Trader struct {
 	MultiMarketService       *services.MultiMarketService
 	OpenPositions            int
 	MaxOpenPositions         int
+	positions                map[string]models.Position
 	enterPrice               map[string]float64
 	balance                  float64
 	stopLoss                 float64
@@ -35,6 +37,7 @@ func (t *Trader) Start() {
 
 	t.firstExitTriggered = make(map[string]bool)
 	t.enterPrice = make(map[string]float64)
+	t.positions = make(map[string]models.Position)
 	t.balance = 1016.859613
 	t.stopLoss = 0.007
 	t.MaxOpenPositions = 3
@@ -62,7 +65,7 @@ func (t *Trader) Start() {
 				} else {
 					if timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float() < t.enterPrice[pair]*(1-t.stopLoss) {
 						helpers.Logger.Infoln(fmt.Sprintf("📈 **%s: --> Stop Loss **\n", pair))
-						t.DelayedExitCheck(pair, &strategies.AlwaysTrueStrategy{}, timeSeries, results.StrategyResults[0].Constants, 0)
+						t.DelayedExitCheck(pair, &strategies.StopLossTriggerStrategy{}, timeSeries, results.StrategyResults[0].Constants, 0)
 					}
 				}
 
@@ -116,7 +119,7 @@ func (t *Trader) DelayedEntryCheck(pair string, strategy interfaces.Strategy,
 				fmt.Sprintf("Strategy: %s\n", strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1)) +
 				fmt.Sprintf("Constants: %v\n", constants) +
 				fmt.Sprintf("Buy Price: %f\n\n", timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float()) +
-				fmt.Sprintf("Updated balance: %f", t.balance))
+				fmt.Sprintf("Updated currentBalance: %f", t.balance))
 	} else if t.enterPrice[pair] == 0.0 {
 		// helpers.Logger.Infoln(fmt.Sprintf("👎🏻 %s: Double entry check fails", pair))
 		t.UnLockPair(pair)

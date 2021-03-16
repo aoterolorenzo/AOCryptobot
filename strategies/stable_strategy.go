@@ -77,9 +77,9 @@ func (s *StableStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSeries, c
 	return exitRuleSetCheck
 }
 
-func (s *StableStrategy) PerformSimulation(exchangeService interfaces.ExchangeService, interval string, limit int, omit int, constants *[]float64) (analytics.StrategySimulationResult, error) {
+func (s *StableStrategy) PerformSimulation(pair string, exchangeService interfaces.ExchangeService, interval string, limit int, omit int, constants *[]float64) (analytics.StrategySimulationResult, error) {
 	strategyResults := analytics.NewStrategySimulationResult()
-	series, err := exchangeService.GetSeries(interval, limit)
+	series, err := exchangeService.GetSeries(pair, interval, limit)
 	if err != nil {
 		return strategyResults, err
 	}
@@ -149,21 +149,21 @@ func (s *StableStrategy) PerformSimulation(exchangeService interfaces.ExchangeSe
 	return strategyResults, nil
 }
 
-func (s *StableStrategy) Analyze(exchangeService interfaces.ExchangeService) (*analytics.StrategyAnalysis, error) {
+func (s *StableStrategy) Analyze(pair string, exchangeService interfaces.ExchangeService) (*analytics.StrategyAnalysis, error) {
 	strategyAnalysis := analytics.NewStrategyAnalysis()
 	strategyAnalysis.Strategy = s
 
 	helpers.Logger.Debugln(fmt.Sprintf("→ Analyzing %s", strings.Replace(reflect.TypeOf(s).String(), "*strategies.", "", 1)))
 
 	// Analyze last 1000 candles
-	result15m1000, err := s.PerformSimulation(exchangeService, "15m", 1000, 0, nil)
+	result15m1000, err := s.PerformSimulation(pair, exchangeService, "15m", 1000, 0, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	// Analyze last 500 candles
 	strategyAnalysis.StrategyResults = append(strategyAnalysis.StrategyResults, result15m1000)
-	result15m500, err := s.PerformSimulation(exchangeService, "15m", 500, 0, &result15m1000.Constants)
+	result15m500, err := s.PerformSimulation(pair, exchangeService, "15m", 500, 0, &result15m1000.Constants)
 	if err != nil {
 		return nil, err
 	}

@@ -9,7 +9,7 @@ import (
 
 type MarketAnalysisService struct {
 	PairAnalysisResults *[]*analytics.PairAnalysis
-	exchangeService     interfaces.ExchangeService
+	ExchangeService     interfaces.ExchangeService
 	strategies          []interfaces.Strategy
 }
 
@@ -17,13 +17,13 @@ func NewMarketAnalysisService(exchangeService interfaces.ExchangeService,
 	strategies []interfaces.Strategy, pairAnalysisResults *[]*analytics.PairAnalysis) MarketAnalysisService {
 	return MarketAnalysisService{
 		PairAnalysisResults: pairAnalysisResults,
-		exchangeService:     exchangeService,
+		ExchangeService:     exchangeService,
 		strategies:          strategies,
 	}
 }
 
 func (mas *MarketAnalysisService) PopulateWithPairs(coin string) {
-	for _, pair := range mas.exchangeService.GetMarkets(coin) {
+	for _, pair := range mas.ExchangeService.GetMarkets(coin) {
 		pairAnalysis := analytics.PairAnalysis{Pair: pair}
 		pairAnalysis.TradeSignal = false
 		*mas.PairAnalysisResults = append(*mas.PairAnalysisResults, &pairAnalysis)
@@ -60,8 +60,7 @@ func (mas *MarketAnalysisService) analyzePair(pair string) (analytics.PairAnalys
 	// For each strategy in pair
 	for _, strategy := range mas.strategies {
 		//We analyze the strategy and set the results in pairAnalysisResult
-		mas.exchangeService.SetPair(pair)
-		strategyAnalysisResult, err := strategy.Analyze(mas.exchangeService)
+		strategyAnalysisResult, err := strategy.Analyze(pair, mas.ExchangeService)
 		if err != nil {
 			helpers.Logger.Errorln(err.Error())
 			return pairAnalysisResult, err

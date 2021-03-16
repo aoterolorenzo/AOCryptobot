@@ -79,9 +79,9 @@ func (s *StochRSICustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeS
 	return exitRuleSetCheck && !s.ParametrizedShouldEnter(timeSeries, constants)
 }
 
-func (s *StochRSICustomStrategy) PerformSimulation(exchangeService interfaces.ExchangeService, interval string, limit int, omit int, constants *[]float64) (analytics.StrategySimulationResult, error) {
+func (s *StochRSICustomStrategy) PerformSimulation(pair string, exchangeService interfaces.ExchangeService, interval string, limit int, omit int, constants *[]float64) (analytics.StrategySimulationResult, error) {
 	strategyResults := analytics.NewStrategySimulationResult()
-	series, err := exchangeService.GetSeries(interval, limit)
+	series, err := exchangeService.GetSeries(pair, interval, limit)
 	if err != nil {
 		return strategyResults, err
 	}
@@ -149,20 +149,20 @@ func (s *StochRSICustomStrategy) PerformSimulation(exchangeService interfaces.Ex
 	return strategyResults, nil
 }
 
-func (s *StochRSICustomStrategy) Analyze(exchangeService interfaces.ExchangeService) (*analytics.StrategyAnalysis, error) {
+func (s *StochRSICustomStrategy) Analyze(pair string, exchangeService interfaces.ExchangeService) (*analytics.StrategyAnalysis, error) {
 	strategyAnalysis := analytics.NewStrategyAnalysis()
 	strategyAnalysis.Strategy = s
 
 	helpers.Logger.Debugln(fmt.Sprintf("→ Analyzing %s", strings.Replace(reflect.TypeOf(s).String(), "*strategies.", "", 1)))
 
 	// Analyze last 1000 candles
-	result15m1000, err := s.PerformSimulation(exchangeService, "15m", 1000, 0, nil)
+	result15m1000, err := s.PerformSimulation(pair, exchangeService, "15m", 1000, 0, nil)
 	if err != nil {
 		return nil, err
 	}
 	// Analyze last 500 candles
 	strategyAnalysis.StrategyResults = append(strategyAnalysis.StrategyResults, result15m1000)
-	result15m500, err := s.PerformSimulation(exchangeService, "15m", 500, 0, &result15m1000.Constants)
+	result15m500, err := s.PerformSimulation(pair, exchangeService, "15m", 500, 0, &result15m1000.Constants)
 	if err != nil {
 		return nil, err
 	}

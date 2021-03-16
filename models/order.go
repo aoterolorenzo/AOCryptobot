@@ -42,6 +42,15 @@ func NewEmptyOrder() Order {
 	return Order{}
 }
 
+// OrderSide is a simple enumeration representing the side of an Order (buy or sell)
+type OrderSide int
+
+// BUY and SELL enumerations
+const (
+	BUY OrderSide = iota
+	SELL
+)
+
 // OrderStatusType define order status type
 type OrderStatusType string
 

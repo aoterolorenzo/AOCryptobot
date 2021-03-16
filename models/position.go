@@ -1,11 +1,12 @@
 package models
 
-import "strconv"
+import (
+	"strconv"
+)
 
 // Position is a pair of two Order objects
 type Position struct {
 	orders [2]*Order
-	Pair   string
 }
 
 // NewPosition returns a new Position with the passed-in order as the open order
@@ -79,4 +80,26 @@ func (p *Position) ExitValue() float64 {
 		return executedQuantity * price
 	}
 	return -1.0
+}
+
+// Profit returns the current/final profit coin amount
+func (p *Position) Profit() float64 {
+	if p.IsOpen() {
+		return -1.0
+	}
+	entryCost := p.CostBasis()
+	exitExecutedQuantity, _ := strconv.ParseFloat(p.ExitOrder().ExecutedQuantity, 64)
+	exitPrice, _ := strconv.ParseFloat(p.ExitOrder().Price, 64)
+	exitCost := exitExecutedQuantity * exitPrice
+	return exitCost - entryCost
+
+}
+
+// Profit returns the current/final percentage profit coin amount
+func (p *Position) ProfitPct() float64 {
+	if p.IsOpen() {
+		return -1.0
+	}
+	entryExecutedQuantity, _ := strconv.ParseFloat(p.EntranceOrder().ExecutedQuantity, 64)
+	return p.Profit() / entryExecutedQuantity
 }
