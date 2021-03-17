@@ -154,9 +154,8 @@ func (t *TraderB) UnLockPair(pair string) {
 func (t *TraderB) EntryCheck(pair string, strategy interfaces.Strategy,
 	timeSeries *techan.TimeSeries, constants []float64, delay int) {
 	time.Sleep(time.Duration(delay) * time.Second)
-	lastEnterPrice, _ := strconv.
-		ParseFloat(t.tradingRecordService.OpenPositions[pair][0].EntranceOrder().Price, 64)
-	if strategy.ParametrizedShouldEnter(timeSeries, constants) && lastEnterPrice == 0.0 &&
+
+	if strategy.ParametrizedShouldEnter(timeSeries, constants) && !t.tradingRecordService.HasOpenPositions(pair) &&
 		t.tradingRecordService.OpenPositionsCount() != t.maxOpenPositions && t.firstExitTriggered[pair] {
 
 		_ = t.tradingRecordService.EnterPosition(pair, t.tradeQuantityPerPosition)

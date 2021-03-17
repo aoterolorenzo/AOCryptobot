@@ -26,11 +26,20 @@ func (s *StopLossTriggerStrategy) ParametrizedShouldExit(timeSeries *techan.Time
 
 func (s *StopLossTriggerStrategy) PerformSimulation(pair string, exchangeService interfaces.ExchangeService, interval string, limit int, omit int, constants *[]float64) (analytics.StrategySimulationResult, error) {
 	strategyResults := analytics.NewStrategySimulationResult()
+	strategyResults.Constants = append(strategyResults.Constants, 0.0)
+	strategyResults.Constants = append(strategyResults.Constants, 0.0)
 	return strategyResults, nil
 }
 
 func (s *StopLossTriggerStrategy) Analyze(pair string, exchangeService interfaces.ExchangeService) (*analytics.StrategyAnalysis, error) {
 	strategyAnalysis := analytics.NewStrategyAnalysis()
 	strategyAnalysis.Strategy = s
+
+	strategyResults := analytics.NewStrategySimulationResult()
+	strategyResults.Constants = append(strategyResults.Constants, 0.0)
+	strategyResults.Constants = append(strategyResults.Constants, 0.0)
+
+	strategyAnalysis.StrategyResults = append(strategyAnalysis.StrategyResults, strategyResults)
+
 	return &strategyAnalysis, nil
 }
