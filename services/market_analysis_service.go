@@ -3,8 +3,12 @@ package services
 import (
 	"gitlab.com/aoterocom/AOCryptobot/helpers"
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
+	"gitlab.com/aoterocom/AOCryptobot/models"
 	"gitlab.com/aoterocom/AOCryptobot/models/analytics"
+	"gitlab.com/aoterocom/AOCryptobot/strategies"
 	"sort"
+	"strings"
+	"time"
 )
 
 type MarketAnalysisService struct {
@@ -26,6 +30,14 @@ func (mas *MarketAnalysisService) PopulateWithPairs(coin string) {
 	for _, pair := range mas.ExchangeService.GetMarkets(coin) {
 		pairAnalysis := analytics.PairAnalysis{Pair: pair}
 		pairAnalysis.TradeSignal = false
+
+		// Set the markets direction
+		if strings.HasSuffix(pairAnalysis.Pair, coin) {
+			pairAnalysis.MarketDirection = models.MarketDirectionLong
+		} else {
+			pairAnalysis.MarketDirection = models.MarketDirectionShort
+		}
+
 		*mas.PairAnalysisResults = append(*mas.PairAnalysisResults, &pairAnalysis)
 	}
 }
@@ -33,8 +45,9 @@ func (mas *MarketAnalysisService) PopulateWithPairs(coin string) {
 func (mas *MarketAnalysisService) AnalyzeMarkets() {
 	for {
 		for _, pairAnalysis := range *mas.PairAnalysisResults {
-			pairAnalysisResultPtr := mas.getPairAnalysisResult(pairAnalysis.Pair)
+			pairAnalysisResultPtr := mas.GetPairAnalysisResult(pairAnalysis.Pair)
 			newPairAnalysisResult, err := mas.analyzePair(pairAnalysis.Pair)
+			newPairAnalysisResult.MarketDirection = pairAnalysisResultPtr.MarketDirection
 			if err == nil {
 				*pairAnalysisResultPtr = newPairAnalysisResult
 			}
@@ -57,6 +70,7 @@ func (mas *MarketAnalysisService) analyzePair(pair string) (analytics.PairAnalys
 	}
 
 	helpers.Logger.Debugln("📐 " + pair + " Market")
+	time.Sleep(5 * time.Second)
 	// For each strategy in pair
 	for _, strategy := range mas.strategies {
 		//We analyze the strategy and set the results in pairAnalysisResult
@@ -97,6 +111,7 @@ func (mas *MarketAnalysisService) chooseStrategy(pairAnalysisResult analytics.Pa
 			//D 	strategy.Mean / strategy.StdDev, bestRatio)
 		}
 	}
+	betterStrategy = interfaces.Strategy(&strategies.StopLossTriggerStrategy{})
 	//D fmt.Printf("Better Strategy: %s\n", betterStrategy)
 
 	return betterStrategy
@@ -117,7 +132,7 @@ func positiveNegativeRatio(list []float64) float64 {
 	}
 	return float64(countPositive) / float64(countNegative)
 }
-func (mas *MarketAnalysisService) getPairAnalysisResult(pair string) *analytics.PairAnalysis {
+func (mas *MarketAnalysisService) GetPairAnalysisResult(pair string) *analytics.PairAnalysis {
 	for _, pairStrategyAnalysis := range *mas.PairAnalysisResults {
 		if pairStrategyAnalysis.Pair == pair {
 			return pairStrategyAnalysis

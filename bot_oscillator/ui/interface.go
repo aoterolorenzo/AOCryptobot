@@ -67,8 +67,6 @@ func (ui *UserInterface) Run() {
 	}
 	defer termui.Close()
 
-	ui.ExchangeService.ConfigureClient()
-
 	for {
 		uiEvents := termui.PollEvents()
 		ticker := time.NewTicker(time.Second).C

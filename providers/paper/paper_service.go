@@ -10,6 +10,7 @@ import (
 	"gitlab.com/aoterocom/AOCryptobot/helpers"
 	"gitlab.com/aoterocom/AOCryptobot/models"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -57,8 +58,12 @@ func (paperService *PaperService) MakeOrder(pair string, quantity float64, rate 
 	rateString = fmt.Sprintf("%f", rate)
 
 	if orderSide == models.BUY {
-		quantityString = fmt.Sprintf("%f", quantity/rate)
+		quantity /= rate
+		quantityString = fmt.Sprintf("%f", quantity)
 	}
+
+	cumulativeQuantity := quantity * rate
+	cumulativeQuantityString := fmt.Sprintf("%f", cumulativeQuantity)
 
 	//Convert techan orderSide to binance SideType
 	var sideType models.SideType
@@ -68,7 +73,7 @@ func (paperService *PaperService) MakeOrder(pair string, quantity float64, rate 
 		sideType = models.SideTypeSell
 	}
 
-	order := models.NewOrder(pair, 0, "0", rateString, quantityString, quantityString, quantityString, models.OrderStatusTypeFilled,
+	order := models.NewOrder(pair, 0, "0", rateString, quantityString, quantityString, cumulativeQuantityString, models.OrderStatusTypeFilled,
 		orderType, sideType, 0, 0, false, false)
 
 	return order, nil
@@ -166,6 +171,23 @@ func (paperService *PaperService) GetMarkets(coin string) []string {
 		}
 	}
 	return pairList
+}
+
+func (paperService *PaperService) GetPairInfo(pair string) *models.PairInfo {
+	info, _ := paperService.binanceClient.NewExchangeInfoService().Do(context.Background())
+	for _, symbol := range info.Symbols {
+		if strings.Contains(symbol.Symbol, pair) {
+
+			maxPrice, _ := strconv.ParseFloat(symbol.PriceFilter().MaxPrice, 64)
+			minPrice, _ := strconv.ParseFloat(symbol.PriceFilter().MinPrice, 64)
+			tickSize, _ := strconv.ParseFloat(symbol.PriceFilter().TickSize, 64)
+			pairInfo := models.NewPairInfo(maxPrice, minPrice,
+				tickSize, symbol.QuotePrecision)
+
+			return pairInfo
+		}
+	}
+	return nil
 }
 
 func (paperService *PaperService) wsKlineHandler(event *binance.WsKlineEvent) {

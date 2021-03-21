@@ -54,16 +54,22 @@ const (
 // OrderStatusType define order status type
 type OrderStatusType string
 
-// OrderStatusType define order type
+// OrderType define order type
 type OrderType string
 
-// OrderStatusType define order type
+// SideType define side type
 type SideType string
+
+// TradeDirection define the direction of a position
+type MarketDirection string
 
 // Global enums
 const (
 	SideTypeBuy  SideType = "BUY"
 	SideTypeSell SideType = "SELL"
+
+	MarketDirectionLong  MarketDirection = "BUY"
+	MarketDirectionShort MarketDirection = "SELL"
 
 	OrderTypeLimit           OrderType = "LIMIT"
 	OrderTypeMarket          OrderType = "MARKET"

@@ -1,4 +1,4 @@
-package bot_signaltrader
+package bot_signal_trader
 
 import (
 	"fmt"

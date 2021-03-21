@@ -39,7 +39,7 @@ func (mm *MarketMaker) Run() {
 	orderBookMutex := sync.Mutex{}
 
 	bs := binance.NewBinanceService()
-	mm.exchangeProvider = &bs
+	mm.exchangeProvider = bs
 
 	coin1 := strings.Split(os.Getenv("pair"), "-")[0]
 	coin2 := strings.Split(os.Getenv("pair"), "-")[1]

@@ -24,12 +24,12 @@ type BinanceService struct {
 	apiSecret             string
 }
 
-func NewBinanceService() BinanceService {
+func NewBinanceService() *BinanceService {
 	binanceService := BinanceService{}
 	binanceService.apiKey = os.Getenv("apiKey")
 	binanceService.apiSecret = os.Getenv("apiSecret")
 	binanceService.binanceClient = binance.NewClient(binanceService.apiKey, binanceService.apiSecret)
-	return binanceService
+	return &binanceService
 }
 
 func init() {
@@ -112,6 +112,14 @@ func (binanceService *BinanceService) MakeOrder(pair string, quantity float64, r
 		quantity = quantity / rate
 	}
 
+	// Get pairInfo to correct quantity price deflections
+	pairInfo := binanceService.GetPairInfo(pair)
+	stepString := strconv.FormatFloat(pairInfo.StepSize, 'f', -1, 64)
+	stepDecLength := len(stepString) - 2
+	stepDecLengthFormatString := fmt.Sprintf("%%.%df", stepDecLength)
+	quantityString := fmt.Sprintf(stepDecLengthFormatString, quantity)
+	quantity, _ = strconv.ParseFloat(quantityString, 64)
+
 	//Convert techan orderSide to binance SideType
 	var sideType binance.SideType
 	if orderSide == models.BUY {
@@ -123,8 +131,9 @@ func (binanceService *BinanceService) MakeOrder(pair string, quantity float64, r
 	//Convert models orderType to binance orderType
 	binanceOrderType := binance.OrderType(orderType)
 
+	formatString := fmt.Sprintf("%%.%df", pairInfo.Precision)
 	preparedOrder := binanceService.binanceClient.NewCreateOrderService().Symbol(pair).
-		Side(sideType).Type(binanceOrderType).Quantity(fmt.Sprintf("%.5f", quantity))
+		Side(sideType).Type(binanceOrderType).Quantity(fmt.Sprintf(formatString, quantity))
 
 	if binanceOrderType == binance.OrderTypeLimit {
 		order, err := preparedOrder.
@@ -283,6 +292,23 @@ func (binanceService *BinanceService) GetMarkets(coin string) []string {
 		}
 	}
 	return pairList
+}
+
+func (binanceService *BinanceService) GetPairInfo(pair string) *models.PairInfo {
+	info, _ := binanceService.binanceClient.NewExchangeInfoService().Do(context.Background())
+	for _, symbol := range info.Symbols {
+		if strings.Contains(symbol.Symbol, pair) {
+
+			maxPrice, _ := strconv.ParseFloat(symbol.LotSizeFilter().MaxQuantity, 64)
+			minPrice, _ := strconv.ParseFloat(symbol.LotSizeFilter().MinQuantity, 64)
+			tickSize, _ := strconv.ParseFloat(symbol.LotSizeFilter().StepSize, 64)
+			pairInfo := models.NewPairInfo(maxPrice, minPrice,
+				tickSize, symbol.QuotePrecision)
+
+			return pairInfo
+		}
+	}
+	return nil
 }
 
 func (binanceService *BinanceService) orderResponseToOrder(o binance.CreateOrderResponse) models.Order {

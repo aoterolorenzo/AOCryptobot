@@ -65,9 +65,8 @@ func (p *Position) ExitOrder() *Order {
 // CostBasis returns the price to enter this order
 func (p *Position) CostBasis() float64 {
 	if p.EntranceOrder() != nil {
-		executedQuantity, _ := strconv.ParseFloat(p.EntranceOrder().ExecutedQuantity, 64)
-		price, _ := strconv.ParseFloat(p.EntranceOrder().Price, 64)
-		return executedQuantity * price
+		cumulativeQuoteQuantity, _ := strconv.ParseFloat(p.EntranceOrder().CumulativeQuoteQuantity, 64)
+		return cumulativeQuoteQuantity
 	}
 	return -1.0
 }
@@ -83,23 +82,13 @@ func (p *Position) ExitValue() float64 {
 }
 
 // Profit returns the current/final profit coin amount
-func (p *Position) Profit() float64 {
-	if p.IsOpen() {
-		return -1.0
-	}
-	entryCost := p.CostBasis()
-	exitExecutedQuantity, _ := strconv.ParseFloat(p.ExitOrder().ExecutedQuantity, 64)
-	exitPrice, _ := strconv.ParseFloat(p.ExitOrder().Price, 64)
-	exitCost := exitExecutedQuantity * exitPrice
-	return exitCost - entryCost
-
-}
-
-// Profit returns the current/final percentage profit coin amount
 func (p *Position) ProfitPct() float64 {
 	if p.IsOpen() {
 		return -1.0
 	}
-	entryExecutedQuantity, _ := strconv.ParseFloat(p.EntranceOrder().ExecutedQuantity, 64)
-	return p.Profit() / entryExecutedQuantity
+	entranceOrder := p.EntranceOrder()
+	exitOrder := p.ExitOrder()
+	enterCumulativeQuoteQuantity, _ := strconv.ParseFloat(entranceOrder.CumulativeQuoteQuantity, 64)
+	exitCumulativeQuoteQuantity, _ := strconv.ParseFloat(exitOrder.CumulativeQuoteQuantity, 64)
+	return exitCumulativeQuoteQuantity/enterCumulativeQuoteQuantity - 1
 }
