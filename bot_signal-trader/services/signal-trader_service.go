@@ -62,7 +62,7 @@ func (t *SignalTraderService) Start() {
 	t.firstExitTriggered = make(map[string]bool)
 	initialBalance, err := t.marketAnalysisService.ExchangeService.GetAvailableBalance(t.targetCoin)
 	if err != nil {
-		helpers.Logger.Fatalln("Couldn't get the initial currentBalance: %s", err.Error())
+		helpers.Logger.Fatalln(fmt.Sprintf("Couldn't get the initial currentBalance: %s", err.Error()))
 	}
 	t.initialBalance = initialBalance
 	t.currentBalance = initialBalance
