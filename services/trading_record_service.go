@@ -1,59 +1,124 @@
 package services
 
 import (
+	"gitlab.com/aoterocom/AOCryptobot/helpers"
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
 	"gitlab.com/aoterocom/AOCryptobot/models"
 	"strconv"
+	"strings"
+	"sync"
+	"time"
 )
 
 type TradingRecordService struct {
-	OpenPositions   map[string][]*models.Position
-	ClosedPositions map[string][]*models.Position
-	exchangeService interfaces.ExchangeService
+	OpenPositions        map[string][]*models.Position
+	ClosedPositions      map[string][]*models.Position
+	openPositionsMutex   *sync.Mutex
+	closedPositionsMutex *sync.Mutex
+
+	multiMarketService *MultiMarketService
+	exchangeService    interfaces.ExchangeService
 }
 
-func NewTradingRecordService(marketService interfaces.ExchangeService) *TradingRecordService {
+func NewTradingRecordService(multiMarketService *MultiMarketService, exchangeService interfaces.ExchangeService) *TradingRecordService {
 	return &TradingRecordService{
-		OpenPositions:   make(map[string][]*models.Position),
-		ClosedPositions: make(map[string][]*models.Position),
-		exchangeService: marketService,
+		OpenPositions:        make(map[string][]*models.Position),
+		ClosedPositions:      make(map[string][]*models.Position),
+		openPositionsMutex:   &sync.Mutex{},
+		closedPositionsMutex: &sync.Mutex{},
+		multiMarketService:   multiMarketService,
+		exchangeService:      exchangeService,
 	}
 }
 
 func (trs *TradingRecordService) AddPosition(position models.Position) error {
+	trs.openPositionsMutex.Lock()
 	trs.OpenPositions[position.EntranceOrder().Symbol] = append(trs.OpenPositions[position.EntranceOrder().Symbol], &position)
+	trs.openPositionsMutex.Unlock()
 	return nil
 }
 
-func (trs *TradingRecordService) EnterPosition(pair string, amount float64) error {
-	order, err := trs.exchangeService.MakeOrder(pair, amount, 0, models.OrderTypeMarket, models.BUY)
+func (trs *TradingRecordService) EnterPosition(pair string, amount float64, direction models.MarketDirection) error {
+
+	var orderSide models.OrderSide
+	if direction == models.MarketDirectionLong {
+		orderSide = models.BUY
+	} else {
+		orderSide = models.SELL
+	}
+
+	currentRate := trs.multiMarketService.GetTimeSeries(pair).LastCandle().ClosePrice
+	order, err := trs.exchangeService.MakeOrder(pair, amount, currentRate.Float(), models.OrderTypeMarket, orderSide)
 	if err != nil {
+		helpers.Logger.Errorln(err)
 		return err
 	}
 	position := models.NewPosition(order)
+	trs.openPositionsMutex.Lock()
 	trs.OpenPositions[pair] = append(trs.OpenPositions[position.EntranceOrder().Symbol], position)
+	trs.openPositionsMutex.Unlock()
 	return nil
 }
 
-func (trs *TradingRecordService) ExitPositions(pair string) error {
-	for i, openPosition := range trs.OpenPositions[pair] {
-		executedQuantity, err := strconv.ParseFloat(openPosition.EntranceOrder().ExecutedQuantity, 64)
-		order, err := trs.exchangeService.MakeOrder(pair, executedQuantity, 0, models.OrderTypeMarket, models.SELL)
+func (trs *TradingRecordService) ExitPositions(pair string, direction models.MarketDirection) error {
+
+	var orderSide models.OrderSide
+	if direction == models.MarketDirectionLong {
+		orderSide = models.SELL
+	} else {
+		orderSide = models.BUY
+	}
+
+	currentRate := trs.multiMarketService.GetTimeSeries(pair).LastCandle().ClosePrice
+	trs.openPositionsMutex.Lock()
+	pairOpenPositions := trs.OpenPositions[pair]
+	trs.openPositionsMutex.Unlock()
+	for i, openPosition := range pairOpenPositions {
+
+		var quantity float64
+		if direction == models.MarketDirectionLong {
+			quantity, _ = strconv.ParseFloat(openPosition.EntranceOrder().ExecutedQuantity, 64)
+		} else {
+			quantity, _ = strconv.ParseFloat(openPosition.EntranceOrder().CumulativeQuoteQuantity, 64)
+		}
+
+		order, err := trs.exchangeService.MakeOrder(pair, quantity, currentRate.Float(), models.OrderTypeMarket, orderSide)
 		if err != nil {
-			return err
+			count := 0
+			helpers.Logger.Errorln(err)
+			for strings.Contains(err.Error(), "Account has insufficient balance for requested action") {
+				quantity *= 1 - 0.0005
+				order, err = trs.exchangeService.MakeOrder(pair, quantity, currentRate.Float(), models.OrderTypeMarket, orderSide)
+				if err == nil {
+					break
+				} else if count > 15 {
+					helpers.Logger.Fatalln(err)
+					return err
+				}
+
+				count++
+				time.Sleep(500 * time.Millisecond)
+			}
 		}
 		openPosition.Exit(order)
+		trs.closedPositionsMutex.Lock()
 		trs.ClosedPositions[pair] = append(trs.ClosedPositions[pair], openPosition)
+		trs.closedPositionsMutex.Unlock()
+		trs.openPositionsMutex.Lock()
 		trs.OpenPositions[pair] = append(trs.OpenPositions[pair][:i], trs.OpenPositions[pair][i+1:]...)
+		trs.openPositionsMutex.Unlock()
 	}
 	return nil
 }
 
 func (trs *TradingRecordService) OpenPositionsCount() int {
 	count := 0
-	for _, openPairPositions := range trs.OpenPositions {
+	trs.openPositionsMutex.Lock()
+	openPositions := trs.OpenPositions
+	for _, openPairPositions := range openPositions {
 		count += len(openPairPositions)
 	}
+	trs.openPositionsMutex.Unlock()
 	return count
 }
 
@@ -66,5 +131,15 @@ func (trs *TradingRecordService) ClosedPositionsCount() int {
 }
 
 func (trs *TradingRecordService) HasOpenPositions(pair string) bool {
-	return len(trs.OpenPositions[pair]) > 0
+	trs.openPositionsMutex.Lock()
+	hasOpenPositions := len(trs.OpenPositions[pair]) > 0
+	trs.openPositionsMutex.Unlock()
+	return hasOpenPositions
+}
+
+func (trs *TradingRecordService) LastPosition(pair string) *models.Position {
+	trs.closedPositionsMutex.Lock()
+	position := trs.ClosedPositions[pair][len(trs.ClosedPositions[pair])-1]
+	trs.closedPositionsMutex.Unlock()
+	return position
 }
