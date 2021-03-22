@@ -25,8 +25,6 @@ func init() {
 }
 
 func (st *SignalTrader) Run() {
-	//bot := &bot_oscillator.MarketMaker{}
-	//rubBot(bot)
 	helpers.Logger.Infoln("🖖🏻 Signal Trader started")
 
 	targetCoin := os.Getenv("targetCoin")

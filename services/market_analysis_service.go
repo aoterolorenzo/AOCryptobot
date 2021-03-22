@@ -5,7 +5,6 @@ import (
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
 	"gitlab.com/aoterocom/AOCryptobot/models"
 	"gitlab.com/aoterocom/AOCryptobot/models/analytics"
-	"gitlab.com/aoterocom/AOCryptobot/strategies"
 	"sort"
 	"strings"
 	"time"
@@ -111,7 +110,6 @@ func (mas *MarketAnalysisService) chooseStrategy(pairAnalysisResult analytics.Pa
 			//D 	strategy.Mean / strategy.StdDev, bestRatio)
 		}
 	}
-	betterStrategy = interfaces.Strategy(&strategies.StopLossTriggerStrategy{})
 	//D fmt.Printf("Better Strategy: %s\n", betterStrategy)
 
 	return betterStrategy
