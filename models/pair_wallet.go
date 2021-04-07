@@ -6,3 +6,7 @@ type PairWallet struct {
 	Coin2FreeBalance   float64
 	Coin2LockedBalance float64
 }
+
+func NewPairWallet() PairWallet {
+	return PairWallet{}
+}

@@ -1,6 +1,7 @@
 package bot_oscillator
 
 import (
+	"github.com/sdcoffey/techan"
 	marketMakerServices "gitlab.com/aoterocom/AOCryptobot/bot_oscillator/services"
 	"gitlab.com/aoterocom/AOCryptobot/bot_oscillator/ui"
 	"gitlab.com/aoterocom/AOCryptobot/helpers"
@@ -15,11 +16,9 @@ import (
 	"time"
 )
 
-var logger = helpers.Logger{}
-
 type MarketMaker struct {
 	exchangeProvider interfaces.ExchangeService
-	marketService    *services.MarketService
+	marketService    *services.SingleMarketService
 	walletService    *services.WalletService
 	orderBookService *services.OrderBookService
 	logList          []string
@@ -33,31 +32,33 @@ func (mm *MarketMaker) Run() {
 	threadNumber, err := strconv.Atoi(os.Getenv("threadNumber"))
 	monitorWindow, err := strconv.Atoi(os.Getenv("monitorWindow"))
 	if err != nil {
-		logger.Fatalln("Error parsing threadNumber from strategy.env")
+		helpers.Logger.Fatalln("Error parsing threadNumber from strategy.env")
 	}
 
 	logListMutex := sync.Mutex{}
 	orderBookMutex := sync.Mutex{}
-	mm.exchangeProvider = &binance.BinanceService{}
+
+	bs := binance.NewBinanceService()
+	mm.exchangeProvider = bs
 
 	coin1 := strings.Split(os.Getenv("pair"), "-")[0]
 	coin2 := strings.Split(os.Getenv("pair"), "-")[1]
 	pair := strings.ReplaceAll(os.Getenv("pair"), "-", "")
-	mm.exchangeProvider.SetPair(pair)
-	mm.exchangeProvider.ConfigureClient()
 
-	mm.marketService = &services.MarketService{}
-	mm.walletService = &services.WalletService{Coin1: coin1, Coin2: coin2}
+	sms := services.NewSingleMarketService(*techan.NewTimeSeries(), pair)
+	mm.marketService = &sms
+	ws := services.NewWalletService(coin1, coin2)
+	mm.walletService = &ws
 	mm.walletService.InitWallet()
 	err = mm.walletService.UpdateWallet()
 	if err != nil {
-		logger.Fatalln("Error initially updating wallet" + err.Error())
+		helpers.Logger.Fatalln("Error initially updating wallet" + err.Error())
 	}
 	mm.orderBookService = &services.OrderBookService{}
 	mm.orderBookService.SetMutex(&orderBookMutex)
 	mm.orderBookService.Init()
 
-	mm.marketService.StartMonitor(pair)
+	mm.marketService.StartMultiMonitor(pair)
 	for {
 		time.Sleep(1 * time.Second)
 		if len(mm.marketService.MarketSnapshotsRecord) > 0 {
@@ -77,7 +78,7 @@ func (mm *MarketMaker) Run() {
 func (mm *MarketMaker) runThread(threadName string, logListMutex *sync.Mutex, waitTime int) {
 	marketMakerService := marketMakerServices.MarketMakerService{}
 	marketMakerService.SetServices(mm.exchangeProvider, mm.marketService, mm.walletService, mm.orderBookService)
-	marketMakerService.SetStrategy(&strategies.MACDCustomStrategy{})
+	marketMakerService.SetStrategy(&strategies.StochRSICustomStrategy{})
 	marketMakerService.SetLogListAndMutex(&mm.logList, logListMutex)
 	marketMakerService.SetThreadName(threadName)
 	marketMakerService.Execute(waitTime)
