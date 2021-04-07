@@ -14,6 +14,10 @@ type MarketDepth struct {
 	CenterPrice    float64
 }
 
+func NewMarketDepth() MarketDepth {
+	return MarketDepth{}
+}
+
 func (s *MarketDepth) Set(depthEvent *binance.WsDepthEvent) error {
 	if len(depthEvent.Asks) > 0 && len(depthEvent.Bids) > 0 {
 		s.WsDepthEvent = depthEvent

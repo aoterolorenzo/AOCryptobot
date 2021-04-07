@@ -6,17 +6,19 @@ import (
 )
 
 type ExchangeService interface {
-	SetPair(pair string)
-	ConfigureClient()
 	GetTotalBalance(asset string) (float64, error)
 	GetAvailableBalance(asset string) (float64, error)
 	GetLockedBalance(asset string) (float64, error)
-	MakeOrder(quantity float64, rate float64, orderType models.OrderType, orderSide techan.OrderSide) (models.Order, error)
-	MakeOCOOrder(quantity float64, rate float64, stopPrice float64, stopLimitPrice float64,
-		orderSide techan.OrderSide) (models.OCOOrder, error)
-	GetOrder(orderId int64) (models.Order, error)
-	CancelOrder(orderId int64) error
-	GetOrderStatus(orderId int64) (models.OrderStatusType, error)
-	DepthMonitor(marketSnapshotsRecord *[]models.MarketDepth)
-	TimeSeriesMonitor(interval string, timeSeries *techan.TimeSeries)
+	MakeOrder(pair string, quantity float64, rate float64,
+		orderType models.OrderType, orderSide models.OrderSide) (models.Order, error)
+	MakeOCOOrder(pair string, quantity float64, rate float64, stopPrice float64, stopLimitPrice float64,
+		orderSide models.OrderSide) (models.OCOOrder, error)
+	GetOrder(order models.Order) (models.Order, error)
+	CancelOrder(order models.Order) error
+	GetOrderStatus(order models.Order) (models.OrderStatusType, error)
+	DepthMonitor(pair string, marketSnapshotsRecord *[]models.MarketDepth)
+	TimeSeriesMonitor(pair string, interval string, timeSeries *techan.TimeSeries, active *bool)
+	GetSeries(pair string, interval string, limit int) (techan.TimeSeries, error)
+	GetMarkets(coin string) []string
+	GetPairInfo(pair string) *models.PairInfo
 }

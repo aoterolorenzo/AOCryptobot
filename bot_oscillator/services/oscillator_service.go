@@ -3,7 +3,6 @@ package services
 import (
 	"fmt"
 	"github.com/joho/godotenv"
-	"github.com/sdcoffey/techan"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/aoterocom/AOCryptobot/helpers"
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
@@ -15,8 +14,6 @@ import (
 	"time"
 )
 
-var logger = helpers.Logger{}
-
 const (
 	MONITOR = "MONITOR"
 	BUYING  = "BUYING"
@@ -25,7 +22,7 @@ const (
 
 type MarketMakerService struct {
 	ExchangeService      interfaces.ExchangeService
-	MarketService        *services.MarketService
+	MarketService        *services.SingleMarketService
 	WalletService        *services.WalletService
 	OrderBookService     *services.OrderBookService
 	strategy             interfaces.Strategy
@@ -72,7 +69,7 @@ func init() {
 	}
 }
 
-func (m *MarketMakerService) SetServices(exchangeService interfaces.ExchangeService, marketService *services.MarketService,
+func (m *MarketMakerService) SetServices(exchangeService interfaces.ExchangeService, marketService *services.SingleMarketService,
 	walletService *services.WalletService, orderBookService *services.OrderBookService) {
 	m.ExchangeService = exchangeService
 	m.MarketService = marketService
@@ -190,7 +187,7 @@ func (m *MarketMakerService) monitor() {
 	m.buyAmount = balanceA * m.pctAmountToTrade / 100
 
 	for {
-		buyOrder, err := m.ExchangeService.MakeOrder(m.buyAmount, m.buyRate, models.OrderTypeLimit, techan.BUY)
+		buyOrder, err := m.ExchangeService.MakeOrder(m.MarketService.Pair, m.buyAmount, m.buyRate, models.OrderTypeLimit, models.BUY)
 		if err != nil {
 			m.logAndList("e3: "+err.Error(), log.ErrorLevel)
 			m.buyAmount *= 0.998
@@ -214,7 +211,7 @@ func (m *MarketMakerService) monitor() {
 
 func (m *MarketMakerService) buying() {
 
-	order, err := m.ExchangeService.GetOrder(m.buyOrder.OrderID)
+	order, err := m.ExchangeService.GetOrder(m.buyOrder)
 	if err != nil {
 		m.logAndList("e4: "+err.Error(), log.ErrorLevel)
 		return
@@ -227,7 +224,7 @@ func (m *MarketMakerService) buying() {
 
 		err = m.WalletService.UpdateWallet()
 		if err != nil {
-			logger.Errorln("Error updating wallet" + err.Error())
+			helpers.Logger.Errorln("Error updating wallet" + err.Error())
 			return
 		}
 
@@ -240,7 +237,7 @@ func (m *MarketMakerService) buying() {
 		// Clean up the residues left by the decimals and broken thread amounts
 		freeAsset, err := m.WalletService.GetFreeAssetBalance(m.WalletService.Coin1)
 		if err != nil {
-			logger.Errorln("Error getting asset: " + err.Error())
+			helpers.Logger.Errorln("Error getting asset: " + err.Error())
 			return
 		}
 
@@ -250,7 +247,7 @@ func (m *MarketMakerService) buying() {
 		}
 
 		for {
-			m.sellOCOOrder, err = m.ExchangeService.MakeOCOOrder(m.sellAmount, m.sellRate, m.stopPrice, m.stopLimitPrice, techan.SELL)
+			m.sellOCOOrder, err = m.ExchangeService.MakeOCOOrder(m.MarketService.Pair, m.sellAmount, m.sellRate, m.stopPrice, m.stopLimitPrice, models.SELL)
 			if err != nil {
 				m.logAndList("e5: "+err.Error(), log.ErrorLevel)
 				m.sellAmount *= 0.998
@@ -271,7 +268,7 @@ func (m *MarketMakerService) buying() {
 
 	} else if order.Status != models.OrderStatusTypePartiallyFilled && m.state.Time+m.buyingTimeout < int(time.Now().Unix()) {
 		m.logAndList(fmt.Sprintf("Buy timeout. Order #%d canceled", m.buyOrder.OrderID), log.InfoLevel)
-		err = m.ExchangeService.CancelOrder(m.buyOrder.OrderID)
+		err = m.ExchangeService.CancelOrder(m.buyOrder)
 		if err != nil {
 			m.logAndList("e6: "+err.Error(), log.WarnLevel)
 		}
@@ -288,7 +285,7 @@ func (m *MarketMakerService) holding() {
 
 	for _, order := range m.sellOCOOrder.Orders {
 		// GET FIRST ORDER
-		tempSellOrder, err := m.ExchangeService.GetOrder(order.OrderID)
+		tempSellOrder, err := m.ExchangeService.GetOrder(order)
 		if err != nil {
 			return
 		}
@@ -306,7 +303,7 @@ func (m *MarketMakerService) holding() {
 			time.Sleep(time.Duration(m.afterStopLossCoolDown) * time.Second)
 
 			if err != nil {
-				logger.Errorln("Error updating wallet" + err.Error())
+				helpers.Logger.Errorln("Error updating wallet" + err.Error())
 				return
 			}
 			m.state.Current = MONITOR
@@ -319,7 +316,7 @@ func (m *MarketMakerService) holding() {
 			m.OrderBookService.AddFilledOrder(m.sellOCOOrder.Orders[1])
 			err = m.WalletService.UpdateWallet()
 			if err != nil {
-				logger.Errorln("Error updating wallet" + err.Error())
+				helpers.Logger.Errorln("Error updating wallet" + err.Error())
 				return
 			}
 			m.state.Current = MONITOR
@@ -332,28 +329,20 @@ func (m *MarketMakerService) holding() {
 	}
 
 	// CHECK SELL IS NOT TIMEOUT init + 2 dias = ahora
-	shouldExit := m.strategy.ShouldExit(&m.MarketService.TimeSeries)
-	if (m.sellingTimeout != 0 && m.state.Time+m.sellingTimeout < int(time.Now().Unix())) || shouldExit {
-
-		if shouldExit {
-			m.logAndList(fmt.Sprintf("Exit strategy signal received"), log.InfoLevel)
-		} else {
-			m.logAndList(fmt.Sprintf("Sell OCO order #%d/#%d timed out", m.sellOCOOrder.Orders[0].OrderID,
-				m.sellOCOOrder.Orders[1].OrderID), log.InfoLevel)
-		}
+	if m.sellingTimeout != 0 && m.state.Time+m.sellingTimeout < int(time.Now().Unix()) {
 
 		var orderA models.Order
 		var orderB models.Order
 		var err error
 		for {
-			orderA, err = m.ExchangeService.GetOrder(m.sellOCOOrder.Orders[0].OrderID)
+			orderA, err = m.ExchangeService.GetOrder(m.sellOCOOrder.Orders[0])
 			if err != nil {
 				m.logAndList("e7: "+err.Error(), log.ErrorLevel)
 				time.Sleep(500 * time.Millisecond)
 				continue
 			}
 
-			orderB, err = m.ExchangeService.GetOrder(m.sellOCOOrder.Orders[1].OrderID)
+			orderB, err = m.ExchangeService.GetOrder(m.sellOCOOrder.Orders[1])
 			if err != nil {
 				m.logAndList("e8: "+err.Error(), log.ErrorLevel)
 				time.Sleep(500 * time.Millisecond)
@@ -364,7 +353,7 @@ func (m *MarketMakerService) holding() {
 
 		if !(orderA.Status == models.OrderStatusTypePartiallyFilled) && !(orderA.Status == models.OrderStatusTypeFilled) &&
 			!(orderB.Status == models.OrderStatusTypePartiallyFilled) && !(orderB.Status == models.OrderStatusTypeFilled) {
-			err = m.ExchangeService.CancelOrder(orderA.OrderID)
+			err = m.ExchangeService.CancelOrder(orderA)
 			if err != nil {
 				m.logAndList("e9: "+err.Error(), log.ErrorLevel)
 				return
@@ -375,8 +364,8 @@ func (m *MarketMakerService) holding() {
 
 			m.OrderBookService.RemoveOpenOrder(m.sellOCOOrder.Orders[1])
 
-			order, err := m.ExchangeService.MakeOrder(m.sellAmount,
-				m.MarketService.MarketSnapshotsRecord[0].HigherBidPrice*(1-0.0005), models.OrderTypeMarket, techan.SELL)
+			order, err := m.ExchangeService.MakeOrder(m.MarketService.Pair, m.sellAmount,
+				m.MarketService.MarketSnapshotsRecord[0].HigherBidPrice*(1-0.0005), models.OrderTypeMarket, models.SELL)
 			if err != nil {
 				m.logAndList("e10: "+err.Error(), log.ErrorLevel)
 				return
@@ -385,7 +374,7 @@ func (m *MarketMakerService) holding() {
 			m.logAndList(fmt.Sprintf("Sell order #%d emitted at market price", order.OrderID), log.InfoLevel)
 			m.logAndList(fmt.Sprintf("Waiting to fill #%d sell timeout order", order.OrderID), log.InfoLevel)
 			for {
-				timeoutSellOrder, err := m.ExchangeService.GetOrder(order.OrderID)
+				timeoutSellOrder, err := m.ExchangeService.GetOrder(order)
 				if err != nil {
 					m.logAndList(" e11: "+err.Error(), log.ErrorLevel)
 					m.state.Current = MONITOR
@@ -399,7 +388,7 @@ func (m *MarketMakerService) holding() {
 					m.OrderBookService.AddFilledOrder(order)
 					err = m.WalletService.UpdateWallet()
 					if err != nil {
-						logger.Errorln("Error updating wallet" + err.Error())
+						helpers.Logger.Errorln("Error updating wallet" + err.Error())
 						return
 					}
 					m.state.Current = MONITOR
@@ -418,28 +407,28 @@ func (m *MarketMakerService) logAndList(msg string, loglevel log.Level) {
 
 	switch loglevel {
 	case log.PanicLevel:
-		logger.Panicln(m.threadName + ": " + msg)
+		helpers.Logger.Panicln(m.threadName + ": " + msg)
 		break
 	case log.FatalLevel:
-		logger.Fatalln(m.threadName + ": " + msg)
+		helpers.Logger.Fatalln(m.threadName + ": " + msg)
 		break
 	case log.ErrorLevel:
-		logger.Errorln(m.threadName + ": " + msg)
+		helpers.Logger.Errorln(m.threadName + ": " + msg)
 		break
 	case log.WarnLevel:
-		logger.Warnln(m.threadName + ": " + msg)
+		helpers.Logger.Warnln(m.threadName + ": " + msg)
 		break
 	case log.InfoLevel:
-		logger.Infoln(m.threadName + ": " + msg)
+		helpers.Logger.Infoln(m.threadName + ": " + msg)
 		m.logListMutex.Lock()
 		*m.logList = append(*m.logList, m.threadName+": "+msg)
 		m.logListMutex.Unlock()
 		break
 	case log.DebugLevel:
-		logger.Debugln(m.threadName + ": " + msg)
+		helpers.Logger.Debugln(m.threadName + ": " + msg)
 		break
 	case log.TraceLevel:
-		logger.Traceln(m.threadName + ": " + msg)
+		helpers.Logger.Traceln(m.threadName + ": " + msg)
 		break
 	}
 }

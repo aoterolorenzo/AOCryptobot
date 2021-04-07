@@ -12,6 +12,13 @@ type WalletService struct {
 	Coin2  string
 }
 
+func NewWalletService(coin1 string, coin2 string) WalletService {
+	return WalletService{
+		Coin1: coin1,
+		Coin2: coin2,
+	}
+}
+
 func (ws *WalletService) GetTotalAssetsBalance(price float64) float64 {
 	return (ws.Wallet.Coin1FreeBalance+ws.Wallet.Coin1LockedBalance)*price +
 		(ws.Wallet.Coin2FreeBalance + ws.Wallet.Coin2LockedBalance)
@@ -58,13 +65,13 @@ func (ws *WalletService) GetLockedAssetBalance(coin string) (float64, error) {
 }
 
 func (ws *WalletService) InitWallet() {
-	ws.Wallet = &models.PairWallet{}
+	wallet := models.NewPairWallet()
+	ws.Wallet = &wallet
 }
 
 func (ws *WalletService) UpdateWallet() error {
-	marketService := binance.BinanceService{}
-	marketService.SetPair(ws.Coin1 + ws.Coin2)
-	marketService.ConfigureClient()
+	// TODO: remove binance in favor of generic service
+	marketService := binance.NewBinanceService()
 
 	coin1FreeBalance, err := marketService.GetAvailableBalance(ws.Coin1)
 	if err != nil {
