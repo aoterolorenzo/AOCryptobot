@@ -36,7 +36,7 @@ Signal trading is here!! You can now develop your own strategies with some well 
 
 # Signal Trader Mode
 
-From the 07 APR 2020 merges, Market Maker mode are now combined with a Signal Trader mode.
+From 07 APR 2020, Market Maker mode are now combined with a Signal Trader mode.
 
 #### Technical indicators
 
@@ -44,9 +44,9 @@ With the help of sdcoffey/techan, we can use different technical indicators such
 
 #### Strategies
 
-Tech indicators can be combined now to create strategies, with enter and exit rules over candles samples. In the same strategy logic, we can set an analysis algorithm to calculate backtest results from past samples, and a set of rules to declare it tradeable or not, depending on the analysis results. This means you can create an aggresive strategy and set the activation rules on for example "strategy had at least a 5% of profit on the backtest analysis, a custom ration between average profit per operation and std deviation", etcetc
+Tech indicators can be combined now to create strategies, with enter and exit rules over candle samples. In the own strategy logic, we can set an analysis algorithm to calculate backtest results from past samples, and a set of rules to declare it tradeable or not, depending on the analysis results. This means you can create an aggresive strategy and set the activation rules on for example "strategy had at least a 5% of profit on the backtest analysis, a custom ration between average profit per operation and std deviation", etcetc
 
-The Signal Trader supports multiple streategies combinations, and provides another algorithm that is always running in the background, analysing each strategy in a backtest, and defining if it is tradeable or not. In the same way, exist a configurable function where to develop strategy choosing.
+The Signal Trader supports multiple streategy combinations, and provides another algorithm that is always running in background, analysing each strategy in a **backtest**, and defining if it is tradeable or not. In the same way, exists a configurable function where to develop strategy choosing.
 
 For example, after analyse ETHEUR:
 
@@ -59,11 +59,11 @@ Strategy 2 (lets say EMA based):
 Strategy 3 (lets say MACD based):
 - Backtest profit in last 5 days 4,31%, std dev 1,54%. Strategy says is tradeable
 
-Choice rules are take the best profit / std dev ratio, so MACD is selected. Start trading.
+Choice rules are taking the best profit / std dev ratio, so MACD is selected. Start trading.
 
 ##### Parametrizing strategies
 
-Alanlyzer algorithms can, in addition to calculate profits with backtest, try the backtests with different parameters. Lets say you develop an strategy with the enter rule "enter if EMA increases in X (being X a parameter)" and the exit rule the same bit inverse. **The backtesting algorithm can calculate the best parameters combination** in terms of profit. So the bot calculates not only your past profit but the best combination of parameters to get the maximum profit. This is because if the market is, for example, more stable, the slope necessary to get the bigger profit could be different than in other situations, so the slope (of the way you use the parameters) change in different market situations, **the bot will calculate it and proceed to trade always with the best combination**. Pretty amazing :)
+Alanlyzer algorithms can, in addition to calculate profits with backtest, try the backtests with different parameters. Lets say you develop an strategy with the enter rule "enter if EMA increases in X (being X a parameter)" and the exit rule the same, but inverse. **The backtesting algorithm can calculate the best parameters combination** in terms of profit. So the bot calculates not only your past profit but the best combination of parameters to get the maximum profit. This is because if the market is, for example, more stable, the slope necessary to get the bigger profit could be different than in other situations, so the slope (or what you parametrize) changes in different market situations, **the bot will calculate it and proceed to trade always with the best combination**. Pretty amazing :)
 
 
 # Market Maker Mode
