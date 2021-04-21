@@ -228,8 +228,10 @@ func (s *MACDCustomStrategy) Analyze(pair string, exchangeService interfaces.Exc
 	strategyAnalysis.StdDev = helpers.StdDev(profits, strategyAnalysis.Mean)
 
 	// Conditions to accept strategy:
-	if result15m1000.Profit > 2.8 && result15m500.Profit > 1.5 &&
-		(helpers.PositiveNegativeRatio(result15m500.ProfitList) >= 1 || len(result15m500.ProfitList) == 0) {
+	// Conditions to accept strategy:
+	if result15m1000.Profit > 3.2 && result15m500.Profit > 2.0 &&
+		(helpers.PositiveNegativeRatio(result15m500.ProfitList) >= 1.1 ||
+			(len(result15m500.ProfitList) == 0 && helpers.PositiveNegativeRatio(result15m1000.ProfitList) >= 1.1)) {
 
 		strategyAnalysis.IsCandidate = true
 		helpers.Logger.Debugln(fmt.Sprintf("✔️  Strategy is tradeable: 1000CandleProfit, %f 500CandleProfit %f, 60%% of the Mean %f, Std Deviation %f, 1000 Profit Ratio %f 500 Profit Ratio %f", result15m1000.Profit, result15m500.Profit,
