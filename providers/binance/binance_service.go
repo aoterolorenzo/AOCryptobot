@@ -262,13 +262,33 @@ func (binanceService *BinanceService) GetSeries(pair string, interval string, li
 		limit = 1000
 	}
 	timeSeries := techan.TimeSeries{}
-	klines, err := binanceService.binanceClient.NewKlinesService().Symbol(pair).
-		Interval(interval).Limit(limit).Do(context.Background())
-	if err != nil {
-		return timeSeries, err
+
+	intervalSeconds := helpers.StringIntervalToSeconds(interval)
+
+	provisionalLimit := limit % 1000
+	if provisionalLimit == 0 {
+		provisionalLimit = 1000
+	}
+	var startTime int64
+	var resultKlines []*binance.Kline
+	for iterations := 0; limit != 0; iterations++ {
+		startTime = time.Now().Unix() - int64(intervalSeconds)*int64(limit)
+		klines, err := binanceService.binanceClient.NewKlinesService().Symbol(pair).
+			Interval(interval).Limit(provisionalLimit).StartTime(startTime * 1000).Do(context.Background())
+		if err != nil {
+			fmt.Println(err)
+			return timeSeries, err
+		}
+
+		for _, k := range klines {
+			resultKlines = append(resultKlines, k)
+		}
+
+		limit -= provisionalLimit
+		provisionalLimit = 1000
 	}
 
-	for _, k := range klines {
+	for _, k := range resultKlines {
 		period := techan.NewTimePeriod(time.Unix(k.OpenTime/1000, 0), time.Minute*15)
 		candle := techan.NewCandle(period)
 		candle.OpenPrice = big.NewFromString(k.Open)

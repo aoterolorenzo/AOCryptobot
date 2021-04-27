@@ -16,5 +16,6 @@ require (
 	github.com/sdcoffey/techan v0.12.0
 	github.com/sirupsen/logrus v1.7.0
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
+	github.com/xhit/go-str2duration/v2 v2.0.0
 	gopkg.in/tucnak/telebot.v2 v2.3.5
 )
