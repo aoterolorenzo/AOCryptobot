@@ -176,9 +176,7 @@ func (s *StableStrategy) Analyze(pair string, exchangeService interfaces.Exchang
 	strategyAnalysis.StdDev = helpers.StdDev(profits, strategyAnalysis.Mean)
 
 	// Conditions to accept strategy:
-	if len(result15m1000.ProfitList) > 0 &&
-		helpers.AllValuesPositive(result15m1000.ProfitList) &&
-		helpers.AllValuesPositive(result15m500.ProfitList) {
+	if result15m1000.Profit > 0 && result15m500.Profit > 0.0 {
 
 		strategyAnalysis.IsCandidate = true
 		helpers.Logger.Debugln(fmt.Sprintf("✔️  Strategy is tradeable: 1000CandleProfit, %f 500CandleProfit %f, 60%% of the Mean %f, Std Deviation %f, 1000 Profit Ratio %f 500 Profit Ratio %f", result15m1000.Profit, result15m500.Profit,

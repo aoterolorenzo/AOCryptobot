@@ -175,10 +175,7 @@ func (s *StochRSICustomStrategy) Analyze(pair string, exchangeService interfaces
 	strategyAnalysis.StdDev = helpers.StdDev(profits, strategyAnalysis.Mean)
 
 	// Conditions to accept strategy:
-	if result15m500.Profit > 2.0 &&
-		(helpers.PositiveNegativeRatio(result15m500.ProfitList) >= 1 ||
-			(len(result15m500.ProfitList) == 0 && helpers.PositiveNegativeRatio(result15m1000.ProfitList) >= 1.0)) {
-
+	if result15m1000.Profit > 0 && result15m500.Profit > 0.0 {
 		strategyAnalysis.IsCandidate = true
 		helpers.Logger.Debugln(fmt.Sprintf("✔️  Strategy is tradeable: 1000CandleProfit, %f 500CandleProfit %f, 60%% of the Mean %f, Std Deviation %f, 1000 Profit Ratio %f 500 Profit Ratio %f", result15m1000.Profit, result15m500.Profit,
 			strategyAnalysis.Mean/0.6, strategyAnalysis.StdDev, helpers.PositiveNegativeRatio(result15m1000.ProfitList),
