@@ -1,6 +1,10 @@
 package helpers
 
-import "math"
+import (
+	"github.com/xhit/go-str2duration/v2"
+	"math"
+	"strings"
+)
 
 func PositiveNegativeRatio(list []float64) float64 {
 	countPositive := 0
@@ -42,4 +46,14 @@ func AllValuesPositive(list []float64) bool {
 		}
 	}
 	return true
+}
+
+func StringIntervalToSeconds(interval string) float64 {
+	interval = strings.ReplaceAll(interval, "S", "w")
+	interval = strings.ToLower(interval)
+	durationFromString, err := str2duration.ParseDuration(interval)
+	if err != nil {
+		return -1.0
+	}
+	return durationFromString.Seconds()
 }
