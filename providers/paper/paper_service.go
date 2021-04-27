@@ -58,11 +58,11 @@ func (paperService *PaperService) MakeOrder(pair string, quantity float64, rate 
 	rateString = fmt.Sprintf("%f", rate)
 
 	if orderSide == models.BUY {
-		quantity /= rate * (1 - 0.0006)
+		quantity /= rate
 		quantityString = fmt.Sprintf("%f", quantity)
 	}
 
-	cumulativeQuantity := quantity * rate * (1 - 0.0006)
+	cumulativeQuantity := quantity * rate
 	cumulativeQuantityString := fmt.Sprintf("%f", cumulativeQuantity)
 
 	//Convert techan orderSide to binance SideType
