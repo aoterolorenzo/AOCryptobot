@@ -1,0 +1,2404 @@
+{
+	"Candles": [
+		{
+			"Period": {
+				"Start": "2021-04-25T21:15:00+02:00",
+				"End": "2021-04-25T21:30:00+02:00"
+			},
+			"OpenPrice": 1918.87,
+			"ClosePrice": 1905.03,
+			"MaxPrice": 1920.92,
+			"MinPrice": 1902.41,
+			"Volume": 401.96753,
+			"TradeCount": 841
+		},
+		{
+			"Period": {
+				"Start": "2021-04-25T21:30:00+02:00",
+				"End": "2021-04-25T21:45:00+02:00"
+			},
+			"OpenPrice": 1905.03,
+			"ClosePrice": 1900.29,
+			"MaxPrice": 1917.42,
+			"MinPrice": 1898.43,
+			"Volume": 478.11373,
+			"TradeCount": 1027
+		},
+		{
+			"Period": {
+				"Start": "2021-04-25T21:45:00+02:00",
+				"End": "2021-04-25T22:00:00+02:00"
+			},
+			"OpenPrice": 1900.48,
+			"ClosePrice": 1886.69,
+			"MaxPrice": 1907.62,
+			"MinPrice": 1883.93,
+			"Volume": 658.37519,
+			"TradeCount": 1526
+		},
+		{
+			"Period": {
+				"Start": "2021-04-25T22:00:00+02:00",
+				"End": "2021-04-25T22:15:00+02:00"
+			},
+			"OpenPrice": 1886.7,
+			"ClosePrice": 1896.33,
+			"MaxPrice": 1900.02,
+			"MinPrice": 1881.29,
+			"Volume": 568.43228,
+			"TradeCount": 1328
+		},
+		{
+			"Period": {
+				"Start": "2021-04-25T22:15:00+02:00",
+				"End": "2021-04-25T22:30:00+02:00"
+			},
+			"OpenPrice": 1896.18,
+			"ClosePrice": 1901.15,
+			"MaxPrice": 1902.72,
+			"MinPrice": 1892.29,
+			"Volume": 426.21269,
+			"TradeCount": 1084
+		},
+		{
+			"Period": {
+				"Start": "2021-04-25T22:30:00+02:00",
+				"End": "2021-04-25T22:45:00+02:00"
+			},
+			"OpenPrice": 1901.33,
+			"ClosePrice": 1889.86,
+			"MaxPrice": 1901.85,
+			"MinPrice": 1882,
+			"Volume": 491.20613,
+			"TradeCount": 1308
+		},
+		{
+			"Period": {
+				"Start": "2021-04-25T22:45:00+02:00",
+				"End": "2021-04-25T23:00:00+02:00"
+			},
+			"OpenPrice": 1889.98,
+			"ClosePrice": 1842.89,
+			"MaxPrice": 1889.98,
+			"MinPrice": 1838.64,
+			"Volume": 1696.1829,
+			"TradeCount": 4015
+		},
+		{
+			"Period": {
+				"Start": "2021-04-25T23:00:00+02:00",
+				"End": "2021-04-25T23:15:00+02:00"
+			},
+			"OpenPrice": 1843.91,
+			"ClosePrice": 1859.3,
+			"MaxPrice": 1862.44,
+			"MinPrice": 1830,
+			"Volume": 1253.38514,
+			"TradeCount": 3111
+		},
+		{
+			"Period": {
+				"Start": "2021-04-25T23:15:00+02:00",
+				"End": "2021-04-25T23:30:00+02:00"
+			},
+			"OpenPrice": 1859.06,
+			"ClosePrice": 1841.35,
+			"MaxPrice": 1864.49,
+			"MinPrice": 1835.86,
+			"Volume": 609.82644,
+			"TradeCount": 1866
+		},
+		{
+			"Period": {
+				"Start": "2021-04-25T23:30:00+02:00",
+				"End": "2021-04-25T23:45:00+02:00"
+			},
+			"OpenPrice": 1841.35,
+			"ClosePrice": 1809.07,
+			"MaxPrice": 1841.35,
+			"MinPrice": 1802,
+			"Volume": 1150.74253,
+			"TradeCount": 2819
+		},
+		{
+			"Period": {
+				"Start": "2021-04-25T23:45:00+02:00",
+				"End": "2021-04-26T00:00:00+02:00"
+			},
+			"OpenPrice": 1808.75,
+			"ClosePrice": 1837.92,
+			"MaxPrice": 1845.85,
+			"MinPrice": 1805,
+			"Volume": 795.82438,
+			"TradeCount": 2118
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T00:00:00+02:00",
+				"End": "2021-04-26T00:15:00+02:00"
+			},
+			"OpenPrice": 1837.39,
+			"ClosePrice": 1871.53,
+			"MaxPrice": 1872.74,
+			"MinPrice": 1832.32,
+			"Volume": 618.18248,
+			"TradeCount": 1923
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T00:15:00+02:00",
+				"End": "2021-04-26T00:30:00+02:00"
+			},
+			"OpenPrice": 1872.53,
+			"ClosePrice": 1864.32,
+			"MaxPrice": 1876.6,
+			"MinPrice": 1862,
+			"Volume": 616.76982,
+			"TradeCount": 1724
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T00:30:00+02:00",
+				"End": "2021-04-26T00:45:00+02:00"
+			},
+			"OpenPrice": 1864.45,
+			"ClosePrice": 1886.61,
+			"MaxPrice": 1890,
+			"MinPrice": 1853.51,
+			"Volume": 1075.39559,
+			"TradeCount": 2208
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T00:45:00+02:00",
+				"End": "2021-04-26T01:00:00+02:00"
+			},
+			"OpenPrice": 1887.12,
+			"ClosePrice": 1891.63,
+			"MaxPrice": 1897.62,
+			"MinPrice": 1882.8,
+			"Volume": 775.16034,
+			"TradeCount": 1944
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T01:00:00+02:00",
+				"End": "2021-04-26T01:15:00+02:00"
+			},
+			"OpenPrice": 1892.93,
+			"ClosePrice": 1885.44,
+			"MaxPrice": 1896.26,
+			"MinPrice": 1877.15,
+			"Volume": 394.19136,
+			"TradeCount": 1149
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T01:15:00+02:00",
+				"End": "2021-04-26T01:30:00+02:00"
+			},
+			"OpenPrice": 1885.45,
+			"ClosePrice": 1910.35,
+			"MaxPrice": 1915.77,
+			"MinPrice": 1885.43,
+			"Volume": 826.55479,
+			"TradeCount": 1941
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T01:30:00+02:00",
+				"End": "2021-04-26T01:45:00+02:00"
+			},
+			"OpenPrice": 1909.27,
+			"ClosePrice": 1907.06,
+			"MaxPrice": 1915.5,
+			"MinPrice": 1900.87,
+			"Volume": 548.50893,
+			"TradeCount": 1239
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T01:45:00+02:00",
+				"End": "2021-04-26T02:00:00+02:00"
+			},
+			"OpenPrice": 1907.06,
+			"ClosePrice": 1925.37,
+			"MaxPrice": 1925.87,
+			"MinPrice": 1900.46,
+			"Volume": 605.70156,
+			"TradeCount": 1311
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T02:00:00+02:00",
+				"End": "2021-04-26T02:15:00+02:00"
+			},
+			"OpenPrice": 1925.53,
+			"ClosePrice": 1976.39,
+			"MaxPrice": 1984.73,
+			"MinPrice": 1911.5,
+			"Volume": 1924.1695,
+			"TradeCount": 4307
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T02:15:00+02:00",
+				"End": "2021-04-26T02:30:00+02:00"
+			},
+			"OpenPrice": 1976.15,
+			"ClosePrice": 1984.1,
+			"MaxPrice": 1999,
+			"MinPrice": 1976.15,
+			"Volume": 1131.73248,
+			"TradeCount": 2765
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T02:30:00+02:00",
+				"End": "2021-04-26T02:45:00+02:00"
+			},
+			"OpenPrice": 1986.11,
+			"ClosePrice": 1996.36,
+			"MaxPrice": 2000.47,
+			"MinPrice": 1975.38,
+			"Volume": 1003.87594,
+			"TradeCount": 2407
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T02:45:00+02:00",
+				"End": "2021-04-26T03:00:00+02:00"
+			},
+			"OpenPrice": 1995.67,
+			"ClosePrice": 1998.43,
+			"MaxPrice": 1999.96,
+			"MinPrice": 1989,
+			"Volume": 287.25494,
+			"TradeCount": 904
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T03:00:00+02:00",
+				"End": "2021-04-26T03:15:00+02:00"
+			},
+			"OpenPrice": 1999.23,
+			"ClosePrice": 2001.94,
+			"MaxPrice": 2012,
+			"MinPrice": 1990.8,
+			"Volume": 509.05955,
+			"TradeCount": 1495
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T03:15:00+02:00",
+				"End": "2021-04-26T03:30:00+02:00"
+			},
+			"OpenPrice": 2002.08,
+			"ClosePrice": 2001.34,
+			"MaxPrice": 2008.55,
+			"MinPrice": 1992.1,
+			"Volume": 615.36071,
+			"TradeCount": 1201
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T03:30:00+02:00",
+				"End": "2021-04-26T03:45:00+02:00"
+			},
+			"OpenPrice": 2001.66,
+			"ClosePrice": 2018.88,
+			"MaxPrice": 2028.93,
+			"MinPrice": 2001.66,
+			"Volume": 703.4799,
+			"TradeCount": 2018
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T03:45:00+02:00",
+				"End": "2021-04-26T04:00:00+02:00"
+			},
+			"OpenPrice": 2019.28,
+			"ClosePrice": 2025,
+			"MaxPrice": 2031.12,
+			"MinPrice": 2013,
+			"Volume": 543.9952,
+			"TradeCount": 1794
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T04:00:00+02:00",
+				"End": "2021-04-26T04:15:00+02:00"
+			},
+			"OpenPrice": 2024.9,
+			"ClosePrice": 2021.07,
+			"MaxPrice": 2045.68,
+			"MinPrice": 2021.07,
+			"Volume": 538.25956,
+			"TradeCount": 1616
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T04:15:00+02:00",
+				"End": "2021-04-26T04:30:00+02:00"
+			},
+			"OpenPrice": 2021.41,
+			"ClosePrice": 2016.07,
+			"MaxPrice": 2022.18,
+			"MinPrice": 2003.22,
+			"Volume": 563.66874,
+			"TradeCount": 1265
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T04:30:00+02:00",
+				"End": "2021-04-26T04:45:00+02:00"
+			},
+			"OpenPrice": 2016.02,
+			"ClosePrice": 2016.66,
+			"MaxPrice": 2018.04,
+			"MinPrice": 2003.73,
+			"Volume": 269.9624,
+			"TradeCount": 657
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T04:45:00+02:00",
+				"End": "2021-04-26T05:00:00+02:00"
+			},
+			"OpenPrice": 2016.66,
+			"ClosePrice": 2026.75,
+			"MaxPrice": 2033.15,
+			"MinPrice": 2015.09,
+			"Volume": 305.95015,
+			"TradeCount": 739
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T05:00:00+02:00",
+				"End": "2021-04-26T05:15:00+02:00"
+			},
+			"OpenPrice": 2027.02,
+			"ClosePrice": 2034.53,
+			"MaxPrice": 2035.44,
+			"MinPrice": 2027.02,
+			"Volume": 219.68218,
+			"TradeCount": 630
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T05:15:00+02:00",
+				"End": "2021-04-26T05:30:00+02:00"
+			},
+			"OpenPrice": 2035,
+			"ClosePrice": 2021.45,
+			"MaxPrice": 2035.47,
+			"MinPrice": 2019.59,
+			"Volume": 249.00679,
+			"TradeCount": 673
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T05:30:00+02:00",
+				"End": "2021-04-26T05:45:00+02:00"
+			},
+			"OpenPrice": 2021.66,
+			"ClosePrice": 2027.43,
+			"MaxPrice": 2027.56,
+			"MinPrice": 2015.96,
+			"Volume": 302.11564,
+			"TradeCount": 647
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T05:45:00+02:00",
+				"End": "2021-04-26T06:00:00+02:00"
+			},
+			"OpenPrice": 2027.88,
+			"ClosePrice": 2033.91,
+			"MaxPrice": 2036.87,
+			"MinPrice": 2025.22,
+			"Volume": 396.60887,
+			"TradeCount": 954
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T06:00:00+02:00",
+				"End": "2021-04-26T06:15:00+02:00"
+			},
+			"OpenPrice": 2034.5,
+			"ClosePrice": 2048.39,
+			"MaxPrice": 2053.43,
+			"MinPrice": 2034.5,
+			"Volume": 885.81058,
+			"TradeCount": 2047
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T06:15:00+02:00",
+				"End": "2021-04-26T06:30:00+02:00"
+			},
+			"OpenPrice": 2048.43,
+			"ClosePrice": 2039.62,
+			"MaxPrice": 2049,
+			"MinPrice": 2037.57,
+			"Volume": 385.03034,
+			"TradeCount": 876
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T06:30:00+02:00",
+				"End": "2021-04-26T06:45:00+02:00"
+			},
+			"OpenPrice": 2039.99,
+			"ClosePrice": 2033.56,
+			"MaxPrice": 2040,
+			"MinPrice": 2028.31,
+			"Volume": 399.69383,
+			"TradeCount": 1086
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T06:45:00+02:00",
+				"End": "2021-04-26T07:00:00+02:00"
+			},
+			"OpenPrice": 2033.43,
+			"ClosePrice": 2033,
+			"MaxPrice": 2039.99,
+			"MinPrice": 2031.57,
+			"Volume": 248.39884,
+			"TradeCount": 730
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T07:00:00+02:00",
+				"End": "2021-04-26T07:15:00+02:00"
+			},
+			"OpenPrice": 2033.68,
+			"ClosePrice": 2015.65,
+			"MaxPrice": 2038.9,
+			"MinPrice": 2013.89,
+			"Volume": 429.51546,
+			"TradeCount": 1124
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T07:15:00+02:00",
+				"End": "2021-04-26T07:30:00+02:00"
+			},
+			"OpenPrice": 2016.21,
+			"ClosePrice": 2032.81,
+			"MaxPrice": 2033.67,
+			"MinPrice": 2016.21,
+			"Volume": 301.28295,
+			"TradeCount": 920
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T07:30:00+02:00",
+				"End": "2021-04-26T07:45:00+02:00"
+			},
+			"OpenPrice": 2032.87,
+			"ClosePrice": 2038.79,
+			"MaxPrice": 2041.03,
+			"MinPrice": 2032.87,
+			"Volume": 344.62378,
+			"TradeCount": 1130
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T07:45:00+02:00",
+				"End": "2021-04-26T08:00:00+02:00"
+			},
+			"OpenPrice": 2038.3,
+			"ClosePrice": 2047.23,
+			"MaxPrice": 2049.99,
+			"MinPrice": 2034.72,
+			"Volume": 521.73874,
+			"TradeCount": 1508
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T08:00:00+02:00",
+				"End": "2021-04-26T08:15:00+02:00"
+			},
+			"OpenPrice": 2047.2,
+			"ClosePrice": 2062.97,
+			"MaxPrice": 2063.57,
+			"MinPrice": 2038.83,
+			"Volume": 700.39272,
+			"TradeCount": 1905
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T08:15:00+02:00",
+				"End": "2021-04-26T08:30:00+02:00"
+			},
+			"OpenPrice": 2063.57,
+			"ClosePrice": 2054.11,
+			"MaxPrice": 2064.58,
+			"MinPrice": 2053.32,
+			"Volume": 860.76256,
+			"TradeCount": 1796
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T08:30:00+02:00",
+				"End": "2021-04-26T08:45:00+02:00"
+			},
+			"OpenPrice": 2054.12,
+			"ClosePrice": 2062.57,
+			"MaxPrice": 2064.12,
+			"MinPrice": 2053.98,
+			"Volume": 891.40859,
+			"TradeCount": 1890
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T08:45:00+02:00",
+				"End": "2021-04-26T09:00:00+02:00"
+			},
+			"OpenPrice": 2062.36,
+			"ClosePrice": 2052.58,
+			"MaxPrice": 2062.74,
+			"MinPrice": 2050,
+			"Volume": 631.15369,
+			"TradeCount": 1562
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T09:00:00+02:00",
+				"End": "2021-04-26T09:15:00+02:00"
+			},
+			"OpenPrice": 2052.13,
+			"ClosePrice": 2035.4,
+			"MaxPrice": 2054.4,
+			"MinPrice": 2032.21,
+			"Volume": 1234.22251,
+			"TradeCount": 2544
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T09:15:00+02:00",
+				"End": "2021-04-26T09:30:00+02:00"
+			},
+			"OpenPrice": 2035.39,
+			"ClosePrice": 2035.71,
+			"MaxPrice": 2036.83,
+			"MinPrice": 2024.07,
+			"Volume": 675.9819,
+			"TradeCount": 1876
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T09:30:00+02:00",
+				"End": "2021-04-26T09:45:00+02:00"
+			},
+			"OpenPrice": 2035.76,
+			"ClosePrice": 2043.47,
+			"MaxPrice": 2043.47,
+			"MinPrice": 2032.95,
+			"Volume": 761.256,
+			"TradeCount": 1770
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T09:45:00+02:00",
+				"End": "2021-04-26T10:00:00+02:00"
+			},
+			"OpenPrice": 2043.47,
+			"ClosePrice": 2031.51,
+			"MaxPrice": 2046.13,
+			"MinPrice": 2024.78,
+			"Volume": 1086.74204,
+			"TradeCount": 2219
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T10:00:00+02:00",
+				"End": "2021-04-26T10:15:00+02:00"
+			},
+			"OpenPrice": 2031.45,
+			"ClosePrice": 2016.26,
+			"MaxPrice": 2036,
+			"MinPrice": 2015.46,
+			"Volume": 584.94027,
+			"TradeCount": 1613
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T10:15:00+02:00",
+				"End": "2021-04-26T10:30:00+02:00"
+			},
+			"OpenPrice": 2017.16,
+			"ClosePrice": 2023.3,
+			"MaxPrice": 2027.27,
+			"MinPrice": 2014.39,
+			"Volume": 696.27816,
+			"TradeCount": 1563
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T10:30:00+02:00",
+				"End": "2021-04-26T10:45:00+02:00"
+			},
+			"OpenPrice": 2023.3,
+			"ClosePrice": 2021.18,
+			"MaxPrice": 2030.9,
+			"MinPrice": 2018.04,
+			"Volume": 680.83687,
+			"TradeCount": 1463
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T10:45:00+02:00",
+				"End": "2021-04-26T11:00:00+02:00"
+			},
+			"OpenPrice": 2021.18,
+			"ClosePrice": 2020.41,
+			"MaxPrice": 2025.18,
+			"MinPrice": 2011.3,
+			"Volume": 583.16569,
+			"TradeCount": 1309
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T11:00:00+02:00",
+				"End": "2021-04-26T11:15:00+02:00"
+			},
+			"OpenPrice": 2019.72,
+			"ClosePrice": 2012.43,
+			"MaxPrice": 2022.1,
+			"MinPrice": 2002.8,
+			"Volume": 753.79433,
+			"TradeCount": 1730
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T11:15:00+02:00",
+				"End": "2021-04-26T11:30:00+02:00"
+			},
+			"OpenPrice": 2011.98,
+			"ClosePrice": 2008.78,
+			"MaxPrice": 2016.88,
+			"MinPrice": 2005.25,
+			"Volume": 596.50329,
+			"TradeCount": 1625
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T11:30:00+02:00",
+				"End": "2021-04-26T11:45:00+02:00"
+			},
+			"OpenPrice": 2008.52,
+			"ClosePrice": 2027.88,
+			"MaxPrice": 2027.88,
+			"MinPrice": 2008.52,
+			"Volume": 353.27382,
+			"TradeCount": 1102
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T11:45:00+02:00",
+				"End": "2021-04-26T12:00:00+02:00"
+			},
+			"OpenPrice": 2027.77,
+			"ClosePrice": 2057.45,
+			"MaxPrice": 2058.3,
+			"MinPrice": 2026.65,
+			"Volume": 883.06076,
+			"TradeCount": 2490
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T12:00:00+02:00",
+				"End": "2021-04-26T12:15:00+02:00"
+			},
+			"OpenPrice": 2057.45,
+			"ClosePrice": 2054.63,
+			"MaxPrice": 2059.98,
+			"MinPrice": 2045.84,
+			"Volume": 697.66132,
+			"TradeCount": 1899
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T12:15:00+02:00",
+				"End": "2021-04-26T12:30:00+02:00"
+			},
+			"OpenPrice": 2054.64,
+			"ClosePrice": 2066.99,
+			"MaxPrice": 2069.18,
+			"MinPrice": 2048.14,
+			"Volume": 947.0219,
+			"TradeCount": 1957
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T12:30:00+02:00",
+				"End": "2021-04-26T12:45:00+02:00"
+			},
+			"OpenPrice": 2067.35,
+			"ClosePrice": 2055.67,
+			"MaxPrice": 2067.35,
+			"MinPrice": 2054.27,
+			"Volume": 540.96082,
+			"TradeCount": 1450
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T12:45:00+02:00",
+				"End": "2021-04-26T13:00:00+02:00"
+			},
+			"OpenPrice": 2055.67,
+			"ClosePrice": 2052.87,
+			"MaxPrice": 2060.37,
+			"MinPrice": 2050,
+			"Volume": 494.14457,
+			"TradeCount": 1290
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T13:00:00+02:00",
+				"End": "2021-04-26T13:15:00+02:00"
+			},
+			"OpenPrice": 2052.84,
+			"ClosePrice": 2068.72,
+			"MaxPrice": 2070.42,
+			"MinPrice": 2052.84,
+			"Volume": 570.72605,
+			"TradeCount": 1499
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T13:15:00+02:00",
+				"End": "2021-04-26T13:30:00+02:00"
+			},
+			"OpenPrice": 2068.52,
+			"ClosePrice": 2085.5,
+			"MaxPrice": 2089.32,
+			"MinPrice": 2063.02,
+			"Volume": 917.62457,
+			"TradeCount": 2601
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T13:30:00+02:00",
+				"End": "2021-04-26T13:45:00+02:00"
+			},
+			"OpenPrice": 2085.6,
+			"ClosePrice": 2090.51,
+			"MaxPrice": 2093.45,
+			"MinPrice": 2078.36,
+			"Volume": 687.43584,
+			"TradeCount": 2050
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T13:45:00+02:00",
+				"End": "2021-04-26T14:00:00+02:00"
+			},
+			"OpenPrice": 2090.18,
+			"ClosePrice": 2089.15,
+			"MaxPrice": 2092.44,
+			"MinPrice": 2082.25,
+			"Volume": 730.23594,
+			"TradeCount": 1806
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T14:00:00+02:00",
+				"End": "2021-04-26T14:15:00+02:00"
+			},
+			"OpenPrice": 2089.06,
+			"ClosePrice": 2084.24,
+			"MaxPrice": 2093,
+			"MinPrice": 2071.31,
+			"Volume": 800.57518,
+			"TradeCount": 2061
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T14:15:00+02:00",
+				"End": "2021-04-26T14:30:00+02:00"
+			},
+			"OpenPrice": 2084.17,
+			"ClosePrice": 2088.24,
+			"MaxPrice": 2089.65,
+			"MinPrice": 2072.15,
+			"Volume": 449.26246,
+			"TradeCount": 1563
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T14:30:00+02:00",
+				"End": "2021-04-26T14:45:00+02:00"
+			},
+			"OpenPrice": 2088.24,
+			"ClosePrice": 2084.84,
+			"MaxPrice": 2089.92,
+			"MinPrice": 2078.54,
+			"Volume": 926.4578,
+			"TradeCount": 2037
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T14:45:00+02:00",
+				"End": "2021-04-26T15:00:00+02:00"
+			},
+			"OpenPrice": 2084.52,
+			"ClosePrice": 2059,
+			"MaxPrice": 2085.83,
+			"MinPrice": 2058.97,
+			"Volume": 796.15311,
+			"TradeCount": 2030
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T15:00:00+02:00",
+				"End": "2021-04-26T15:15:00+02:00"
+			},
+			"OpenPrice": 2059.35,
+			"ClosePrice": 2053.71,
+			"MaxPrice": 2069.83,
+			"MinPrice": 2053.24,
+			"Volume": 640.09984,
+			"TradeCount": 1558
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T15:15:00+02:00",
+				"End": "2021-04-26T15:30:00+02:00"
+			},
+			"OpenPrice": 2054.34,
+			"ClosePrice": 2070.77,
+			"MaxPrice": 2072.66,
+			"MinPrice": 2054.34,
+			"Volume": 494.13903,
+			"TradeCount": 1263
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T15:30:00+02:00",
+				"End": "2021-04-26T15:45:00+02:00"
+			},
+			"OpenPrice": 2070.79,
+			"ClosePrice": 2086.72,
+			"MaxPrice": 2086.72,
+			"MinPrice": 2068.11,
+			"Volume": 572.52808,
+			"TradeCount": 1297
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T15:45:00+02:00",
+				"End": "2021-04-26T16:00:00+02:00"
+			},
+			"OpenPrice": 2086.74,
+			"ClosePrice": 2071.7,
+			"MaxPrice": 2086.81,
+			"MinPrice": 2067.08,
+			"Volume": 422.679,
+			"TradeCount": 1267
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T16:00:00+02:00",
+				"End": "2021-04-26T16:15:00+02:00"
+			},
+			"OpenPrice": 2070.79,
+			"ClosePrice": 2070.41,
+			"MaxPrice": 2083.83,
+			"MinPrice": 2065,
+			"Volume": 418.04599,
+			"TradeCount": 1214
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T16:15:00+02:00",
+				"End": "2021-04-26T16:30:00+02:00"
+			},
+			"OpenPrice": 2071.48,
+			"ClosePrice": 2063.3,
+			"MaxPrice": 2072.55,
+			"MinPrice": 2060.31,
+			"Volume": 375.9004,
+			"TradeCount": 1012
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T16:30:00+02:00",
+				"End": "2021-04-26T16:45:00+02:00"
+			},
+			"OpenPrice": 2063.3,
+			"ClosePrice": 2063.49,
+			"MaxPrice": 2068.32,
+			"MinPrice": 2055,
+			"Volume": 515.97585,
+			"TradeCount": 989
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T16:45:00+02:00",
+				"End": "2021-04-26T17:00:00+02:00"
+			},
+			"OpenPrice": 2063.08,
+			"ClosePrice": 2061.94,
+			"MaxPrice": 2071.83,
+			"MinPrice": 2058.6,
+			"Volume": 723.33616,
+			"TradeCount": 1223
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T17:00:00+02:00",
+				"End": "2021-04-26T17:15:00+02:00"
+			},
+			"OpenPrice": 2062.41,
+			"ClosePrice": 2055.2,
+			"MaxPrice": 2072.11,
+			"MinPrice": 2051.78,
+			"Volume": 717.17499,
+			"TradeCount": 1473
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T17:15:00+02:00",
+				"End": "2021-04-26T17:30:00+02:00"
+			},
+			"OpenPrice": 2054.22,
+			"ClosePrice": 2066.81,
+			"MaxPrice": 2069.15,
+			"MinPrice": 2052.06,
+			"Volume": 376.28452,
+			"TradeCount": 990
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T17:30:00+02:00",
+				"End": "2021-04-26T17:45:00+02:00"
+			},
+			"OpenPrice": 2066.8,
+			"ClosePrice": 2072.01,
+			"MaxPrice": 2075.3,
+			"MinPrice": 2066.46,
+			"Volume": 407.2991,
+			"TradeCount": 852
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T17:45:00+02:00",
+				"End": "2021-04-26T18:00:00+02:00"
+			},
+			"OpenPrice": 2072.11,
+			"ClosePrice": 2082.13,
+			"MaxPrice": 2083.54,
+			"MinPrice": 2070,
+			"Volume": 261.96394,
+			"TradeCount": 981
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T18:00:00+02:00",
+				"End": "2021-04-26T18:15:00+02:00"
+			},
+			"OpenPrice": 2082.27,
+			"ClosePrice": 2060.96,
+			"MaxPrice": 2096,
+			"MinPrice": 2057,
+			"Volume": 1529.27158,
+			"TradeCount": 3257
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T18:15:00+02:00",
+				"End": "2021-04-26T18:30:00+02:00"
+			},
+			"OpenPrice": 2061.17,
+			"ClosePrice": 2043.67,
+			"MaxPrice": 2064.41,
+			"MinPrice": 2035.72,
+			"Volume": 772.59306,
+			"TradeCount": 2264
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T18:30:00+02:00",
+				"End": "2021-04-26T18:45:00+02:00"
+			},
+			"OpenPrice": 2043.81,
+			"ClosePrice": 2049.82,
+			"MaxPrice": 2060.15,
+			"MinPrice": 2036.64,
+			"Volume": 390.98884,
+			"TradeCount": 1393
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T18:45:00+02:00",
+				"End": "2021-04-26T19:00:00+02:00"
+			},
+			"OpenPrice": 2049.58,
+			"ClosePrice": 2060.75,
+			"MaxPrice": 2063,
+			"MinPrice": 2049.58,
+			"Volume": 317.12522,
+			"TradeCount": 935
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T19:00:00+02:00",
+				"End": "2021-04-26T19:15:00+02:00"
+			},
+			"OpenPrice": 2060.77,
+			"ClosePrice": 2075.85,
+			"MaxPrice": 2082.7,
+			"MinPrice": 2060.18,
+			"Volume": 390.5608,
+			"TradeCount": 1254
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T19:15:00+02:00",
+				"End": "2021-04-26T19:30:00+02:00"
+			},
+			"OpenPrice": 2075.76,
+			"ClosePrice": 2090.83,
+			"MaxPrice": 2099.28,
+			"MinPrice": 2073.45,
+			"Volume": 627.67441,
+			"TradeCount": 1943
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T19:30:00+02:00",
+				"End": "2021-04-26T19:45:00+02:00"
+			},
+			"OpenPrice": 2091.62,
+			"ClosePrice": 2086.78,
+			"MaxPrice": 2093,
+			"MinPrice": 2077.78,
+			"Volume": 414.99998,
+			"TradeCount": 1179
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T19:45:00+02:00",
+				"End": "2021-04-26T20:00:00+02:00"
+			},
+			"OpenPrice": 2086.7,
+			"ClosePrice": 2082.42,
+			"MaxPrice": 2089.59,
+			"MinPrice": 2074.2,
+			"Volume": 380.2922,
+			"TradeCount": 1059
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T20:00:00+02:00",
+				"End": "2021-04-26T20:15:00+02:00"
+			},
+			"OpenPrice": 2082.79,
+			"ClosePrice": 2079.78,
+			"MaxPrice": 2083.27,
+			"MinPrice": 2071.05,
+			"Volume": 393.03171,
+			"TradeCount": 1128
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T20:15:00+02:00",
+				"End": "2021-04-26T20:30:00+02:00"
+			},
+			"OpenPrice": 2079.69,
+			"ClosePrice": 2065.84,
+			"MaxPrice": 2079.69,
+			"MinPrice": 2061.88,
+			"Volume": 510.93947,
+			"TradeCount": 1499
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T20:30:00+02:00",
+				"End": "2021-04-26T20:45:00+02:00"
+			},
+			"OpenPrice": 2066.22,
+			"ClosePrice": 2068.12,
+			"MaxPrice": 2075,
+			"MinPrice": 2065.25,
+			"Volume": 399.52638,
+			"TradeCount": 1089
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T20:45:00+02:00",
+				"End": "2021-04-26T21:00:00+02:00"
+			},
+			"OpenPrice": 2068.39,
+			"ClosePrice": 2077.01,
+			"MaxPrice": 2077.69,
+			"MinPrice": 2066.81,
+			"Volume": 478.91033,
+			"TradeCount": 969
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T21:00:00+02:00",
+				"End": "2021-04-26T21:15:00+02:00"
+			},
+			"OpenPrice": 2077,
+			"ClosePrice": 2061.96,
+			"MaxPrice": 2078.17,
+			"MinPrice": 2055.66,
+			"Volume": 1025.37754,
+			"TradeCount": 1937
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T21:15:00+02:00",
+				"End": "2021-04-26T21:30:00+02:00"
+			},
+			"OpenPrice": 2061.72,
+			"ClosePrice": 2057.15,
+			"MaxPrice": 2069.33,
+			"MinPrice": 2057.15,
+			"Volume": 372.15262,
+			"TradeCount": 977
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T21:30:00+02:00",
+				"End": "2021-04-26T21:45:00+02:00"
+			},
+			"OpenPrice": 2057.15,
+			"ClosePrice": 2065.62,
+			"MaxPrice": 2067.98,
+			"MinPrice": 2054.69,
+			"Volume": 390.52465,
+			"TradeCount": 1109
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T21:45:00+02:00",
+				"End": "2021-04-26T22:00:00+02:00"
+			},
+			"OpenPrice": 2064.84,
+			"ClosePrice": 2068.22,
+			"MaxPrice": 2070.9,
+			"MinPrice": 2059.99,
+			"Volume": 387.69395,
+			"TradeCount": 1205
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T22:00:00+02:00",
+				"End": "2021-04-26T22:15:00+02:00"
+			},
+			"OpenPrice": 2068.32,
+			"ClosePrice": 2060.43,
+			"MaxPrice": 2068.32,
+			"MinPrice": 2058.93,
+			"Volume": 383.59807,
+			"TradeCount": 1543
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T22:15:00+02:00",
+				"End": "2021-04-26T22:30:00+02:00"
+			},
+			"OpenPrice": 2060.64,
+			"ClosePrice": 2044.18,
+			"MaxPrice": 2066.89,
+			"MinPrice": 2044.18,
+			"Volume": 674.96104,
+			"TradeCount": 2538
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T22:30:00+02:00",
+				"End": "2021-04-26T22:45:00+02:00"
+			},
+			"OpenPrice": 2044.61,
+			"ClosePrice": 2054.01,
+			"MaxPrice": 2060,
+			"MinPrice": 2044.22,
+			"Volume": 322.51822,
+			"TradeCount": 1962
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T22:45:00+02:00",
+				"End": "2021-04-26T23:00:00+02:00"
+			},
+			"OpenPrice": 2053.75,
+			"ClosePrice": 2039.23,
+			"MaxPrice": 2055.81,
+			"MinPrice": 2039.22,
+			"Volume": 579.62828,
+			"TradeCount": 2439
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T23:00:00+02:00",
+				"End": "2021-04-26T23:15:00+02:00"
+			},
+			"OpenPrice": 2039.36,
+			"ClosePrice": 2021.9,
+			"MaxPrice": 2040.45,
+			"MinPrice": 2019.03,
+			"Volume": 901.45068,
+			"TradeCount": 2642
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T23:15:00+02:00",
+				"End": "2021-04-26T23:30:00+02:00"
+			},
+			"OpenPrice": 2021.9,
+			"ClosePrice": 2018,
+			"MaxPrice": 2024.45,
+			"MinPrice": 2016.73,
+			"Volume": 446.73823,
+			"TradeCount": 1429
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T23:30:00+02:00",
+				"End": "2021-04-26T23:45:00+02:00"
+			},
+			"OpenPrice": 2017.85,
+			"ClosePrice": 2061.96,
+			"MaxPrice": 2061.96,
+			"MinPrice": 2017.64,
+			"Volume": 342.83748,
+			"TradeCount": 1549
+		},
+		{
+			"Period": {
+				"Start": "2021-04-26T23:45:00+02:00",
+				"End": "2021-04-27T00:00:00+02:00"
+			},
+			"OpenPrice": 2061.9,
+			"ClosePrice": 2070.76,
+			"MaxPrice": 2073.54,
+			"MinPrice": 2056.74,
+			"Volume": 228.52086,
+			"TradeCount": 930
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T00:00:00+02:00",
+				"End": "2021-04-27T00:15:00+02:00"
+			},
+			"OpenPrice": 2070.12,
+			"ClosePrice": 2095.82,
+			"MaxPrice": 2099.95,
+			"MinPrice": 2054.08,
+			"Volume": 1242.44297,
+			"TradeCount": 3096
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T00:15:00+02:00",
+				"End": "2021-04-27T00:30:00+02:00"
+			},
+			"OpenPrice": 2096.6,
+			"ClosePrice": 2086.96,
+			"MaxPrice": 2107,
+			"MinPrice": 2085.43,
+			"Volume": 1184.56271,
+			"TradeCount": 3308
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T00:30:00+02:00",
+				"End": "2021-04-27T00:45:00+02:00"
+			},
+			"OpenPrice": 2086.18,
+			"ClosePrice": 2085.59,
+			"MaxPrice": 2098.28,
+			"MinPrice": 2079.45,
+			"Volume": 422.06716,
+			"TradeCount": 1266
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T00:45:00+02:00",
+				"End": "2021-04-27T01:00:00+02:00"
+			},
+			"OpenPrice": 2085.56,
+			"ClosePrice": 2081,
+			"MaxPrice": 2092.71,
+			"MinPrice": 2073.32,
+			"Volume": 374.41319,
+			"TradeCount": 978
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T01:00:00+02:00",
+				"End": "2021-04-27T01:15:00+02:00"
+			},
+			"OpenPrice": 2080.6,
+			"ClosePrice": 2085.65,
+			"MaxPrice": 2087.75,
+			"MinPrice": 2075.25,
+			"Volume": 364.8802,
+			"TradeCount": 791
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T01:15:00+02:00",
+				"End": "2021-04-27T01:30:00+02:00"
+			},
+			"OpenPrice": 2085.62,
+			"ClosePrice": 2086.45,
+			"MaxPrice": 2094.51,
+			"MinPrice": 2084.08,
+			"Volume": 285.65235,
+			"TradeCount": 839
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T01:30:00+02:00",
+				"End": "2021-04-27T01:45:00+02:00"
+			},
+			"OpenPrice": 2085.72,
+			"ClosePrice": 2092.62,
+			"MaxPrice": 2097.58,
+			"MinPrice": 2082.44,
+			"Volume": 367.31777,
+			"TradeCount": 618
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T01:45:00+02:00",
+				"End": "2021-04-27T02:00:00+02:00"
+			},
+			"OpenPrice": 2092.08,
+			"ClosePrice": 2100.45,
+			"MaxPrice": 2107,
+			"MinPrice": 2091.13,
+			"Volume": 424.81065,
+			"TradeCount": 804
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T02:00:00+02:00",
+				"End": "2021-04-27T02:15:00+02:00"
+			},
+			"OpenPrice": 2100.03,
+			"ClosePrice": 2087.15,
+			"MaxPrice": 2112.78,
+			"MinPrice": 2082.56,
+			"Volume": 551.86231,
+			"TradeCount": 1592
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T02:15:00+02:00",
+				"End": "2021-04-27T02:30:00+02:00"
+			},
+			"OpenPrice": 2087.35,
+			"ClosePrice": 2074.47,
+			"MaxPrice": 2090.35,
+			"MinPrice": 2073.02,
+			"Volume": 352.64502,
+			"TradeCount": 760
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T02:30:00+02:00",
+				"End": "2021-04-27T02:45:00+02:00"
+			},
+			"OpenPrice": 2075.03,
+			"ClosePrice": 2079.91,
+			"MaxPrice": 2088.89,
+			"MinPrice": 2075.03,
+			"Volume": 172.09603,
+			"TradeCount": 500
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T02:45:00+02:00",
+				"End": "2021-04-27T03:00:00+02:00"
+			},
+			"OpenPrice": 2079.55,
+			"ClosePrice": 2080.56,
+			"MaxPrice": 2086.36,
+			"MinPrice": 2078.6,
+			"Volume": 158.56687,
+			"TradeCount": 430
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T03:00:00+02:00",
+				"End": "2021-04-27T03:15:00+02:00"
+			},
+			"OpenPrice": 2078.98,
+			"ClosePrice": 2085.2,
+			"MaxPrice": 2085.21,
+			"MinPrice": 2076.45,
+			"Volume": 140.60484,
+			"TradeCount": 362
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T03:15:00+02:00",
+				"End": "2021-04-27T03:30:00+02:00"
+			},
+			"OpenPrice": 2085.27,
+			"ClosePrice": 2091.39,
+			"MaxPrice": 2092.02,
+			"MinPrice": 2080.01,
+			"Volume": 159.61349,
+			"TradeCount": 551
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T03:30:00+02:00",
+				"End": "2021-04-27T03:45:00+02:00"
+			},
+			"OpenPrice": 2090.96,
+			"ClosePrice": 2083.13,
+			"MaxPrice": 2090.96,
+			"MinPrice": 2080.28,
+			"Volume": 187.04572,
+			"TradeCount": 600
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T03:45:00+02:00",
+				"End": "2021-04-27T04:00:00+02:00"
+			},
+			"OpenPrice": 2082.26,
+			"ClosePrice": 2087.25,
+			"MaxPrice": 2089.86,
+			"MinPrice": 2079.12,
+			"Volume": 290.73727,
+			"TradeCount": 725
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T04:00:00+02:00",
+				"End": "2021-04-27T04:15:00+02:00"
+			},
+			"OpenPrice": 2087.18,
+			"ClosePrice": 2096.11,
+			"MaxPrice": 2100.8,
+			"MinPrice": 2086.38,
+			"Volume": 222.02357,
+			"TradeCount": 505
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T04:15:00+02:00",
+				"End": "2021-04-27T04:30:00+02:00"
+			},
+			"OpenPrice": 2095.48,
+			"ClosePrice": 2096.92,
+			"MaxPrice": 2097.77,
+			"MinPrice": 2091.69,
+			"Volume": 108.28298,
+			"TradeCount": 252
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T04:30:00+02:00",
+				"End": "2021-04-27T04:45:00+02:00"
+			},
+			"OpenPrice": 2096.36,
+			"ClosePrice": 2095.68,
+			"MaxPrice": 2097.68,
+			"MinPrice": 2090.05,
+			"Volume": 122.2306,
+			"TradeCount": 257
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T04:45:00+02:00",
+				"End": "2021-04-27T05:00:00+02:00"
+			},
+			"OpenPrice": 2096.89,
+			"ClosePrice": 2089.51,
+			"MaxPrice": 2097.17,
+			"MinPrice": 2087.59,
+			"Volume": 77.01992,
+			"TradeCount": 494
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T05:00:00+02:00",
+				"End": "2021-04-27T05:15:00+02:00"
+			},
+			"OpenPrice": 2089.56,
+			"ClosePrice": 2078.2,
+			"MaxPrice": 2089.56,
+			"MinPrice": 2076.62,
+			"Volume": 134.99842,
+			"TradeCount": 663
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T05:15:00+02:00",
+				"End": "2021-04-27T05:30:00+02:00"
+			},
+			"OpenPrice": 2078.08,
+			"ClosePrice": 2069.47,
+			"MaxPrice": 2082.11,
+			"MinPrice": 2060.3,
+			"Volume": 433.49263,
+			"TradeCount": 921
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T05:30:00+02:00",
+				"End": "2021-04-27T05:45:00+02:00"
+			},
+			"OpenPrice": 2069.86,
+			"ClosePrice": 2069.27,
+			"MaxPrice": 2075.93,
+			"MinPrice": 2067.33,
+			"Volume": 216.13558,
+			"TradeCount": 527
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T05:45:00+02:00",
+				"End": "2021-04-27T06:00:00+02:00"
+			},
+			"OpenPrice": 2069.58,
+			"ClosePrice": 2070.57,
+			"MaxPrice": 2077.68,
+			"MinPrice": 2069.4,
+			"Volume": 168.56764,
+			"TradeCount": 343
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T06:00:00+02:00",
+				"End": "2021-04-27T06:15:00+02:00"
+			},
+			"OpenPrice": 2070.28,
+			"ClosePrice": 2074.69,
+			"MaxPrice": 2079.31,
+			"MinPrice": 2068.6,
+			"Volume": 275.68771,
+			"TradeCount": 490
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T06:15:00+02:00",
+				"End": "2021-04-27T06:30:00+02:00"
+			},
+			"OpenPrice": 2075.4,
+			"ClosePrice": 2079.68,
+			"MaxPrice": 2081.2,
+			"MinPrice": 2069.2,
+			"Volume": 133.2025,
+			"TradeCount": 372
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T06:30:00+02:00",
+				"End": "2021-04-27T06:45:00+02:00"
+			},
+			"OpenPrice": 2078.56,
+			"ClosePrice": 2074.91,
+			"MaxPrice": 2078.83,
+			"MinPrice": 2071.76,
+			"Volume": 143.54265,
+			"TradeCount": 325
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T06:45:00+02:00",
+				"End": "2021-04-27T07:00:00+02:00"
+			},
+			"OpenPrice": 2075.08,
+			"ClosePrice": 2083.18,
+			"MaxPrice": 2084.87,
+			"MinPrice": 2074.54,
+			"Volume": 171.52423,
+			"TradeCount": 470
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T07:00:00+02:00",
+				"End": "2021-04-27T07:15:00+02:00"
+			},
+			"OpenPrice": 2083.43,
+			"ClosePrice": 2098.21,
+			"MaxPrice": 2099.93,
+			"MinPrice": 2082.09,
+			"Volume": 390.43576,
+			"TradeCount": 1098
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T07:15:00+02:00",
+				"End": "2021-04-27T07:30:00+02:00"
+			},
+			"OpenPrice": 2098.16,
+			"ClosePrice": 2099.59,
+			"MaxPrice": 2104.24,
+			"MinPrice": 2093.78,
+			"Volume": 326.57704,
+			"TradeCount": 881
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T07:30:00+02:00",
+				"End": "2021-04-27T07:45:00+02:00"
+			},
+			"OpenPrice": 2100,
+			"ClosePrice": 2099.85,
+			"MaxPrice": 2102.47,
+			"MinPrice": 2096.4,
+			"Volume": 188.32461,
+			"TradeCount": 611
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T07:45:00+02:00",
+				"End": "2021-04-27T08:00:00+02:00"
+			},
+			"OpenPrice": 2100.16,
+			"ClosePrice": 2100.96,
+			"MaxPrice": 2102.88,
+			"MinPrice": 2095.47,
+			"Volume": 207.68025,
+			"TradeCount": 537
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T08:00:00+02:00",
+				"End": "2021-04-27T08:15:00+02:00"
+			},
+			"OpenPrice": 2101.37,
+			"ClosePrice": 2115.42,
+			"MaxPrice": 2123,
+			"MinPrice": 2100.99,
+			"Volume": 821.44623,
+			"TradeCount": 2085
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T08:15:00+02:00",
+				"End": "2021-04-27T08:30:00+02:00"
+			},
+			"OpenPrice": 2115.39,
+			"ClosePrice": 2124.29,
+			"MaxPrice": 2128.48,
+			"MinPrice": 2111.31,
+			"Volume": 576.18081,
+			"TradeCount": 1328
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T08:30:00+02:00",
+				"End": "2021-04-27T08:45:00+02:00"
+			},
+			"OpenPrice": 2125,
+			"ClosePrice": 2123.11,
+			"MaxPrice": 2126.57,
+			"MinPrice": 2117.99,
+			"Volume": 652.15771,
+			"TradeCount": 1232
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T08:45:00+02:00",
+				"End": "2021-04-27T09:00:00+02:00"
+			},
+			"OpenPrice": 2123.54,
+			"ClosePrice": 2127.27,
+			"MaxPrice": 2131.99,
+			"MinPrice": 2118.53,
+			"Volume": 683.74839,
+			"TradeCount": 1211
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T09:00:00+02:00",
+				"End": "2021-04-27T09:15:00+02:00"
+			},
+			"OpenPrice": 2127.09,
+			"ClosePrice": 2129.58,
+			"MaxPrice": 2130.96,
+			"MinPrice": 2121.27,
+			"Volume": 452.29896,
+			"TradeCount": 1156
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T09:15:00+02:00",
+				"End": "2021-04-27T09:30:00+02:00"
+			},
+			"OpenPrice": 2129.58,
+			"ClosePrice": 2121.66,
+			"MaxPrice": 2129.63,
+			"MinPrice": 2117.99,
+			"Volume": 493.3966,
+			"TradeCount": 1376
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T09:30:00+02:00",
+				"End": "2021-04-27T09:45:00+02:00"
+			},
+			"OpenPrice": 2121.64,
+			"ClosePrice": 2119.52,
+			"MaxPrice": 2121.72,
+			"MinPrice": 2115.57,
+			"Volume": 348.02984,
+			"TradeCount": 1084
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T09:45:00+02:00",
+				"End": "2021-04-27T10:00:00+02:00"
+			},
+			"OpenPrice": 2119.42,
+			"ClosePrice": 2114.77,
+			"MaxPrice": 2123.35,
+			"MinPrice": 2104.59,
+			"Volume": 531.2112,
+			"TradeCount": 1375
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T10:00:00+02:00",
+				"End": "2021-04-27T10:15:00+02:00"
+			},
+			"OpenPrice": 2114.34,
+			"ClosePrice": 2117.73,
+			"MaxPrice": 2125.41,
+			"MinPrice": 2108.65,
+			"Volume": 640.6244,
+			"TradeCount": 1369
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T10:15:00+02:00",
+				"End": "2021-04-27T10:30:00+02:00"
+			},
+			"OpenPrice": 2117.73,
+			"ClosePrice": 2119.21,
+			"MaxPrice": 2124.28,
+			"MinPrice": 2116.74,
+			"Volume": 799.63783,
+			"TradeCount": 1398
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T10:30:00+02:00",
+				"End": "2021-04-27T10:45:00+02:00"
+			},
+			"OpenPrice": 2119.21,
+			"ClosePrice": 2110.95,
+			"MaxPrice": 2120.91,
+			"MinPrice": 2107.99,
+			"Volume": 492.64786,
+			"TradeCount": 1191
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T10:45:00+02:00",
+				"End": "2021-04-27T11:00:00+02:00"
+			},
+			"OpenPrice": 2110.92,
+			"ClosePrice": 2108.19,
+			"MaxPrice": 2114.57,
+			"MinPrice": 2107.42,
+			"Volume": 431.30269,
+			"TradeCount": 1138
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T11:00:00+02:00",
+				"End": "2021-04-27T11:15:00+02:00"
+			},
+			"OpenPrice": 2108,
+			"ClosePrice": 2109.71,
+			"MaxPrice": 2114.52,
+			"MinPrice": 2105.4,
+			"Volume": 437.35668,
+			"TradeCount": 1124
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T11:15:00+02:00",
+				"End": "2021-04-27T11:30:00+02:00"
+			},
+			"OpenPrice": 2110.17,
+			"ClosePrice": 2116.35,
+			"MaxPrice": 2123.63,
+			"MinPrice": 2110.17,
+			"Volume": 557.61586,
+			"TradeCount": 1215
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T11:30:00+02:00",
+				"End": "2021-04-27T11:45:00+02:00"
+			},
+			"OpenPrice": 2115.87,
+			"ClosePrice": 2117.25,
+			"MaxPrice": 2123.61,
+			"MinPrice": 2115.53,
+			"Volume": 288.48341,
+			"TradeCount": 990
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T11:45:00+02:00",
+				"End": "2021-04-27T12:00:00+02:00"
+			},
+			"OpenPrice": 2117.25,
+			"ClosePrice": 2112.27,
+			"MaxPrice": 2120.26,
+			"MinPrice": 2110.63,
+			"Volume": 386.0482,
+			"TradeCount": 1093
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T12:00:00+02:00",
+				"End": "2021-04-27T12:15:00+02:00"
+			},
+			"OpenPrice": 2111.57,
+			"ClosePrice": 2115.16,
+			"MaxPrice": 2119.28,
+			"MinPrice": 2109.32,
+			"Volume": 487.82745,
+			"TradeCount": 1170
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T12:15:00+02:00",
+				"End": "2021-04-27T12:30:00+02:00"
+			},
+			"OpenPrice": 2115.17,
+			"ClosePrice": 2112.26,
+			"MaxPrice": 2116.21,
+			"MinPrice": 2106.8,
+			"Volume": 306.6036,
+			"TradeCount": 962
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T12:30:00+02:00",
+				"End": "2021-04-27T12:45:00+02:00"
+			},
+			"OpenPrice": 2112.49,
+			"ClosePrice": 2107.08,
+			"MaxPrice": 2112.49,
+			"MinPrice": 2107.08,
+			"Volume": 250.33711,
+			"TradeCount": 753
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T12:45:00+02:00",
+				"End": "2021-04-27T13:00:00+02:00"
+			},
+			"OpenPrice": 2107.03,
+			"ClosePrice": 2110.19,
+			"MaxPrice": 2115.98,
+			"MinPrice": 2107.02,
+			"Volume": 319.68821,
+			"TradeCount": 1000
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T13:00:00+02:00",
+				"End": "2021-04-27T13:15:00+02:00"
+			},
+			"OpenPrice": 2110.83,
+			"ClosePrice": 2123.46,
+			"MaxPrice": 2125.7,
+			"MinPrice": 2110.53,
+			"Volume": 419.01539,
+			"TradeCount": 1203
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T13:15:00+02:00",
+				"End": "2021-04-27T13:30:00+02:00"
+			},
+			"OpenPrice": 2123.46,
+			"ClosePrice": 2119.78,
+			"MaxPrice": 2129.78,
+			"MinPrice": 2111.51,
+			"Volume": 439.60851,
+			"TradeCount": 1375
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T13:30:00+02:00",
+				"End": "2021-04-27T13:45:00+02:00"
+			},
+			"OpenPrice": 2119.78,
+			"ClosePrice": 2130.12,
+			"MaxPrice": 2134.22,
+			"MinPrice": 2119,
+			"Volume": 646.69687,
+			"TradeCount": 1662
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T13:45:00+02:00",
+				"End": "2021-04-27T14:00:00+02:00"
+			},
+			"OpenPrice": 2130.12,
+			"ClosePrice": 2133.11,
+			"MaxPrice": 2136.85,
+			"MinPrice": 2129.15,
+			"Volume": 595.78188,
+			"TradeCount": 1496
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T14:00:00+02:00",
+				"End": "2021-04-27T14:15:00+02:00"
+			},
+			"OpenPrice": 2133.1,
+			"ClosePrice": 2133.74,
+			"MaxPrice": 2142.84,
+			"MinPrice": 2129.25,
+			"Volume": 363.18332,
+			"TradeCount": 1400
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T14:15:00+02:00",
+				"End": "2021-04-27T14:30:00+02:00"
+			},
+			"OpenPrice": 2133.74,
+			"ClosePrice": 2126.58,
+			"MaxPrice": 2137.31,
+			"MinPrice": 2125.58,
+			"Volume": 313.35115,
+			"TradeCount": 1030
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T14:30:00+02:00",
+				"End": "2021-04-27T14:45:00+02:00"
+			},
+			"OpenPrice": 2126.56,
+			"ClosePrice": 2118.8,
+			"MaxPrice": 2130,
+			"MinPrice": 2115.85,
+			"Volume": 480.38262,
+			"TradeCount": 1290
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T14:45:00+02:00",
+				"End": "2021-04-27T15:00:00+02:00"
+			},
+			"OpenPrice": 2118.65,
+			"ClosePrice": 2119.23,
+			"MaxPrice": 2123.78,
+			"MinPrice": 2117.18,
+			"Volume": 228.12751,
+			"TradeCount": 765
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T15:00:00+02:00",
+				"End": "2021-04-27T15:15:00+02:00"
+			},
+			"OpenPrice": 2119.23,
+			"ClosePrice": 2125.5,
+			"MaxPrice": 2125.98,
+			"MinPrice": 2118.83,
+			"Volume": 220.23612,
+			"TradeCount": 774
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T15:15:00+02:00",
+				"End": "2021-04-27T15:30:00+02:00"
+			},
+			"OpenPrice": 2125.47,
+			"ClosePrice": 2119.89,
+			"MaxPrice": 2125.97,
+			"MinPrice": 2117.91,
+			"Volume": 270.74052,
+			"TradeCount": 785
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T15:30:00+02:00",
+				"End": "2021-04-27T15:45:00+02:00"
+			},
+			"OpenPrice": 2119.56,
+			"ClosePrice": 2108.92,
+			"MaxPrice": 2130,
+			"MinPrice": 2101.35,
+			"Volume": 1036.90751,
+			"TradeCount": 1982
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T15:45:00+02:00",
+				"End": "2021-04-27T16:00:00+02:00"
+			},
+			"OpenPrice": 2109.24,
+			"ClosePrice": 2118.02,
+			"MaxPrice": 2120.51,
+			"MinPrice": 2108.9,
+			"Volume": 568.75957,
+			"TradeCount": 1293
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T16:00:00+02:00",
+				"End": "2021-04-27T16:15:00+02:00"
+			},
+			"OpenPrice": 2117.97,
+			"ClosePrice": 2114.36,
+			"MaxPrice": 2118.88,
+			"MinPrice": 2105,
+			"Volume": 855.20401,
+			"TradeCount": 1400
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T16:15:00+02:00",
+				"End": "2021-04-27T16:30:00+02:00"
+			},
+			"OpenPrice": 2114.35,
+			"ClosePrice": 2167.14,
+			"MaxPrice": 2171,
+			"MinPrice": 2108.17,
+			"Volume": 1685.13301,
+			"TradeCount": 3869
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T16:30:00+02:00",
+				"End": "2021-04-27T16:45:00+02:00"
+			},
+			"OpenPrice": 2167.08,
+			"ClosePrice": 2177.59,
+			"MaxPrice": 2184.56,
+			"MinPrice": 2158.06,
+			"Volume": 909.01244,
+			"TradeCount": 2751
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T16:45:00+02:00",
+				"End": "2021-04-27T17:00:00+02:00"
+			},
+			"OpenPrice": 2178.42,
+			"ClosePrice": 2187.12,
+			"MaxPrice": 2187.35,
+			"MinPrice": 2175.98,
+			"Volume": 705.46149,
+			"TradeCount": 2167
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T17:00:00+02:00",
+				"End": "2021-04-27T17:15:00+02:00"
+			},
+			"OpenPrice": 2187.11,
+			"ClosePrice": 2186.28,
+			"MaxPrice": 2195,
+			"MinPrice": 2170.68,
+			"Volume": 963.42974,
+			"TradeCount": 2744
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T17:15:00+02:00",
+				"End": "2021-04-27T17:30:00+02:00"
+			},
+			"OpenPrice": 2184.73,
+			"ClosePrice": 2183.92,
+			"MaxPrice": 2186.78,
+			"MinPrice": 2178.38,
+			"Volume": 306.04848,
+			"TradeCount": 1102
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T17:30:00+02:00",
+				"End": "2021-04-27T17:45:00+02:00"
+			},
+			"OpenPrice": 2183.88,
+			"ClosePrice": 2207.07,
+			"MaxPrice": 2208.7,
+			"MinPrice": 2183.35,
+			"Volume": 1140.82183,
+			"TradeCount": 3115
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T17:45:00+02:00",
+				"End": "2021-04-27T18:00:00+02:00"
+			},
+			"OpenPrice": 2207.33,
+			"ClosePrice": 2210.37,
+			"MaxPrice": 2215,
+			"MinPrice": 2197.65,
+			"Volume": 938.34967,
+			"TradeCount": 2759
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T18:00:00+02:00",
+				"End": "2021-04-27T18:15:00+02:00"
+			},
+			"OpenPrice": 2210.02,
+			"ClosePrice": 2202.13,
+			"MaxPrice": 2223.19,
+			"MinPrice": 2190.49,
+			"Volume": 1077.87002,
+			"TradeCount": 2844
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T18:15:00+02:00",
+				"End": "2021-04-27T18:30:00+02:00"
+			},
+			"OpenPrice": 2202.13,
+			"ClosePrice": 2197.54,
+			"MaxPrice": 2216.5,
+			"MinPrice": 2195.33,
+			"Volume": 638.67741,
+			"TradeCount": 1792
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T18:30:00+02:00",
+				"End": "2021-04-27T18:45:00+02:00"
+			},
+			"OpenPrice": 2197.52,
+			"ClosePrice": 2203.24,
+			"MaxPrice": 2205.45,
+			"MinPrice": 2191.46,
+			"Volume": 531.44386,
+			"TradeCount": 1741
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T18:45:00+02:00",
+				"End": "2021-04-27T19:00:00+02:00"
+			},
+			"OpenPrice": 2203.4,
+			"ClosePrice": 2187.31,
+			"MaxPrice": 2203.5,
+			"MinPrice": 2178.87,
+			"Volume": 760.90577,
+			"TradeCount": 2001
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T19:00:00+02:00",
+				"End": "2021-04-27T19:15:00+02:00"
+			},
+			"OpenPrice": 2187.48,
+			"ClosePrice": 2178.61,
+			"MaxPrice": 2195.54,
+			"MinPrice": 2175.2,
+			"Volume": 1000.78925,
+			"TradeCount": 2288
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T19:15:00+02:00",
+				"End": "2021-04-27T19:30:00+02:00"
+			},
+			"OpenPrice": 2178.61,
+			"ClosePrice": 2190.8,
+			"MaxPrice": 2192.05,
+			"MinPrice": 2178.1,
+			"Volume": 493.32602,
+			"TradeCount": 1471
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T19:30:00+02:00",
+				"End": "2021-04-27T19:45:00+02:00"
+			},
+			"OpenPrice": 2190.8,
+			"ClosePrice": 2189.92,
+			"MaxPrice": 2190.94,
+			"MinPrice": 2184.03,
+			"Volume": 244.64381,
+			"TradeCount": 873
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T19:45:00+02:00",
+				"End": "2021-04-27T20:00:00+02:00"
+			},
+			"OpenPrice": 2189.95,
+			"ClosePrice": 2194.14,
+			"MaxPrice": 2195.78,
+			"MinPrice": 2181.45,
+			"Volume": 306.71763,
+			"TradeCount": 974
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T20:00:00+02:00",
+				"End": "2021-04-27T20:15:00+02:00"
+			},
+			"OpenPrice": 2194.39,
+			"ClosePrice": 2185.26,
+			"MaxPrice": 2194.41,
+			"MinPrice": 2179.17,
+			"Volume": 317.81222,
+			"TradeCount": 984
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T20:15:00+02:00",
+				"End": "2021-04-27T20:30:00+02:00"
+			},
+			"OpenPrice": 2185.64,
+			"ClosePrice": 2189.39,
+			"MaxPrice": 2190.47,
+			"MinPrice": 2181.33,
+			"Volume": 398.90799,
+			"TradeCount": 1056
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T20:30:00+02:00",
+				"End": "2021-04-27T20:45:00+02:00"
+			},
+			"OpenPrice": 2189.01,
+			"ClosePrice": 2186.04,
+			"MaxPrice": 2194.41,
+			"MinPrice": 2185,
+			"Volume": 355.98928,
+			"TradeCount": 1027
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T20:45:00+02:00",
+				"End": "2021-04-27T21:00:00+02:00"
+			},
+			"OpenPrice": 2185.67,
+			"ClosePrice": 2191.84,
+			"MaxPrice": 2194.37,
+			"MinPrice": 2181.49,
+			"Volume": 475.80809,
+			"TradeCount": 1153
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T21:00:00+02:00",
+				"End": "2021-04-27T21:15:00+02:00"
+			},
+			"OpenPrice": 2191.75,
+			"ClosePrice": 2183.82,
+			"MaxPrice": 2192.72,
+			"MinPrice": 2182.6,
+			"Volume": 197.97342,
+			"TradeCount": 790
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T21:15:00+02:00",
+				"End": "2021-04-27T21:30:00+02:00"
+			},
+			"OpenPrice": 2183.7,
+			"ClosePrice": 2168.45,
+			"MaxPrice": 2188.89,
+			"MinPrice": 2161.86,
+			"Volume": 928.11582,
+			"TradeCount": 1858
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T21:30:00+02:00",
+				"End": "2021-04-27T21:45:00+02:00"
+			},
+			"OpenPrice": 2167.81,
+			"ClosePrice": 2163.04,
+			"MaxPrice": 2174.86,
+			"MinPrice": 2158.31,
+			"Volume": 653.39073,
+			"TradeCount": 1822
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T21:45:00+02:00",
+				"End": "2021-04-27T22:00:00+02:00"
+			},
+			"OpenPrice": 2162.9,
+			"ClosePrice": 2174.67,
+			"MaxPrice": 2177.77,
+			"MinPrice": 2162.83,
+			"Volume": 353.68604,
+			"TradeCount": 1177
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T22:00:00+02:00",
+				"End": "2021-04-27T22:15:00+02:00"
+			},
+			"OpenPrice": 2175.41,
+			"ClosePrice": 2185.5,
+			"MaxPrice": 2188.41,
+			"MinPrice": 2175.41,
+			"Volume": 534.51471,
+			"TradeCount": 1487
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T22:15:00+02:00",
+				"End": "2021-04-27T22:30:00+02:00"
+			},
+			"OpenPrice": 2185.8,
+			"ClosePrice": 2184.11,
+			"MaxPrice": 2186,
+			"MinPrice": 2176.53,
+			"Volume": 262.65933,
+			"TradeCount": 1070
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T22:30:00+02:00",
+				"End": "2021-04-27T22:45:00+02:00"
+			},
+			"OpenPrice": 2184.12,
+			"ClosePrice": 2191.28,
+			"MaxPrice": 2196.15,
+			"MinPrice": 2181.05,
+			"Volume": 219.57768,
+			"TradeCount": 1040
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T22:45:00+02:00",
+				"End": "2021-04-27T23:00:00+02:00"
+			},
+			"OpenPrice": 2191.08,
+			"ClosePrice": 2193.44,
+			"MaxPrice": 2196.12,
+			"MinPrice": 2181.59,
+			"Volume": 327.67694,
+			"TradeCount": 1383
+		},
+		{
+			"Period": {
+				"Start": "2021-04-27T23:00:00+02:00",
+				"End": "2021-04-27T23:15:00+02:00"
+			},
+			"OpenPrice": 2193.44,
+			"ClosePrice": 2189.98,
+			"MaxPrice": 2193.9,
+			"MinPrice": 2177.14,
+			"Volume": 256.40958,
+			"TradeCount": 1019
+		}
+	]
+}
