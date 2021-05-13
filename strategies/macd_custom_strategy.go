@@ -135,7 +135,7 @@ func (s *MACDCustomStrategy) PerformSimulation(pair string, exchangeService inte
 					balance *= profitPct * (1 - 0.00014)
 					profitList = append(profitList, (profitPct*(1-0.0014))-1)
 				}
-				time.Sleep(500 * time.Microsecond)
+				time.Sleep(100 * time.Microsecond)
 			}
 			open = false
 			//return pairAnalysis, nil
@@ -209,7 +209,7 @@ func (s *MACDCustomStrategy) Analyze(pair string, exchangeService interfaces.Exc
 		strings.Replace(reflect.TypeOf(s).String(), "*strategies.", "", 1)))
 
 	// Analyze last 1000 candles
-	result15m1000, err := s.PerformSimulation(pair, exchangeService, "15m", 1000, 0, nil)
+	result15m1000, err := s.PerformSimulation(pair, exchangeService, "15m", 2000, 0, nil)
 	if err != nil {
 		return nil, err
 	}

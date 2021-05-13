@@ -126,7 +126,7 @@ func (s *StableStrategy) PerformSimulation(pair string, exchangeService interfac
 				}
 				data2 = append(data2, profitPct*(1-0.0014)-1)
 			}
-			time.Sleep(1 * time.Millisecond)
+			time.Sleep(300 * time.Nanosecond)
 		}
 
 		open = false
@@ -156,7 +156,7 @@ func (s *StableStrategy) Analyze(pair string, exchangeService interfaces.Exchang
 	helpers.Logger.Debugln(fmt.Sprintf("→ Analyzing %s", strings.Replace(reflect.TypeOf(s).String(), "*strategies.", "", 1)))
 
 	// Analyze last 1000 candles
-	result15m1000, err := s.PerformSimulation(pair, exchangeService, "15m", 1000, 0, nil)
+	result15m1000, err := s.PerformSimulation(pair, exchangeService, "15m", 2000, 0, nil)
 	if err != nil {
 		return nil, err
 	}
