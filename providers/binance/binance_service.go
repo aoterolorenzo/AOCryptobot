@@ -22,6 +22,9 @@ type BinanceService struct {
 	marketSnapshotsRecord *[]models.MarketDepth
 	apiKey                string
 	apiSecret             string
+	pair                  string
+	interval              string
+	active                *bool
 }
 
 func NewBinanceService() *BinanceService {
@@ -212,7 +215,9 @@ func (binanceService *BinanceService) GetOrderStatus(order models.Order) (models
 
 func (binanceService *BinanceService) DepthMonitor(pair string, marketSnapshotsRecord *[]models.MarketDepth) {
 	binanceService.marketSnapshotsRecord = marketSnapshotsRecord
-	doneC, _, err := binance.WsDepthServe(pair, binanceService.wsDepthHandler, binanceService.errHandler)
+	binanceService.pair = pair
+
+	doneC, _, err := binance.WsDepthServe(pair, binanceService.wsDepthHandler, binanceService.wsDepthErrHandler)
 	if err != nil {
 		helpers.Logger.Errorln(err)
 		return
@@ -222,8 +227,11 @@ func (binanceService *BinanceService) DepthMonitor(pair string, marketSnapshotsR
 
 func (binanceService *BinanceService) TimeSeriesMonitor(pair, interval string, timeSeries *techan.TimeSeries, active *bool) {
 	binanceService.timeSeries = timeSeries
+	binanceService.pair = pair
+	binanceService.interval = pair
+	binanceService.active = active
 
-	klines, err := binanceService.binanceClient.NewKlinesService().Symbol(pair).
+	klines, err := binanceService.binanceClient.NewKlinesService().Symbol(binanceService.pair).
 		Interval(interval).Do(context.Background())
 	if err != nil {
 		helpers.Logger.Fatalln("error getting klines: " + err.Error())
@@ -241,7 +249,7 @@ func (binanceService *BinanceService) TimeSeriesMonitor(pair, interval string, t
 		binanceService.timeSeries.AddCandle(candle)
 	}
 
-	doneC, done, err := binance.WsKlineServe(pair, interval, binanceService.wsKlineHandler, binanceService.errHandler)
+	doneC, done, err := binance.WsKlineServe(binanceService.pair, interval, binanceService.wsKlineHandler, binanceService.wsKlineErrHandler)
 	if err != nil {
 		helpers.Logger.Errorln(err)
 		return
@@ -391,7 +399,7 @@ func (binanceService *BinanceService) wsDepthHandler(event *binance.WsDepthEvent
 	marketSnapshot := models.NewMarketDepth()
 	err := marketSnapshot.Set(event)
 	if err != nil {
-		binanceService.errHandler(err)
+		binanceService.wsDepthErrHandler(err)
 		return
 	}
 
@@ -407,8 +415,14 @@ func (binanceService *BinanceService) wsDepthHandler(event *binance.WsDepthEvent
 	}
 }
 
-func (binanceService *BinanceService) errHandler(err error) {
-	helpers.Logger.Errorln(err)
+func (binanceService *BinanceService) wsDepthErrHandler(err error) {
+	helpers.Logger.Errorln("Error in Binace Depth monitor on pair " + binanceService.pair + ": " + err.Error())
+	binanceService.DepthMonitor(binanceService.pair, binanceService.marketSnapshotsRecord)
+}
+
+func (binanceService *BinanceService) wsKlineErrHandler(err error) {
+	helpers.Logger.Errorln("Error in Binace Kline monitor on pair " + binanceService.pair + ": " + err.Error())
+	binanceService.TimeSeriesMonitor(binanceService.pair, binanceService.interval, binanceService.timeSeries, binanceService.active)
 }
 
 func reverseAny(s interface{}) {
