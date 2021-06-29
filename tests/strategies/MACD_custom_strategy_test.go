@@ -13,7 +13,7 @@ func TestMACDCustomStrategy(t *testing.T) {
 	strategy := strategies.NewMACDCustomStrategy()
 	exchangeService := &mocks.ProviderMock{}
 	symbol := "ETHEUR"
-	strategyResults, _ := strategy.PerformSimulation(symbol, exchangeService, "1h", 500, 0, nil)
+	strategyResults, _ := strategy.PerformSimulation(symbol, exchangeService, "1h", 120, 0, nil)
 
 	ratio := helpers.PositiveNegativeRatio(strategyResults.ProfitList)
 	profit := strategyResults.Profit

@@ -209,13 +209,13 @@ func (s *MACDCustomStrategy) Analyze(pair string, exchangeService interfaces.Exc
 		strings.Replace(reflect.TypeOf(s).String(), "*strategies.", "", 1)))
 
 	// Analyze last 1000 candles
-	result15m1000, err := s.PerformSimulation(pair, exchangeService, "1h", 2000, 0, nil)
+	result15m1000, err := s.PerformSimulation(pair, exchangeService, "1h", 480, 0, nil)
 	if err != nil {
 		return nil, err
 	}
 	// Analyze last 500 candles
 	strategyAnalysis.StrategyResults = append(strategyAnalysis.StrategyResults, result15m1000)
-	result15m500, err := s.PerformSimulation(pair, exchangeService, "1h", 500, 0, &result15m1000.Constants)
+	result15m500, err := s.PerformSimulation(pair, exchangeService, "1h", 120, 0, &result15m1000.Constants)
 	if err != nil {
 		return nil, err
 	}
