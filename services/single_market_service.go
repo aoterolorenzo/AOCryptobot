@@ -95,7 +95,7 @@ func (sms *SingleMarketService) StartMultiMonitor(pair string) {
 	binanceService := binance.NewBinanceService()
 
 	go binanceService.DepthMonitor(pair, &sms.MarketSnapshotsRecord)
-	go binanceService.TimeSeriesMonitor(pair, "1h", &sms.TimeSeries, &sms.Active)
+	go binanceService.TimeSeriesMonitor(pair, "30m", &sms.TimeSeries, &sms.Active)
 
 }
 
@@ -104,7 +104,7 @@ func (sms *SingleMarketService) StartCandleMonitor(pair string) {
 	sms.Active = true
 	binanceService := binance.NewBinanceService()
 
-	go binanceService.TimeSeriesMonitor(pair, "1h", &sms.TimeSeries, &sms.Active)
+	go binanceService.TimeSeriesMonitor(pair, "30m", &sms.TimeSeries, &sms.Active)
 
 }
 
