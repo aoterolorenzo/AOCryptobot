@@ -226,6 +226,7 @@ func (s *MACDCustomStrategy) Analyze(pair string, exchangeService interfaces.Exc
 	sum := helpers.Sum(profits)
 	strategyAnalysis.Mean = sum / float64(len(profits))
 	strategyAnalysis.StdDev = helpers.StdDev(profits, strategyAnalysis.Mean)
+	strategyAnalysis.PositivismAvgRatio = (helpers.PositiveNegativeRatio(result15m500.ProfitList) + helpers.PositiveNegativeRatio(result15m1000.ProfitList)) / 2
 
 	// Conditions to accept strategy:
 	// Conditions to accept strategy:

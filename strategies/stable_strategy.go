@@ -174,6 +174,7 @@ func (s *StableStrategy) Analyze(pair string, exchangeService interfaces.Exchang
 	sum := helpers.Sum(profits)
 	strategyAnalysis.Mean = sum / float64(len(profits))
 	strategyAnalysis.StdDev = helpers.StdDev(profits, strategyAnalysis.Mean)
+	strategyAnalysis.PositivismAvgRatio = (helpers.PositiveNegativeRatio(result15m500.ProfitList) + helpers.PositiveNegativeRatio(result15m1000.ProfitList)) / 2
 
 	// Conditions to accept strategy:
 	if len(result15m1000.ProfitList) > 0 &&

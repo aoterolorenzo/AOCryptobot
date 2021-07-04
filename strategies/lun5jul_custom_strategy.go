@@ -176,6 +176,7 @@ func (s *Lun5JulCustomStrategy) Analyze(pair string, exchangeService interfaces.
 	sum := helpers.Sum(profits)
 	strategyAnalysis.Mean = sum / float64(len(profits))
 	strategyAnalysis.StdDev = helpers.StdDev(profits, strategyAnalysis.Mean)
+	strategyAnalysis.PositivismAvgRatio = (helpers.PositiveNegativeRatio(result15m500.ProfitList) + helpers.PositiveNegativeRatio(result15m1000.ProfitList)) / 2
 
 	// Conditions to accept strategy:
 	if result15m1000.Profit > 3.2 && result15m500.Profit > 2.0 &&
