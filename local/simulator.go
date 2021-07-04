@@ -10,20 +10,22 @@ import (
 
 func main() {
 
-	targetCoin := "EUR"
+	targetCoin := "UNIEUR"
 	bs := binance.NewPaperService()
 	exchangeService := interfaces.ExchangeService(bs)
 
-	lun1MarCustomStrategy := strategies.NewLun1MarCustomStrategy()
-	MACDCustomStrategy := strategies.NewMACDCustomStrategy()
-	stableStrategy := strategies.NewStableStrategy()
-	stochRSICustomStrategy := strategies.NewStochRSICustomStrategy()
+	//lun1MarCustomStrategy := strategies.NewLun1MarCustomStrategy()
+	lun5JulCustomStrategy := strategies.NewLun5JulCustomStrategy()
+	//MACDCustomStrategy := strategies.NewMACDCustomStrategy()
+	//stableStrategy := strategies.NewStableStrategy()
+	//stochRSICustomStrategy := strategies.NewStochRSICustomStrategy()
 
 	selectedStrategies := []interfaces.Strategy{
-		&lun1MarCustomStrategy,
-		&stochRSICustomStrategy,
-		&MACDCustomStrategy,
-		&stableStrategy,
+		//&MACDCustomStrategy,
+		//&lun1MarCustomStrategy,
+		//&stochRSICustomStrategy,
+		&lun5JulCustomStrategy,
+		//&stableStrategy,
 	}
 
 	for _, pair := range exchangeService.GetMarkets(targetCoin) {
