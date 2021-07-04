@@ -195,7 +195,7 @@ func (t *SignalTraderService) PerformExit(pair string, strategy interfaces.Strat
 			fmt.Sprintf("Constants: %v\n", constants) +
 			fmt.Sprintf("Sell Price: %f\n", timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float()) +
 			fmt.Sprintf("Updated Balance: %.2f€\n", t.currentBalance) +
-			fmt.Sprintf("Gain/Loss: %.2f€\n", t.initialBalance-t.currentBalance) +
+			fmt.Sprintf("Gain/Loss: %.2f€\n", t.currentBalance-t.initialBalance) +
 			fmt.Sprintf("%s Profit: %.2f%%", profitEmoji, profitPct*100))
 }
 
