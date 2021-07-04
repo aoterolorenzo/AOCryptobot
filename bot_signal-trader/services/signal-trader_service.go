@@ -95,12 +95,12 @@ func (t *SignalTraderService) Start() {
 			// Scenario 1: Position is open, and we should exit
 			if t.ExitCheck(pair, strategy, timeSeries, results.StrategyResults[0].Constants) {
 				// Exit after a delayed recheck (helps to avoid "false-positive" strategy signals due to market oscillations)
-				go t.ExitIfDelayedExitCheck(pair, strategy, timeSeries, results.StrategyResults[0].Constants, 20)
+				go t.ExitIfDelayedExitCheck(pair, strategy, timeSeries, results.StrategyResults[0].Constants, 80)
 
 				// Scenario 2: Position is closed, and we should enter
 			} else if t.EntryCheck(pair, strategy, timeSeries, results.StrategyResults[0].Constants) {
 				// Entry after a delayed recheck (same as in exit scenario)
-				go t.EnterIfDelayedEntryCheck(pair, strategy, timeSeries, results.StrategyResults[0].Constants, 30)
+				go t.EnterIfDelayedEntryCheck(pair, strategy, timeSeries, results.StrategyResults[0].Constants, 120)
 			}
 
 			// Checks just an initial strategy exit signal. This avoid entry in the middle of a market raise
@@ -194,9 +194,9 @@ func (t *SignalTraderService) PerformExit(pair string, strategy interfaces.Strat
 			fmt.Sprintf("Strategy: %s\n", strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1)) +
 			fmt.Sprintf("Constants: %v\n", constants) +
 			fmt.Sprintf("Sell Price: %f\n", timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float()) +
-			fmt.Sprintf("Updated Balance: %f.2€\n", t.currentBalance) +
-			fmt.Sprintf("Gain/Loss: %f€\n", t.initialBalance-t.currentBalance) +
-			fmt.Sprintf("%s Profit: %f.2%%", profitEmoji, profitPct*100))
+			fmt.Sprintf("Updated Balance: %.2f€\n", t.currentBalance) +
+			fmt.Sprintf("Gain/Loss: %.2f€\n", t.initialBalance-t.currentBalance) +
+			fmt.Sprintf("%s Profit: %.2f%%", profitEmoji, profitPct*100))
 }
 
 func (t *SignalTraderService) LockPair(pair string) {
