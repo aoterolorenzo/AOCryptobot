@@ -90,5 +90,5 @@ func (p *Position) ProfitPct() float64 {
 	exitOrder := p.ExitOrder()
 	enterCumulativeQuoteQuantity, _ := strconv.ParseFloat(entranceOrder.CumulativeQuoteQuantity, 64)
 	exitCumulativeQuoteQuantity, _ := strconv.ParseFloat(exitOrder.CumulativeQuoteQuantity, 64)
-	return exitCumulativeQuoteQuantity/enterCumulativeQuoteQuantity - 1
+	return (exitCumulativeQuoteQuantity/enterCumulativeQuoteQuantity - 1) * (1 - 0.0015)
 }

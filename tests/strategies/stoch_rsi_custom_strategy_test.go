@@ -13,7 +13,7 @@ func TestStochRSICustomStrategy(t *testing.T) {
 	strategy := strategies.NewStochRSICustomStrategy()
 	exchangeService := &mocks.ProviderMock{}
 	symbol := "ETHEUR"
-	strategyResults, _ := strategy.PerformSimulation(symbol, exchangeService, "30m", 500, 0, nil)
+	strategyResults, _ := strategy.PerformSimulation(symbol, exchangeService, "1h", 240, 0, nil)
 
 	ratio := helpers.PositiveNegativeRatio(strategyResults.ProfitList)
 	profit := strategyResults.Profit
