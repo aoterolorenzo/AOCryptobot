@@ -95,12 +95,12 @@ func (t *SignalTraderService) Start() {
 			// Scenario 1: Position is open, and we should exit
 			if t.ExitCheck(pair, strategy, timeSeries, results.StrategyResults[0].Constants) {
 				// Exit after a delayed recheck (helps to avoid "false-positive" strategy signals due to market oscillations)
-				go t.ExitIfDelayedExitCheck(pair, strategy, timeSeries, results.StrategyResults[0].Constants, 80)
+				go t.ExitIfDelayedExitCheck(pair, strategy, timeSeries, results.StrategyResults[0].Constants, 180)
 
 				// Scenario 2: Position is closed, and we should enter
 			} else if t.EntryCheck(pair, strategy, timeSeries, results.StrategyResults[0].Constants) {
 				// Entry after a delayed recheck (same as in exit scenario)
-				go t.EnterIfDelayedEntryCheck(pair, strategy, timeSeries, results.StrategyResults[0].Constants, 120)
+				go t.EnterIfDelayedEntryCheck(pair, strategy, timeSeries, results.StrategyResults[0].Constants, 180)
 			}
 
 			// Checks just an initial strategy exit signal. This avoid entry in the middle of a market raise
