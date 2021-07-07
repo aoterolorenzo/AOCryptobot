@@ -44,6 +44,9 @@ func (s *Lun1MarCustomStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeS
 	distanceCurrentKD := currentSmoothKValue - currentSmoothDValue
 	distanceLastKD := lastSmoothKValue - lastSmoothDValue
 
+	myRSI5 := techan.NewRelativeStrengthIndexIndicator(techan.NewClosePriceIndicator(timeSeries), 5)
+	myRSI5Value := myRSI5.Calculate(lastCandleIndex).Float()
+
 	//closePrices := techan.NewClosePriceIndicator(timeSeries)
 	//MACD := techan.NewMACDIndicator(closePrices, 12, 26)
 	//MACDHistogram := techan.NewMACDHistogramIndicator(MACD, 9)
@@ -53,7 +56,7 @@ func (s *Lun1MarCustomStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeS
 	//lastLastMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex - 2).Float()
 
 	return currentSmoothKValue > currentSmoothDValue &&
-		distanceCurrentKD > distanceLastKD+constants[0]
+		distanceCurrentKD > distanceLastKD+constants[0] && myRSI5Value < 70
 
 }
 
