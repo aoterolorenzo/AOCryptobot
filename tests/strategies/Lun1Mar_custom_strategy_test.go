@@ -13,7 +13,7 @@ func TestLun1MarCustomStrategy(t *testing.T) {
 	strategy := strategies.NewLun1MarCustomStrategy()
 	exchangeService := &mocks.ProviderMock{}
 	symbol := "ETHEUR"
-	strategyResults, _ := strategy.PerformSimulation(symbol, exchangeService, "15m", 500, 0, nil)
+	strategyResults, _ := strategy.PerformSimulation(symbol, exchangeService, "1h", 240, 0, nil)
 
 	ratio := helpers.PositiveNegativeRatio(strategyResults.ProfitList)
 	profit := strategyResults.Profit
@@ -26,7 +26,7 @@ func TestLun1MarCustomStrategy(t *testing.T) {
 	fmt.Printf("Ratio %f Profit: %.2f%%\n", helpers.PositiveNegativeRatio(strategyResults.ProfitList),
 		strategyResults.Profit)
 
-	assert.Equal(t, 0.7857142857142857, ratio)
-	assert.Equal(t, 6.953072770110964, profit)
-	assert.Equal(t, []float64{0.005}, constants)
+	assert.Equal(t, 1.0, ratio)
+	assert.Equal(t, 3.1977614488366584, profit)
+	assert.Equal(t, []float64{0.075}, constants)
 }

@@ -228,7 +228,7 @@ func (binanceService *BinanceService) DepthMonitor(pair string, marketSnapshotsR
 func (binanceService *BinanceService) TimeSeriesMonitor(pair, interval string, timeSeries *techan.TimeSeries, active *bool) {
 	binanceService.timeSeries = timeSeries
 	binanceService.pair = pair
-	binanceService.interval = pair
+	binanceService.interval = interval
 	binanceService.active = active
 
 	klines, err := binanceService.binanceClient.NewKlinesService().Symbol(binanceService.pair).
