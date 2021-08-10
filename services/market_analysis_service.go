@@ -97,7 +97,7 @@ func (mas *MarketAnalysisService) chooseStrategy(pairAnalysisResult analytics.Pa
 	betterStrategy = nil
 	bestRatio := -10000.0
 	for _, strategy := range pairAnalysisResult.StrategiesAnalysis {
-		strategyRatio := strategy.Mean / strategy.StdDev
+		strategyRatio := (strategy.Mean / strategy.StdDev) * strategy.PositivismAvgRatio
 		//D fmt.Printf("Strategy: %s Ratio: %.2f (Analyze %t)\n",strategy.Strategy, strategy.Mean / strategy.StdDev,  strategy.Analyze)
 		if strategy.IsCandidate && strategyRatio > bestRatio {
 			//D fmt.Printf("Strategy %s with ratio %.2f%% is better than %.2f\n", strategy.Strategy,

@@ -44,6 +44,9 @@ func (s *Lun1MarCustomStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeS
 	distanceCurrentKD := currentSmoothKValue - currentSmoothDValue
 	distanceLastKD := lastSmoothKValue - lastSmoothDValue
 
+	myRSI5 := techan.NewRelativeStrengthIndexIndicator(techan.NewClosePriceIndicator(timeSeries), 5)
+	myRSI5Value := myRSI5.Calculate(lastCandleIndex).Float()
+
 	//closePrices := techan.NewClosePriceIndicator(timeSeries)
 	//MACD := techan.NewMACDIndicator(closePrices, 12, 26)
 	//MACDHistogram := techan.NewMACDHistogramIndicator(MACD, 9)
@@ -53,7 +56,7 @@ func (s *Lun1MarCustomStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeS
 	//lastLastMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex - 2).Float()
 
 	return currentSmoothKValue > currentSmoothDValue &&
-		distanceCurrentKD > distanceLastKD+constants[0]
+		distanceCurrentKD > distanceLastKD+constants[0] && myRSI5Value < 70
 
 }
 
@@ -159,13 +162,13 @@ func (s *Lun1MarCustomStrategy) Analyze(pair string, exchangeService interfaces.
 	helpers.Logger.Debugln(fmt.Sprintf("→ Analyzing %s", strings.Replace(reflect.TypeOf(s).String(), "*strategies.", "", 1)))
 
 	// Analyze last 1000 candles
-	result15m1000, err := s.PerformSimulation(pair, exchangeService, "15m", 2000, 0, nil)
+	result15m1000, err := s.PerformSimulation(pair, exchangeService, "1h", 500, 0, nil)
 	if err != nil {
 		return nil, err
 	}
 	// Analyze last 500 candles
 	strategyAnalysis.StrategyResults = append(strategyAnalysis.StrategyResults, result15m1000)
-	result15m500, err := s.PerformSimulation(pair, exchangeService, "15m", 500, 0, &result15m1000.Constants)
+	result15m500, err := s.PerformSimulation(pair, exchangeService, "1h", 240, 0, &result15m1000.Constants)
 	if err != nil {
 		return nil, err
 	}
@@ -176,10 +179,12 @@ func (s *Lun1MarCustomStrategy) Analyze(pair string, exchangeService interfaces.
 	sum := helpers.Sum(profits)
 	strategyAnalysis.Mean = sum / float64(len(profits))
 	strategyAnalysis.StdDev = helpers.StdDev(profits, strategyAnalysis.Mean)
+	strategyAnalysis.PositivismAvgRatio = (helpers.PositiveNegativeRatio(result15m500.ProfitList) + helpers.PositiveNegativeRatio(result15m1000.ProfitList)) / 2
 
 	// Conditions to accept strategy:
-	if result15m1000.Profit > 2.8 && result15m500.Profit > 1.5 &&
-		(helpers.PositiveNegativeRatio(result15m500.ProfitList) >= 1.0 || len(result15m500.ProfitList) == 0) {
+	if result15m1000.Profit > 3.2 && result15m500.Profit > 2.0 &&
+		(helpers.PositiveNegativeRatio(result15m500.ProfitList) >= 1.2 ||
+			(len(result15m500.ProfitList) == 0 && helpers.PositiveNegativeRatio(result15m1000.ProfitList) >= 1.2)) {
 
 		strategyAnalysis.IsCandidate = true
 		helpers.Logger.Debugln(fmt.Sprintf("✔️  Strategy is tradeable: 1000CandleProfit, %f 500CandleProfit %f, 60%% of the Mean %f, Std Deviation %f, 1000 Profit Ratio %f 500 Profit Ratio %f", result15m1000.Profit, result15m500.Profit,

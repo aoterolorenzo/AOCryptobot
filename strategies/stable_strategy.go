@@ -156,14 +156,14 @@ func (s *StableStrategy) Analyze(pair string, exchangeService interfaces.Exchang
 	helpers.Logger.Debugln(fmt.Sprintf("→ Analyzing %s", strings.Replace(reflect.TypeOf(s).String(), "*strategies.", "", 1)))
 
 	// Analyze last 1000 candles
-	result15m1000, err := s.PerformSimulation(pair, exchangeService, "15m", 2000, 0, nil)
+	result15m1000, err := s.PerformSimulation(pair, exchangeService, "1h", 500, 0, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	// Analyze last 500 candles
 	strategyAnalysis.StrategyResults = append(strategyAnalysis.StrategyResults, result15m1000)
-	result15m500, err := s.PerformSimulation(pair, exchangeService, "15m", 500, 0, &result15m1000.Constants)
+	result15m500, err := s.PerformSimulation(pair, exchangeService, "1h", 240, 0, &result15m1000.Constants)
 	if err != nil {
 		return nil, err
 	}
@@ -174,6 +174,7 @@ func (s *StableStrategy) Analyze(pair string, exchangeService interfaces.Exchang
 	sum := helpers.Sum(profits)
 	strategyAnalysis.Mean = sum / float64(len(profits))
 	strategyAnalysis.StdDev = helpers.StdDev(profits, strategyAnalysis.Mean)
+	strategyAnalysis.PositivismAvgRatio = (helpers.PositiveNegativeRatio(result15m500.ProfitList) + helpers.PositiveNegativeRatio(result15m1000.ProfitList)) / 2
 
 	// Conditions to accept strategy:
 	if len(result15m1000.ProfitList) > 0 &&
