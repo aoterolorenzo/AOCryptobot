@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/joho/godotenv"
 	"github.com/sdcoffey/techan"
+	"gitlab.com/aoterocom/AOCryptobot/database"
 	"gitlab.com/aoterocom/AOCryptobot/helpers"
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
 	"gitlab.com/aoterocom/AOCryptobot/models"
@@ -179,15 +180,19 @@ func (t *SignalTraderService) PerformExit(pair string, strategy interfaces.Strat
 	} else {
 		tradingAmount, _ = strconv.ParseFloat(lastPosition.EntranceOrder().ExecutedQuantity, 64)
 	}
-
+	lastCurrentBalance := t.currentBalance
 	t.currentBalance += tradingAmount * profitPct
 
-	helpers.Logger.Errorln(fmt.Sprintf("BenefitPct: %f", profitPct))
+	transactionBenefit := t.currentBalance - lastCurrentBalance
+
 	if profitPct >= 0 {
 		profitEmoji = "✅"
 	} else {
 		profitEmoji = "❌"
 	}
+
+	dbService := database.DBService{}
+	dbService.AddPosition(*lastPosition, strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1), constants, profitPct*100, transactionBenefit, t.currentBalance-t.initialBalance)
 
 	helpers.Logger.Infoln(
 		fmt.Sprintf("📉 **%s: ❕ Exit signal**\n", pair) +
