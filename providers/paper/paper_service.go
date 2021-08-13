@@ -74,7 +74,7 @@ func (paperService *PaperService) MakeOrder(pair string, quantity float64, rate 
 	}
 
 	order := models.NewOrder(pair, 0, "0", rateString, quantityString, quantityString, cumulativeQuantityString, models.OrderStatusTypeFilled,
-		orderType, sideType, 0, 0, false, false)
+		orderType, sideType, time.Now().Unix(), time.Now().Unix(), false, false)
 
 	return order, nil
 }
