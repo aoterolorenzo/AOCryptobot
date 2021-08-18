@@ -23,7 +23,8 @@ type SignalTraderService struct {
 
 	maxOpenPositions    int
 	targetCoin          string
-	stopLoss            float64
+	stopLoss            bool
+	stopLossPct         float64
 	tradePctPerPosition float64
 	balancePctToTrade   float64
 
@@ -53,7 +54,8 @@ func (t *SignalTraderService) Start() {
 
 	t.tradingRecordService = services.NewTradingRecordService(t.multiMarketService, t.marketAnalysisService.ExchangeService)
 	// Get .env file strategy variables
-	t.stopLoss, _ = strconv.ParseFloat(os.Getenv("stopLoss"), 64)
+	t.stopLoss, _ = strconv.ParseBool(os.Getenv("stopLoss"))
+	t.stopLossPct, _ = strconv.ParseFloat(os.Getenv("stopLossPct"), 64)
 	t.maxOpenPositions, _ = strconv.Atoi(os.Getenv("maxOpenPositions"))
 	t.targetCoin = os.Getenv("targetCoin")
 	t.tradePctPerPosition, _ = strconv.ParseFloat(os.Getenv("tradePctPerPosition"), 64)
@@ -147,7 +149,16 @@ func (t *SignalTraderService) EntryCheck(pair string, strategy interfaces.Strate
 func (t *SignalTraderService) ExitCheck(pair string, strategy interfaces.Strategy,
 	timeSeries *techan.TimeSeries, constants []float64) bool {
 
-	return strategy.ParametrizedShouldExit(timeSeries, constants) && t.tradingRecordService.HasOpenPositions(pair)
+	if t.tradingRecordService.HasOpenPositions(pair) && t.stopLoss {
+		entryPrice, _ := strconv.ParseFloat(t.tradingRecordService.OpenPositions[pair][0].EntranceOrder().Price, 64)
+
+		if entryPrice*(1-t.stopLossPct) > timeSeries.LastCandle().ClosePrice.Float() {
+			helpers.Logger.Debugln(fmt.Sprintf("Stop-Loss signal for %s", pair))
+			return true
+		}
+	}
+
+	return t.tradingRecordService.HasOpenPositions(pair) && strategy.ParametrizedShouldExit(timeSeries, constants)
 }
 
 func (t *SignalTraderService) PerformEntry(pair string, strategy interfaces.Strategy,
