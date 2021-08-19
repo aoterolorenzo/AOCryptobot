@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/joho/godotenv"
 	"github.com/sdcoffey/techan"
+	"gitlab.com/aoterocom/AOCryptobot/database"
 	"gitlab.com/aoterocom/AOCryptobot/helpers"
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
 	"gitlab.com/aoterocom/AOCryptobot/models"
@@ -20,6 +21,7 @@ type SignalTraderService struct {
 	marketAnalysisService *services.MarketAnalysisService
 	multiMarketService    *services.MultiMarketService
 	tradingRecordService  *services.TradingRecordService
+	databaseService 	  *database.DBService
 
 	maxOpenPositions    int
 	targetCoin          string
@@ -27,6 +29,7 @@ type SignalTraderService struct {
 	stopLossPct         float64
 	tradePctPerPosition float64
 	balancePctToTrade   float64
+	databaseIsEnabled   bool
 
 	currentBalance           float64
 	initialBalance           float64
@@ -60,6 +63,9 @@ func (t *SignalTraderService) Start() {
 	t.targetCoin = os.Getenv("targetCoin")
 	t.tradePctPerPosition, _ = strconv.ParseFloat(os.Getenv("tradePctPerPosition"), 64)
 	t.balancePctToTrade, _ = strconv.ParseFloat(os.Getenv("balancePctToTrade"), 64)
+	t.databaseIsEnabled, _ = strconv.ParseBool(os.Getenv("enableDatabaseRecording"))
+	t.databaseService = database.NewDBService(os.Getenv("databaseName"), os.Getenv("databaseHost"), os.Getenv("databasePort"),
+		os.Getenv("databaseUser"), os.Getenv("databasePassword"))
 
 	t.firstExitTriggered = make(map[string]bool)
 	initialBalance, err := t.marketAnalysisService.ExchangeService.GetAvailableBalance(t.targetCoin)
@@ -190,14 +196,19 @@ func (t *SignalTraderService) PerformExit(pair string, strategy interfaces.Strat
 	} else {
 		tradingAmount, _ = strconv.ParseFloat(lastPosition.EntranceOrder().ExecutedQuantity, 64)
 	}
-
+	lastCurrentBalance := t.currentBalance
 	t.currentBalance += tradingAmount * profitPct
 
-	helpers.Logger.Errorln(fmt.Sprintf("BenefitPct: %f", profitPct))
+	transactionBenefit := t.currentBalance - lastCurrentBalance
+
 	if profitPct >= 0 {
 		profitEmoji = "✅"
 	} else {
 		profitEmoji = "❌"
+	}
+
+	if t.databaseIsEnabled {
+		t.databaseService.AddPosition(*lastPosition, strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1), constants, profitPct*100, transactionBenefit, t.currentBalance-t.initialBalance)
 	}
 
 	helpers.Logger.Infoln(
