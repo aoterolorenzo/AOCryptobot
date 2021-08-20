@@ -135,7 +135,6 @@ func (s *MACDCustomStrategy) PerformSimulation(pair string, exchangeService inte
 					balance *= profitPct * (1 - 0.00014)
 					profitList = append(profitList, (profitPct*(1-0.0014))-1)
 				}
-				time.Sleep(100 * time.Microsecond)
 			}
 			open = false
 			//return pairAnalysis, nil

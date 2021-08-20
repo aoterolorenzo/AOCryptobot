@@ -125,7 +125,6 @@ func (s *StochRSICustomStrategy) PerformSimulation(pair string, exchangeService 
 				}
 
 			}
-			time.Sleep(300 * time.Nanosecond)
 		}
 
 		open = false

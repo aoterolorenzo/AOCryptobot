@@ -9,7 +9,6 @@ import (
 	"gitlab.com/aoterocom/AOCryptobot/strategies/indicators"
 	"reflect"
 	"strings"
-	"time"
 )
 
 type Lun1MarCustomStrategy struct{}
@@ -130,7 +129,6 @@ func (s *Lun1MarCustomStrategy) PerformSimulation(pair string, exchangeService i
 					profitList = append(profitList, (profitPct*(1-0.0014))-1)
 				}
 			}
-			time.Sleep(300 * time.Nanosecond)
 		}
 
 		open = false
