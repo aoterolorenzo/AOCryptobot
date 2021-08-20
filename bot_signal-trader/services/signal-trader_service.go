@@ -21,7 +21,7 @@ type SignalTraderService struct {
 	marketAnalysisService *services.MarketAnalysisService
 	multiMarketService    *services.MultiMarketService
 	tradingRecordService  *services.TradingRecordService
-	databaseService 	  *database.DBService
+	databaseService       *database.DBService
 
 	maxOpenPositions    int
 	targetCoin          string
@@ -137,6 +137,16 @@ func (t *SignalTraderService) EnterIfDelayedEntryCheck(pair string, strategy int
 func (t *SignalTraderService) ExitIfDelayedExitCheck(pair string, strategy interfaces.Strategy,
 	timeSeries *techan.TimeSeries, constants []float64, delay int) {
 
+	if t.tradingRecordService.HasOpenPositions(pair) && t.stopLoss {
+		entryPrice, _ := strconv.ParseFloat(t.tradingRecordService.OpenPositions[pair][0].EntranceOrder().Price, 64)
+
+		if entryPrice*(1-t.stopLossPct) > timeSeries.LastCandle().ClosePrice.Float() {
+			helpers.Logger.Debugln(fmt.Sprintf("Stop-Loss signal for %s", pair))
+			t.PerformExit(pair, strategy, timeSeries, constants)
+			t.UnLockPair(pair)
+		}
+	}
+
 	// If there's no stop-loss signal, wait delay and exit if recheck
 	time.Sleep(time.Duration(delay) * time.Second)
 	if t.ExitCheck(pair, strategy, timeSeries, constants) {
@@ -154,15 +164,6 @@ func (t *SignalTraderService) EntryCheck(pair string, strategy interfaces.Strate
 
 func (t *SignalTraderService) ExitCheck(pair string, strategy interfaces.Strategy,
 	timeSeries *techan.TimeSeries, constants []float64) bool {
-
-	if t.tradingRecordService.HasOpenPositions(pair) && t.stopLoss {
-		entryPrice, _ := strconv.ParseFloat(t.tradingRecordService.OpenPositions[pair][0].EntranceOrder().Price, 64)
-
-		if entryPrice*(1-t.stopLossPct) > timeSeries.LastCandle().ClosePrice.Float() {
-			helpers.Logger.Debugln(fmt.Sprintf("Stop-Loss signal for %s", pair))
-			return true
-		}
-	}
 
 	return t.tradingRecordService.HasOpenPositions(pair) && strategy.ParametrizedShouldExit(timeSeries, constants)
 }
