@@ -36,6 +36,8 @@ func (st *SignalTrader) Run() {
 	MACDCustomStrategy := strategies2.NewMACDCustomStrategy()
 	stableStrategy := strategies2.NewStableStrategy()
 	stochRSICustomStrategy := strategies2.NewStochRSICustomStrategy()
+	MACDInStochRSIOutCustomStrategy := strategies2.NewMACDInStochRSIOutCustomStrategy()
+	stochRSIInMACDOutCustomStrategy := strategies2.NewStochRSIInMACDOutCustomStrategy()
 
 	strategies := []interfaces.Strategy{
 		&lun1MarCustomStrategy,
@@ -43,6 +45,8 @@ func (st *SignalTrader) Run() {
 		&stochRSICustomStrategy,
 		&MACDCustomStrategy,
 		&stableStrategy,
+		&MACDInStochRSIOutCustomStrategy,
+		&stochRSIInMACDOutCustomStrategy,
 	}
 	marketAnalysisService := services.NewMarketAnalysisService(exchangeService, strategies, &pairAnalysisResults)
 	marketAnalysisService.PopulateWithPairs(targetCoin)
