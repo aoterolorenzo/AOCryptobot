@@ -38,11 +38,11 @@ func init() {
 }
 
 func (paperService *PaperService) GetTotalBalance(asset string) (float64, error) {
-	return 10568.83, nil
+	return 10000.0, nil
 }
 
 func (paperService *PaperService) GetAvailableBalance(asset string) (float64, error) {
-	return 10568.83, nil
+	return 10000.0, nil
 }
 
 func (paperService *PaperService) GetLockedBalance(asset string) (float64, error) {
@@ -74,7 +74,7 @@ func (paperService *PaperService) MakeOrder(pair string, quantity float64, rate 
 	}
 
 	order := models.NewOrder(pair, 0, "0", rateString, quantityString, quantityString, cumulativeQuantityString, models.OrderStatusTypeFilled,
-		orderType, sideType, time.Now().Unix(), time.Now().Unix(), false, false)
+		orderType, sideType, 0, 0, false, false)
 
 	return order, nil
 }

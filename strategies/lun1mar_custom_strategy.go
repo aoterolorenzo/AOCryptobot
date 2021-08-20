@@ -125,8 +125,10 @@ func (s *Lun1MarCustomStrategy) PerformSimulation(pair string, exchangeService i
 				open = false
 				sellRate = candles[i-1].ClosePrice.Float()
 				profitPct := sellRate * 1 / buyRate
-				balance *= profitPct * (1 - 0.0014)
-				profitList = append(profitList, (profitPct*(1-0.0014))-1)
+				if profitPct < 1.5 {
+					balance *= profitPct * (1 - 0.0014)
+					profitList = append(profitList, (profitPct*(1-0.0014))-1)
+				}
 			}
 			time.Sleep(300 * time.Nanosecond)
 		}

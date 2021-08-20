@@ -12,23 +12,22 @@ import (
 	"time"
 )
 
-type Lun5JulCustomStrategy struct{}
+type StochRSIInMACDOutCustomStrategy struct{}
 
-func NewLun5JulCustomStrategy() Lun5JulCustomStrategy {
-	return Lun5JulCustomStrategy{}
+func NewStochRSIInMACDOutCustomStrategy() StochRSIInMACDOutCustomStrategy {
+	return StochRSIInMACDOutCustomStrategy{}
 }
 
-func (s *Lun5JulCustomStrategy) ShouldEnter(timeSeries *techan.TimeSeries) bool {
+func (s *StochRSIInMACDOutCustomStrategy) ShouldEnter(timeSeries *techan.TimeSeries) bool {
 	return s.ParametrizedShouldEnter(timeSeries, []float64{0.15, 0})
 }
 
-func (s *Lun5JulCustomStrategy) ShouldExit(timeSeries *techan.TimeSeries) bool {
+func (s *StochRSIInMACDOutCustomStrategy) ShouldExit(timeSeries *techan.TimeSeries) bool {
 	return s.ParametrizedShouldExit(timeSeries, []float64{0.15, 0})
 }
 
-func (s *Lun5JulCustomStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeSeries, constants []float64) bool {
+func (s *StochRSIInMACDOutCustomStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeSeries, constants []float64) bool {
 	myRSI := techan.NewRelativeStrengthIndexIndicator(techan.NewClosePriceIndicator(timeSeries), 12)
-	myRSI5 := techan.NewRelativeStrengthIndexIndicator(techan.NewClosePriceIndicator(timeSeries), 5)
 	stochRSI := indicators.NewStochasticRelativeStrengthIndicator(myRSI, 12)
 	smoothK := techan.NewSimpleMovingAverage(stochRSI, 3)
 	smoothD := techan.NewSimpleMovingAverage(smoothK, 3)
@@ -43,46 +42,39 @@ func (s *Lun5JulCustomStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeS
 	lastSmoothDValue := smoothD.Calculate(lastCandleIndex).Float()
 	distanceLastKD := lastSmoothKValue - lastSmoothDValue
 
-	myRSI5Value := myRSI5.Calculate(lastCandleIndex).Float()
-
 	lastLastSmoothKValue := smoothK.Calculate(lastCandleIndex - 1).Float()
 	lastLastSmoothDValue := smoothD.Calculate(lastCandleIndex - 1).Float()
 	distanceLastLastKD := lastLastSmoothKValue - lastLastSmoothDValue
 
-	return (((lastSmoothKValue > lastSmoothDValue+0.1 &&
+	return ((lastSmoothKValue > lastSmoothDValue+0.1 &&
 		distanceLastKD > distanceLastLastKD+constants[0]) ||
-		distanceLastKD > 0.16) && lastSmoothKValue < 40) && myRSI5Value < 70
+		distanceLastKD > 0.16) && lastSmoothKValue < 40
 }
 
-func (s *Lun5JulCustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSeries, constants []float64) bool {
-	myRSI := techan.NewRelativeStrengthIndexIndicator(techan.NewClosePriceIndicator(timeSeries), 12)
-	stochRSI := indicators.NewStochasticRelativeStrengthIndicator(myRSI, 12)
-	smoothK := techan.NewSimpleMovingAverage(stochRSI, 3)
-	smoothD := techan.NewSimpleMovingAverage(smoothK, 3)
+func (s *StochRSIInMACDOutCustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSeries, constants []float64) bool {
 
+	closePrices := techan.NewClosePriceIndicator(timeSeries)
 	lastCandleIndex := len(timeSeries.Candles) - 1
 
 	// Left some margin after the candle start
-	if time.Now().Unix()-240 < timeSeries.Candles[lastCandleIndex].Period.Start.Unix() {
+	if time.Now().Unix()-120 < timeSeries.Candles[lastCandleIndex].Period.Start.Unix() {
 		return false
 	}
 
-	lastSmoothKValue := smoothK.Calculate(lastCandleIndex).Float()
-	lastSmoothDValue := smoothD.Calculate(lastCandleIndex).Float()
-	distanceLastKD := lastSmoothKValue - lastSmoothDValue
+	MACD := techan.NewMACDIndicator(closePrices, 12, 26)
+	MACDHistogram := techan.NewMACDHistogramIndicator(MACD, 9)
 
-	lastLastSmoothKValue := smoothK.Calculate(lastCandleIndex - 1).Float()
-	lastLastSmoothDValue := smoothD.Calculate(lastCandleIndex - 1).Float()
-	distanceLastLastKD := lastLastSmoothKValue - lastLastSmoothDValue
+	currentMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex).Float()
+	lastMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex - 1).Float()
+	myRSI := techan.NewRelativeStrengthIndexIndicator(closePrices, 12)
+	currentRSIValue := myRSI.Calculate(lastCandleIndex).Float()
 
-	lastRsiValue := myRSI.Calculate(lastCandleIndex).Float()
-	lastLastRsiValue := myRSI.Calculate(lastCandleIndex - 1).Float()
-	exitRuleSetCheck := distanceLastKD < distanceLastLastKD-0.03 || lastRsiValue < lastLastRsiValue*0.85
+	exitRuleSetCheck := currentMACDHistogramValue < lastMACDHistogramValue-constants[1] || currentRSIValue < 50
 
 	return exitRuleSetCheck && !s.ParametrizedShouldEnter(timeSeries, constants)
 }
 
-func (s *Lun5JulCustomStrategy) PerformSimulation(pair string, exchangeService interfaces.ExchangeService, interval string, limit int, omit int, constants *[]float64) (analytics.StrategySimulationResult, error) {
+func (s *StochRSIInMACDOutCustomStrategy) PerformSimulation(pair string, exchangeService interfaces.ExchangeService, interval string, limit int, omit int, constants *[]float64) (analytics.StrategySimulationResult, error) {
 	strategyResults := analytics.NewStrategySimulationResult()
 	series, err := exchangeService.GetSeries(pair, interval, limit)
 	if err != nil {
@@ -146,6 +138,12 @@ func (s *Lun5JulCustomStrategy) PerformSimulation(pair string, exchangeService i
 	//fmt.Printf("BEST CONSTANT COMBINATION FOUND: Entry Constant: %.8f Profit: %.4f%%\n",
 	//	selectedEntryConstant, highestBalance*100/1000-100)
 
+	for i, profit := range bestProfitList {
+		if profit > 1.0 {
+			bestProfitList = helpers.RemoveFromSlice(bestProfitList, i)
+		}
+	}
+
 	strategyResults.Trend = series.Candles[len(series.Candles)-1].ClosePrice.Float() / series.Candles[0].ClosePrice.Float()
 	strategyResults.Profit = highestBalance*100/1000 - 100
 	strategyResults.ProfitList = bestProfitList
@@ -154,7 +152,7 @@ func (s *Lun5JulCustomStrategy) PerformSimulation(pair string, exchangeService i
 	return strategyResults, nil
 }
 
-func (s *Lun5JulCustomStrategy) Analyze(pair string, exchangeService interfaces.ExchangeService) (*analytics.StrategyAnalysis, error) {
+func (s *StochRSIInMACDOutCustomStrategy) Analyze(pair string, exchangeService interfaces.ExchangeService) (*analytics.StrategyAnalysis, error) {
 	strategyAnalysis := analytics.NewStrategyAnalysis()
 	strategyAnalysis.Strategy = s
 
@@ -181,7 +179,7 @@ func (s *Lun5JulCustomStrategy) Analyze(pair string, exchangeService interfaces.
 	strategyAnalysis.PositivismAvgRatio = (helpers.PositiveNegativeRatio(result15m500.ProfitList) + helpers.PositiveNegativeRatio(result15m1000.ProfitList)) / 2
 
 	// Conditions to accept strategy:
-	if result15m1000.Profit > 3.2 && result15m500.Profit > 2.0 &&
+	if result15m500.Profit > 2.0 &&
 		(helpers.PositiveNegativeRatio(result15m500.ProfitList) >= 1.2 ||
 			(len(result15m500.ProfitList) == 0 && helpers.PositiveNegativeRatio(result15m1000.ProfitList) >= 1.2)) {
 

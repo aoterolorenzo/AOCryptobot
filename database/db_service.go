@@ -1,14 +1,41 @@
 package database
 
 import (
+	"github.com/joho/godotenv"
 	database "gitlab.com/aoterocom/AOCryptobot/database/models"
 	"gitlab.com/aoterocom/AOCryptobot/models"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"log"
+	"os"
 )
 
 type DBService struct {
+	DBName string
+	DBHost string
+	DBPort string
+	DBUser string
+	DBPass string
 }
+
+func NewDBService(database string, host string, port string, user string, password string) *DBService {
+	return &DBService{
+		DBName: database,
+		DBHost: host,
+		DBPort: port,
+		DBUser: user,
+		DBPass: password,
+	}
+}
+
+func init() {
+	cwd, _ := os.Getwd()
+	err := godotenv.Load(cwd + "/bot_signal-trader/conf.env")
+	if err != nil {
+		log.Fatalln("Error loading go.env file", err)
+	}
+}
+
 
 func (dbs *DBService) AddPosition(position models.Position, strategy string, constants []float64,
 	profitPct float64, benefits float64, cumulatedGain float64) {
@@ -62,7 +89,7 @@ func (dbs *DBService) AddPosition(position models.Position, strategy string, con
 		}},
 	}
 
-	dsn := "user:pass@tcp(127.0.0.1:3336)/AOCryptoBot?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := dbs.DBUser + ":" + dbs.DBPass + "@tcp(" + dbs.DBHost + ":" + dbs.DBPort + ")/" + dbs.DBName + "?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
