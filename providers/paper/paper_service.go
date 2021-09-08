@@ -38,11 +38,11 @@ func init() {
 }
 
 func (paperService *PaperService) GetTotalBalance(asset string) (float64, error) {
-	return 10539.64, nil
+	return 10670.73, nil
 }
 
 func (paperService *PaperService) GetAvailableBalance(asset string) (float64, error) {
-	return 10539.64, nil
+	return 10670.73, nil
 }
 
 func (paperService *PaperService) GetLockedBalance(asset string) (float64, error) {
