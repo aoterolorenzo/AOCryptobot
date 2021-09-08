@@ -198,7 +198,7 @@ func (t *SignalTraderService) PerformExit(pair string, strategy interfaces.Strat
 		tradingAmount, _ = strconv.ParseFloat(lastPosition.EntranceOrder().ExecutedQuantity, 64)
 	}
 	lastCurrentBalance := t.currentBalance
-	t.currentBalance += tradingAmount * profitPct
+	t.currentBalance += tradingAmount * profitPct / 100
 
 	transactionBenefit := t.currentBalance - lastCurrentBalance
 
@@ -219,7 +219,7 @@ func (t *SignalTraderService) PerformExit(pair string, strategy interfaces.Strat
 			fmt.Sprintf("Sell Price: %f\n", timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float()) +
 			fmt.Sprintf("Updated Balance: %.2f€\n", t.currentBalance) +
 			fmt.Sprintf("Gain/Loss: %.2f€\n", t.currentBalance-t.initialBalance) +
-			fmt.Sprintf("%s Profit: %.2f%%", profitEmoji, profitPct*100))
+			fmt.Sprintf("%s Profit: %.2f%%", profitEmoji, profitPct))
 }
 
 func (t *SignalTraderService) LockPair(pair string) {
