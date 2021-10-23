@@ -311,11 +311,17 @@ func (binanceService *BinanceService) GetSeries(pair string, interval string, li
 	return timeSeries, nil
 }
 
-func (binanceService *BinanceService) GetMarkets(coin string) []string {
+func (binanceService *BinanceService) GetMarkets(coin string, whitelist []string, blacklist []string) []string {
 	var pairList []string
+
+	blacklistStringify := strings.Join(blacklist, ",")
+	whitelistStringify := strings.Join(whitelist, ",")
+
 	info, _ := binanceService.binanceClient.NewExchangeInfoService().Do(context.Background())
 	for _, symbol := range info.Symbols {
-		if strings.Contains(symbol.Symbol, coin) {
+		if strings.Contains(symbol.Symbol, coin) &&
+			!strings.Contains(blacklistStringify, symbol.Symbol) &&
+			(len(whitelist) == 0 || (len(whitelist) > 0 && strings.Contains(whitelistStringify, symbol.Symbol))) {
 			pairList = append(pairList, symbol.Symbol)
 		}
 	}

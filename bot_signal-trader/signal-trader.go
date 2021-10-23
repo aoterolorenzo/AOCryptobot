@@ -11,6 +11,7 @@ import (
 	strategies2 "gitlab.com/aoterocom/AOCryptobot/strategies"
 	"log"
 	"os"
+	"strings"
 )
 
 type SignalTrader struct {
@@ -28,6 +29,18 @@ func (st *SignalTrader) Run() {
 	helpers.Logger.Infoln("🖖🏻 Signal Trader started")
 
 	targetCoin := os.Getenv("targetCoin")
+	whitelistCoinsString := os.Getenv("whitelistCoins")
+	blacklistCoinsString := os.Getenv("blacklistCoins")
+	whitelistCoins := strings.Split(whitelistCoinsString, ",")
+	if whitelistCoins[0] == "" {
+		whitelistCoins = []string{}
+	}
+
+	blacklistCoins := strings.Split(blacklistCoinsString, ",")
+	if blacklistCoins[0] == "" {
+		blacklistCoins = []string{}
+	}
+
 	var pairAnalysisResults []*analytics.PairAnalysis
 	bs := binance2.NewPaperService()
 	exchangeService := interfaces.ExchangeService(bs)
@@ -49,7 +62,7 @@ func (st *SignalTrader) Run() {
 		//&stochRSIInMACDOutCustomStrategy,
 	}
 	marketAnalysisService := services.NewMarketAnalysisService(exchangeService, strategies, &pairAnalysisResults)
-	marketAnalysisService.PopulateWithPairs(targetCoin)
+	marketAnalysisService.PopulateWithPairs(targetCoin, whitelistCoins, blacklistCoins)
 	go marketAnalysisService.AnalyzeMarkets()
 
 	mms := services.NewMultiMarketService(&pairAnalysisResults)

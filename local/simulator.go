@@ -11,6 +11,8 @@ import (
 func main() {
 
 	targetCoin := "DOTEUR"
+	var whitelist []string
+	var blacklist []string
 	bs := binance.NewPaperService()
 	exchangeService := interfaces.ExchangeService(bs)
 
@@ -30,7 +32,7 @@ func main() {
 		//&stableStrategy,
 	}
 
-	for _, pair := range exchangeService.GetMarkets(targetCoin) {
+	for _, pair := range exchangeService.GetMarkets(targetCoin, whitelist, blacklist) {
 		helpers.Logger.Infoln("⚠️ Analyzing " + pair + " ⚠️")
 		for _, strategy := range selectedStrategies {
 			_, err := strategy.Analyze(pair, exchangeService)

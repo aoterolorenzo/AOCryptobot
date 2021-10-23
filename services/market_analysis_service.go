@@ -25,8 +25,8 @@ func NewMarketAnalysisService(exchangeService interfaces.ExchangeService,
 	}
 }
 
-func (mas *MarketAnalysisService) PopulateWithPairs(coin string) {
-	for _, pair := range mas.ExchangeService.GetMarkets(coin) {
+func (mas *MarketAnalysisService) PopulateWithPairs(coin string, whitelist []string, blacklist []string) {
+	for _, pair := range mas.ExchangeService.GetMarkets(coin, whitelist, blacklist) {
 		pairAnalysis := analytics.PairAnalysis{Pair: pair}
 		pairAnalysis.TradeSignal = false
 

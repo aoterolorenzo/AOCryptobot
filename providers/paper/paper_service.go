@@ -162,12 +162,24 @@ func (paperService *PaperService) GetSeries(pair string, interval string, limit 
 	return timeSeries, nil
 }
 
-func (paperService *PaperService) GetMarkets(coin string) []string {
+func (paperService *PaperService) GetMarkets(coin string, whitelist []string, blacklist []string) []string {
 	var pairList []string
+
+	blacklistStringify := strings.Join(blacklist, ",")
+	whitelistStringify := strings.Join(whitelist, ",")
+
 	info, _ := paperService.binanceClient.NewExchangeInfoService().Do(context.Background())
 	for _, symbol := range info.Symbols {
-		if strings.Contains(symbol.Symbol, coin) {
+
+		if strings.Contains(symbol.Symbol, coin) &&
+			(len(blacklist) == 0 || (len(blacklist) > 0 && !strings.Contains(blacklistStringify, symbol.Symbol))) &&
+			(len(whitelist) == 0 || (len(whitelist) > 0 && strings.Contains(whitelistStringify, symbol.Symbol))) {
+			fmt.Println("Accepted " + symbol.Symbol)
 			pairList = append(pairList, symbol.Symbol)
+		} else {
+			if strings.Contains(symbol.Symbol, coin) {
+				fmt.Println("Rejected " + symbol.Symbol)
+			}
 		}
 	}
 	return pairList

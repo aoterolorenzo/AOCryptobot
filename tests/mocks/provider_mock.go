@@ -69,7 +69,7 @@ func (paperService *ProviderMock) GetSeries(pair string, interval string, limit 
 	return series, nil
 }
 
-func (paperService *ProviderMock) GetMarkets(coin string) []string {
+func (paperService *ProviderMock) GetMarkets(coin string, whitelist []string, blacklist []string) []string {
 	var pairList []string
 	return pairList
 }
