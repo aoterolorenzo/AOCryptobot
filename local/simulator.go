@@ -10,21 +10,23 @@ import (
 
 func main() {
 
-	targetCoin := "UNIEUR"
+	targetCoin := "DOTEUR"
 	bs := binance.NewPaperService()
 	exchangeService := interfaces.ExchangeService(bs)
 
 	//lun1MarCustomStrategy := strategies.NewLun1MarCustomStrategy()
-	lun5JulCustomStrategy := strategies.NewLun5JulCustomStrategy()
+	//lun5JulCustomStrategy := strategies.NewLun5JulCustomStrategy()
 	//MACDCustomStrategy := strategies.NewMACDCustomStrategy()
 	//stableStrategy := strategies.NewStableStrategy()
 	//stochRSICustomStrategy := strategies.NewStochRSICustomStrategy()
+	stochRSIInMACDOutCustomStrategy := strategies.NewMACDInStochRSIOutCustomStrategy()
 
 	selectedStrategies := []interfaces.Strategy{
 		//&MACDCustomStrategy,
 		//&lun1MarCustomStrategy,
 		//&stochRSICustomStrategy,
-		&lun5JulCustomStrategy,
+		&stochRSIInMACDOutCustomStrategy,
+		//&lun5JulCustomStrategy,
 		//&stableStrategy,
 	}
 

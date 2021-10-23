@@ -32,21 +32,21 @@ func (st *SignalTrader) Run() {
 	bs := binance2.NewPaperService()
 	exchangeService := interfaces.ExchangeService(bs)
 	lun1MarCustomStrategy := strategies2.NewLun1MarCustomStrategy()
-	//lun5JulCustomStrategy := strategies2.NewLun5JulCustomStrategy()
+	lun5JulCustomStrategy := strategies2.NewLun5JulCustomStrategy()
 	//MACDCustomStrategy := strategies2.NewMACDCustomStrategy()
-	stableStrategy := strategies2.NewStableStrategy()
+	//stableStrategy := strategies2.NewStableStrategy()
 	stochRSICustomStrategy := strategies2.NewStochRSICustomStrategy()
 	//MACDInStochRSIOutCustomStrategy := strategies2.NewMACDInStochRSIOutCustomStrategy()
-	stochRSIInMACDOutCustomStrategy := strategies2.NewStochRSIInMACDOutCustomStrategy()
+	//stochRSIInMACDOutCustomStrategy := strategies2.NewStochRSIInMACDOutCustomStrategy()
 
 	strategies := []interfaces.Strategy{
 		&lun1MarCustomStrategy,
-		//&lun5JulCustomStrategy,
+		&lun5JulCustomStrategy,
 		&stochRSICustomStrategy,
 		//&MACDCustomStrategy,
-		&stableStrategy,
+		//&stableStrategy,
 		//&MACDInStochRSIOutCustomStrategy,
-		&stochRSIInMACDOutCustomStrategy,
+		//&stochRSIInMACDOutCustomStrategy,
 	}
 	marketAnalysisService := services.NewMarketAnalysisService(exchangeService, strategies, &pairAnalysisResults)
 	marketAnalysisService.PopulateWithPairs(targetCoin)

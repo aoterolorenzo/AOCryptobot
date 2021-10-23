@@ -163,7 +163,7 @@ func (s *StochRSIInMACDOutCustomStrategy) PerformSimulation(pair string, exchang
 					open = false
 					sellRate = candles[i-1].ClosePrice.Float()
 					profitPct := sellRate * 1 / buyRate
-					if profitPct < 1.5 {
+					if profitPct < 2 {
 						balance *= profitPct * (1 - 0.0014)
 						profitList = append(profitList, (profitPct*(1-0.0014))-1)
 					}
