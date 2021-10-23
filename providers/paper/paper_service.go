@@ -174,12 +174,7 @@ func (paperService *PaperService) GetMarkets(coin string, whitelist []string, bl
 		if strings.Contains(symbol.Symbol, coin) &&
 			(len(blacklist) == 0 || (len(blacklist) > 0 && !strings.Contains(blacklistStringify, symbol.Symbol))) &&
 			(len(whitelist) == 0 || (len(whitelist) > 0 && strings.Contains(whitelistStringify, symbol.Symbol))) {
-			fmt.Println("Accepted " + symbol.Symbol)
 			pairList = append(pairList, symbol.Symbol)
-		} else {
-			if strings.Contains(symbol.Symbol, coin) {
-				fmt.Println("Rejected " + symbol.Symbol)
-			}
 		}
 	}
 	return pairList
