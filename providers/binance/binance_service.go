@@ -319,8 +319,9 @@ func (binanceService *BinanceService) GetMarkets(coin string, whitelist []string
 
 	info, _ := binanceService.binanceClient.NewExchangeInfoService().Do(context.Background())
 	for _, symbol := range info.Symbols {
+
 		if strings.Contains(symbol.Symbol, coin) &&
-			!strings.Contains(blacklistStringify, symbol.Symbol) &&
+			(len(blacklist) == 0 || (len(blacklist) > 0 && !strings.Contains(blacklistStringify, symbol.Symbol))) &&
 			(len(whitelist) == 0 || (len(whitelist) > 0 && strings.Contains(whitelistStringify, symbol.Symbol))) {
 			pairList = append(pairList, symbol.Symbol)
 		}
