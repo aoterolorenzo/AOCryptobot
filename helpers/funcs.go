@@ -57,3 +57,7 @@ func StringIntervalToSeconds(interval string) float64 {
 	}
 	return durationFromString.Seconds()
 }
+
+func RemoveFromSlice(slice []float64, s int) []float64 {
+	return append(slice[:s], slice[s+1:]...)
+}
