@@ -209,7 +209,7 @@ func (t *SignalTraderService) PerformExit(pair string, strategy interfaces.Strat
 	}
 
 	if t.databaseIsEnabled {
-		t.databaseService.AddPosition(*lastPosition, strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1), constants, profitPct*100, transactionBenefit, t.currentBalance-t.initialBalance)
+		t.databaseService.AddPosition(*lastPosition, strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1), constants, profitPct, transactionBenefit, t.currentBalance-t.initialBalance)
 	}
 
 	helpers.Logger.Infoln(
