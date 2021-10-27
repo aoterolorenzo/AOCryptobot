@@ -144,6 +144,7 @@ func (t *SignalTraderService) ExitIfDelayedExitCheck(pair string, strategy inter
 			helpers.Logger.Debugln(fmt.Sprintf("Stop-Loss signal for %s", pair))
 			t.PerformExit(pair, strategy, timeSeries, constants)
 			t.UnLockPair(pair)
+			return
 		}
 	}
 
