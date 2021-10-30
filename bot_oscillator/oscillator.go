@@ -2,6 +2,7 @@ package bot_oscillator
 
 import (
 	"github.com/sdcoffey/techan"
+	"github.com/urfave/cli/v2"
 	marketMakerServices "gitlab.com/aoterocom/AOCryptobot/bot_oscillator/services"
 	"gitlab.com/aoterocom/AOCryptobot/bot_oscillator/ui"
 	"gitlab.com/aoterocom/AOCryptobot/helpers"
@@ -27,7 +28,7 @@ type MarketMaker struct {
 	waitTime         int
 }
 
-func (mm *MarketMaker) Run() {
+func (mm *MarketMaker) Run(c *cli.Context) {
 
 	threadNumber, err := strconv.Atoi(os.Getenv("threadNumber"))
 	monitorWindow, err := strconv.Atoi(os.Getenv("monitorWindow"))

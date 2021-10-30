@@ -1,8 +1,10 @@
 package bot_signal_trader
 
 import (
+	"fmt"
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
+	"github.com/urfave/cli/v2"
 	signalTrader "gitlab.com/aoterocom/AOCryptobot/bot_signal-trader/services"
 	"gitlab.com/aoterocom/AOCryptobot/helpers"
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
@@ -26,10 +28,14 @@ func init() {
 	}
 }
 
-func (st *SignalTrader) Run() {
-	helpers.Logger.Infoln("🖖🏻 Signal Trader started")
+func (st *SignalTrader) Run(c *cli.Context) {
 
-	strategiesString := os.Getenv("strategies")
+	strategiesString := c.String("strategies")
+	if strategiesString == "" {
+		fmt.Println("BACKKK")
+		strategiesString = os.Getenv("strategies")
+	}
+
 	strategiesList := strings.Split(strategiesString, ",")
 	if strategiesList[0] == "" {
 		helpers.Logger.Infoln("error: couldn't initialize bot. No strategies set")
