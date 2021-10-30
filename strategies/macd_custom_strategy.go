@@ -132,9 +132,12 @@ func (s *MACDCustomStrategy) PerformSimulation(pair string, exchangeService inte
 					open = false
 					sellRate = candles[i-1].ClosePrice.Float()
 					profitPct := sellRate * 1 / buyRate
-					balance *= profitPct * (1 - 0.00014)
-					profitList = append(profitList, (profitPct*(1-0.0014))-1)
+					if profitPct < 2 {
+						balance *= profitPct * (1 - 0.0014)
+						profitList = append(profitList, (profitPct*(1-0.0014))-1)
+					}
 				}
+				time.Sleep(500 * time.Microsecond)
 			}
 			open = false
 			//return pairAnalysis, nil

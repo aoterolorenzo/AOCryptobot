@@ -123,7 +123,7 @@ func (s *StochRSICustomStrategy) PerformSimulation(pair string, exchangeService 
 					balance *= profitPct * (1 - 0.0014)
 					profitList = append(profitList, (profitPct*(1-0.0014))-1)
 				}
-
+				time.Sleep(500 * time.Microsecond)
 			}
 		}
 

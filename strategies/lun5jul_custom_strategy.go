@@ -127,6 +127,7 @@ func (s *Lun5JulCustomStrategy) PerformSimulation(pair string, exchangeService i
 					profitList = append(profitList, (profitPct*(1-0.0014))-1)
 				}
 			}
+			time.Sleep(500 * time.Microsecond)
 		}
 
 		open = false
