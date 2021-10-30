@@ -1,7 +1,6 @@
 package bot_signal_trader
 
 import (
-	"fmt"
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
@@ -32,7 +31,6 @@ func (st *SignalTrader) Run(c *cli.Context) {
 
 	strategiesString := c.String("strategies")
 	if strategiesString == "" {
-		fmt.Println("BACKKK")
 		strategiesString = os.Getenv("strategies")
 	}
 
