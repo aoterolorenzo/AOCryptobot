@@ -28,6 +28,7 @@ func init() {
 }
 
 func (st *SignalTrader) Run(c *cli.Context) {
+	helpers.Logger.Infoln("🖖🏻 Signal Trader started")
 
 	strategiesString := c.String("strategies")
 	if strategiesString == "" {
