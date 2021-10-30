@@ -137,15 +137,11 @@ func (t *SignalTraderService) EnterIfDelayedEntryCheck(pair string, strategy int
 func (t *SignalTraderService) ExitIfDelayedExitCheck(pair string, strategy interfaces.Strategy,
 	timeSeries *techan.TimeSeries, constants []float64, delay int) {
 
-	if t.tradingRecordService.HasOpenPositions(pair) && t.stopLoss {
-		entryPrice, _ := strconv.ParseFloat(t.tradingRecordService.OpenPositions[pair][0].EntranceOrder().Price, 64)
-
-		if entryPrice*(1-t.stopLossPct) > timeSeries.LastCandle().ClosePrice.Float() {
-			helpers.Logger.Debugln(fmt.Sprintf("Stop-Loss signal for %s", pair))
-			t.PerformExit(pair, strategy, timeSeries, constants)
-			t.UnLockPair(pair)
-			return
-		}
+	if t.StopLossCheck(pair, strategy,
+		timeSeries, constants, true) {
+		t.PerformExit(pair, strategy, timeSeries, constants)
+		t.UnLockPair(pair)
+		return
 	}
 
 	// If there's no stop-loss signal, wait delay and exit if recheck
@@ -154,6 +150,20 @@ func (t *SignalTraderService) ExitIfDelayedExitCheck(pair string, strategy inter
 		t.PerformExit(pair, strategy, timeSeries, constants)
 		t.UnLockPair(pair)
 	}
+}
+
+func (t *SignalTraderService) StopLossCheck(pair string, strategy interfaces.Strategy, timeSeries *techan.TimeSeries, constants []float64, silent bool) bool {
+
+	if t.tradingRecordService.HasOpenPositions(pair) && t.stopLoss {
+		entryPrice, _ := strconv.ParseFloat(t.tradingRecordService.OpenPositions[pair][0].EntranceOrder().Price, 64)
+		if entryPrice*(1-t.stopLossPct) > timeSeries.LastCandle().ClosePrice.Float() {
+			if !silent {
+				helpers.Logger.Debugln(fmt.Sprintf("Stop-Loss signal for %s", pair))
+			}
+			return true
+		}
+	}
+	return false
 }
 
 func (t *SignalTraderService) EntryCheck(pair string, strategy interfaces.Strategy,
@@ -165,6 +175,11 @@ func (t *SignalTraderService) EntryCheck(pair string, strategy interfaces.Strate
 
 func (t *SignalTraderService) ExitCheck(pair string, strategy interfaces.Strategy,
 	timeSeries *techan.TimeSeries, constants []float64) bool {
+
+	if t.StopLossCheck(pair, strategy,
+		timeSeries, constants, false) {
+		return true
+	}
 
 	return t.tradingRecordService.HasOpenPositions(pair) && strategy.ParametrizedShouldExit(timeSeries, constants)
 }
