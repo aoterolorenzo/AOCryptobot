@@ -46,6 +46,7 @@ func (mas *MarketAnalysisService) AnalyzeMarkets() {
 		for _, pairAnalysis := range *mas.PairAnalysisResults {
 			pairAnalysisResultPtr := mas.GetPairAnalysisResult(pairAnalysis.Pair)
 			newPairAnalysisResult, err := mas.analyzePair(pairAnalysis.Pair)
+			newPairAnalysisResult.LockedMonitor = pairAnalysisResultPtr.LockedMonitor
 			newPairAnalysisResult.MarketDirection = pairAnalysisResultPtr.MarketDirection
 			if err == nil {
 				*pairAnalysisResultPtr = newPairAnalysisResult
