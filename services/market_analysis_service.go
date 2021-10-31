@@ -61,11 +61,10 @@ func (mas *MarketAnalysisService) AnalyzeMarkets() {
 }
 
 func (mas *MarketAnalysisService) analyzePair(pair string) (analytics.PairAnalysis, error) {
-	varFalse := false
 	pairAnalysisResult := analytics.PairAnalysis{
 		StrategiesAnalysis: nil,
 		TradeSignal:        false,
-		LockedMonitor:      &varFalse,
+		LockedMonitor:      false,
 		Pair:               pair,
 	}
 
@@ -85,7 +84,7 @@ func (mas *MarketAnalysisService) analyzePair(pair string) (analytics.PairAnalys
 
 	//Once the results are set for the pair, we check the strategies and choose between them if they are valid
 	chosenStrategy := mas.chooseStrategy(pairAnalysisResult)
-	if chosenStrategy != nil && !*pairAnalysisResult.LockedMonitor {
+	if chosenStrategy != nil && !pairAnalysisResult.LockedMonitor {
 		pairAnalysisResult.TradeSignal = true
 		pairAnalysisResult.BestStrategy = chosenStrategy
 	}

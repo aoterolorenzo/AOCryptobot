@@ -241,7 +241,7 @@ func (t *SignalTraderService) PerformExit(pair string, strategy interfaces.Strat
 func (t *SignalTraderService) LockPair(pair string) {
 	for _, marketAnalysisService := range *t.marketAnalysisService.PairAnalysisResults {
 		if marketAnalysisService.Pair == pair {
-			*marketAnalysisService.LockedMonitor = true
+			marketAnalysisService.LockedMonitor = true
 		}
 	}
 }
@@ -249,7 +249,7 @@ func (t *SignalTraderService) LockPair(pair string) {
 func (t *SignalTraderService) UnLockPair(pair string) {
 	for _, marketAnalysisService := range *t.marketAnalysisService.PairAnalysisResults {
 		if marketAnalysisService.Pair == pair {
-			*marketAnalysisService.LockedMonitor = false
+			marketAnalysisService.LockedMonitor = false
 		}
 	}
 }
