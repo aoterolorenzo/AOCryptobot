@@ -34,14 +34,14 @@ func (mms *MultiMarketService) StartMonitor() {
 			isMonitoring := mms.IsMonitoring(pairAnalysisResult.Pair)
 			if pairAnalysisResult.TradeSignal {
 				if !isMonitoring {
-					helpers.Logger.Debugln(fmt.Sprintf("%s: Monitor started. Strategy %s",
+					helpers.Logger.Infoln(fmt.Sprintf("%s: Monitor started. Strategy %s",
 						pairAnalysisResult.Pair, strings.Replace(reflect.TypeOf(pairAnalysisResult.BestStrategy).String(),
 							"*strategies.", "", 1)))
 					mms.startMonitor(pairAnalysisResult.Pair)
 				}
 			} else {
 				if isMonitoring && !pairAnalysisResult.LockedMonitor {
-					helpers.Logger.Debugln(fmt.Sprintf("%s: Monitor stopped", pairAnalysisResult.Pair))
+					helpers.Logger.Infoln(fmt.Sprintf("%s: Monitor stopped", pairAnalysisResult.Pair))
 					mms.stopMonitor(pairAnalysisResult.Pair)
 				}
 			}
