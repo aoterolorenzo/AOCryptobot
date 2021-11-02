@@ -419,6 +419,10 @@ func (binanceService *BinanceService) wsDepthHandler(event *binance.WsDepthEvent
 		*binanceService.marketSnapshotsRecord = append(*binanceService.marketSnapshotsRecord, marketSnapshot)
 		reverseAny(*binanceService.marketSnapshotsRecord)
 
+		if len(*binanceService.marketSnapshotsRecord) > 1020 {
+			remove(*binanceService.marketSnapshotsRecord, 0)
+		}
+
 	}
 }
 
@@ -438,4 +442,8 @@ func reverseAny(s interface{}) {
 	for i, j := 0, n-1; i < j; i, j = i+1, j-1 {
 		swap(i, j)
 	}
+}
+
+func remove(slice []models.MarketDepth, s int) []models.MarketDepth {
+	return append(slice[:s], slice[s+1:]...)
 }
