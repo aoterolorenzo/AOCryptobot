@@ -256,7 +256,7 @@ func (t *SignalTraderService) UnLockPair(pair string) {
 func (t *SignalTraderService) IsPairLocked(pair string) bool {
 	for _, marketAnalysisService := range *t.marketAnalysisService.PairAnalysisResults {
 		if marketAnalysisService.Pair == pair {
-			return true
+			return marketAnalysisService.LockedMonitor
 		}
 	}
 
