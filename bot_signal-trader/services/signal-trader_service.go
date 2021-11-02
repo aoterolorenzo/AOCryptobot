@@ -170,12 +170,11 @@ func (t *SignalTraderService) EntryCheck(pair string, strategy interfaces.Strate
 	timeSeries *techan.TimeSeries, constants []float64) bool {
 
 	return strategy.ParametrizedShouldEnter(timeSeries, constants) && !t.tradingRecordService.HasOpenPositions(pair) &&
-		t.tradingRecordService.OpenPositionsCount() != t.maxOpenPositions && t.firstExitTriggered[pair]
+		t.tradingRecordService.OpenPositionsCount() != t.maxOpenPositions && t.firstExitTriggered[pair] && !t.IsPairLocked(pair)
 }
 
 func (t *SignalTraderService) ExitCheck(pair string, strategy interfaces.Strategy,
 	timeSeries *techan.TimeSeries, constants []float64) bool {
-
 	if t.StopLossCheck(pair, strategy,
 		timeSeries, constants, false) {
 		return true
@@ -252,4 +251,14 @@ func (t *SignalTraderService) UnLockPair(pair string) {
 			marketAnalysisService.LockedMonitor = false
 		}
 	}
+}
+
+func (t *SignalTraderService) IsPairLocked(pair string) bool {
+	for _, marketAnalysisService := range *t.marketAnalysisService.PairAnalysisResults {
+		if marketAnalysisService.Pair == pair {
+			return true
+		}
+	}
+
+	return false
 }
