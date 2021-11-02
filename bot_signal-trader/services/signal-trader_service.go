@@ -158,7 +158,7 @@ func (t *SignalTraderService) StopLossCheck(pair string, strategy interfaces.Str
 		entryPrice, _ := strconv.ParseFloat(t.tradingRecordService.OpenPositions[pair][0].EntranceOrder().Price, 64)
 		if entryPrice*(1-t.stopLossPct) > timeSeries.LastCandle().ClosePrice.Float() {
 			if !silent {
-				helpers.Logger.Debugln(fmt.Sprintf("Stop-Loss signal for %s", pair))
+				helpers.Logger.Debugln(fmt.Sprintf("Stop-Loss signal for %s. Last price %.2f. Entry price %.2f. Stop-Loss value %.2f. Min value %.2f", pair, timeSeries.LastCandle().ClosePrice.Float(), entryPrice), t.stopLossPct, entryPrice*(1-t.stopLossPct))
 			}
 			return true
 		}
