@@ -29,6 +29,9 @@ func StrategyFactory(strategyName string) (interfaces.Strategy, error) {
 	case "stochRSIInMACDOutCustomStrategy":
 		stochRSIInMACDOutCustomStrategy := NewStochRSIInMACDOutCustomStrategy()
 		return interfaces.Strategy(&stochRSIInMACDOutCustomStrategy), nil
+	case "mixedStrategy1":
+		mixedStrategy1 := NewMixedStrategy1()
+		return interfaces.Strategy(&mixedStrategy1), nil
 	default:
 		return nil, fmt.Errorf("%s is not a known strategy", strategyName)
 	}
