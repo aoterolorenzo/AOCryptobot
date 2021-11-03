@@ -189,6 +189,12 @@ func (t *SignalTraderService) ExitCheck(pair string, strategy interfaces.Strateg
 func (t *SignalTraderService) PerformEntry(pair string, strategy interfaces.Strategy,
 	timeSeries *techan.TimeSeries, constants []float64) {
 
+	lastPosition := t.tradingRecordService.LastOpenPosition(pair)
+
+	if t.databaseIsEnabled {
+		lastPosition.Id = t.databaseService.AddPosition(*lastPosition, strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1), constants, -1000, 0.0, 0.0)
+	}
+
 	_ = t.tradingRecordService.EnterPosition(pair, t.tradeQuantityPerPosition,
 		t.marketAnalysisService.GetPairAnalysisResult(pair).MarketDirection)
 	helpers.Logger.Infoln(
@@ -204,7 +210,7 @@ func (t *SignalTraderService) PerformExit(pair string, strategy interfaces.Strat
 
 	_ = t.tradingRecordService.ExitPositions(pair, t.marketAnalysisService.GetPairAnalysisResult(pair).MarketDirection)
 
-	lastPosition := t.tradingRecordService.LastPosition(pair)
+	lastPosition := t.tradingRecordService.LastClosedPosition(pair)
 
 	var profitEmoji string
 	profitPct := lastPosition.ProfitPct()
@@ -227,7 +233,7 @@ func (t *SignalTraderService) PerformExit(pair string, strategy interfaces.Strat
 	}
 
 	if t.databaseIsEnabled {
-		t.databaseService.AddPosition(*lastPosition, strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1), constants, profitPct, transactionBenefit, t.currentBalance-t.initialBalance)
+		t.databaseService.UpdatePosition(lastPosition.Id, *lastPosition, strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1), constants, profitPct, transactionBenefit, t.currentBalance-t.initialBalance)
 	}
 
 	helpers.Logger.Infoln(

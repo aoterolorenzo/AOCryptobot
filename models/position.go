@@ -6,6 +6,7 @@ import (
 
 // Position is a pair of two Order objects
 type Position struct {
+	Id     uint
 	orders [2]*Order
 }
 
