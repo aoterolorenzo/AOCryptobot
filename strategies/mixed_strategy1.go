@@ -120,7 +120,7 @@ func (s *MixedStrategy1) PerformSimulation(pair string, exchangeService interfac
 				open = false
 				sellRate = candles[i-1].ClosePrice.Float()
 				profitPct := sellRate * 1 / buyRate
-				if profitPct < 2 {
+				if profitPct < 2.0 {
 					balance *= profitPct * (1 - 0.0014)
 					profitList = append(profitList, (profitPct*(1-0.0014))-1)
 				}
@@ -179,9 +179,9 @@ func (s *MixedStrategy1) Analyze(pair string, exchangeService interfaces.Exchang
 	strategyAnalysis.PositivismAvgRatio = (helpers.PositiveNegativeRatio(result15m500.ProfitList) + helpers.PositiveNegativeRatio(result15m1000.ProfitList)) / 2
 
 	// Conditions to accept strategy:
-	if result15m500.Profit > 2.0 &&
-		(helpers.PositiveNegativeRatio(result15m500.ProfitList) >= 1.2 ||
-			(len(result15m500.ProfitList) == 0 && helpers.PositiveNegativeRatio(result15m1000.ProfitList) >= 1.2)) {
+	if result15m500.Profit > 2.0 && result15m1000.Profit > 3.5 &&
+		(helpers.PositiveNegativeRatio(result15m500.ProfitList) >= 1.0 || len(result15m500.ProfitList) == 0 || helpers.PositiveNegativeRatio(result15m500.ProfitList) == 0.0) &&
+		(helpers.PositiveNegativeRatio(result15m1000.ProfitList) >= 1.0 || len(result15m1000.ProfitList) == 0 || helpers.PositiveNegativeRatio(result15m1000.ProfitList) == 0.0) {
 
 		strategyAnalysis.IsCandidate = true
 		helpers.Logger.Debugln(fmt.Sprintf("✔️  Strategy is tradeable: 1000CandleProfit, %f 500CandleProfit %f, 60%% of the Mean %f, Std Deviation %f, 1000 Profit Ratio %f 500 Profit Ratio %f", result15m1000.Profit, result15m500.Profit,
