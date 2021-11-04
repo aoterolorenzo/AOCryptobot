@@ -96,7 +96,7 @@ func (t *SignalTraderService) Start() {
 			results := t.marketAnalysisService.GetBestStrategyResults(pairAnalysisResults)
 
 			// Makes another first entry mandatory in case analysis becomes inconclusive
-			if t.firstExitTriggered[pair] && !pairAnalysisResults.TradeSignal {
+			if t.firstExitTriggered[pair] && !pairAnalysisResults.TradeSignal && !pairAnalysisResults.LockedMonitor {
 				t.firstExitTriggered[pair] = false
 			}
 

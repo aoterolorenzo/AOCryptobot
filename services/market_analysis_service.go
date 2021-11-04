@@ -159,7 +159,8 @@ func (mas *MarketAnalysisService) GetTradeSignaledMarketsByInvStdDev() []analyti
 
 	pairAnalysisResults := []analytics.PairAnalysis{}
 	for _, result := range *mas.PairAnalysisResults {
-		if result.TradeSignal {
+
+		if result.TradeSignal || result.LockedMonitor {
 			pairAnalysisResults = append(pairAnalysisResults, *result)
 		}
 	}
