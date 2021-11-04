@@ -76,8 +76,9 @@ func (s *MixedStrategy1) ParametrizedShouldExit(timeSeries *techan.TimeSeries, c
 	lastSmoothDValue := smoothD.Calculate(lastCandleIndex).Float()
 
 	// Conditions:
-	return myRSIValue > 50 && lastSmoothKValue > 0.5 && lastSmoothDValue > 0.5 &&
-		MACDHistogramValue < 0
+	return (myRSIValue > 50 && lastSmoothKValue > 0.5 && lastSmoothDValue > 0.5 &&
+		MACDHistogramValue < 0) || (myRSIValue < 30 && lastSmoothKValue < 0.3 && lastSmoothDValue < 0.3 &&
+		MACDHistogramValue < 0 && !s.ParametrizedShouldEnter(timeSeries, constants))
 }
 
 func (s *MixedStrategy1) PerformSimulation(pair string, exchangeService interfaces.ExchangeService, interval string, limit int, omit int, constants *[]float64) (analytics.StrategySimulationResult, error) {
