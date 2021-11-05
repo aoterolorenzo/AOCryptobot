@@ -15,12 +15,12 @@ type MultiMarketService struct {
 	PairAnalysisResults  []*analytics.PairAnalysis
 }
 
-func NewMultiMarketService(pairAnalysisResults *[]*analytics.PairAnalysis) MultiMarketService {
+func NewMultiMarketService(pairAnalysisResults *[]*analytics.PairAnalysis, interval string) MultiMarketService {
 	mms := MultiMarketService{}
 	mms.PairAnalysisResults = *pairAnalysisResults
 
 	for _, pairAnalysisResult := range *pairAnalysisResults {
-		sms := NewSingleMarketService(*techan.NewTimeSeries(), pairAnalysisResult.Pair)
+		sms := NewSingleMarketService(*techan.NewTimeSeries(), pairAnalysisResult.Pair, interval)
 
 		mms.SingleMarketServices = append(mms.SingleMarketServices, &sms)
 	}

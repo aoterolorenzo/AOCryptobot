@@ -12,10 +12,14 @@ import (
 	"time"
 )
 
-type MixedStrategy1 struct{}
+type MixedStrategy1 struct {
+	Interval string
+}
 
-func NewMixedStrategy1() MixedStrategy1 {
-	return MixedStrategy1{}
+func NewMixedStrategy1(interval string) MixedStrategy1 {
+	return MixedStrategy1{
+		Interval: interval,
+	}
 }
 
 func (s *MixedStrategy1) ShouldEnter(timeSeries *techan.TimeSeries) bool {
@@ -160,13 +164,13 @@ func (s *MixedStrategy1) Analyze(pair string, exchangeService interfaces.Exchang
 	helpers.Logger.Debugln(fmt.Sprintf("→ Analyzing %s", strings.Replace(reflect.TypeOf(s).String(), "*strategies.", "", 1)))
 
 	// Analyze last 1000 candles
-	result15m1000, err := s.PerformSimulation(pair, exchangeService, "1h", 500, 0, nil)
+	result15m1000, err := s.PerformSimulation(pair, exchangeService, s.Interval, 500, 0, nil)
 	if err != nil {
 		return nil, err
 	}
 	// Analyze last 500 candles
 	strategyAnalysis.StrategyResults = append(strategyAnalysis.StrategyResults, result15m1000)
-	result15m500, err := s.PerformSimulation(pair, exchangeService, "1h", 240, 0, &result15m1000.Constants)
+	result15m500, err := s.PerformSimulation(pair, exchangeService, s.Interval, 240, 0, &result15m1000.Constants)
 	if err != nil {
 		return nil, err
 	}

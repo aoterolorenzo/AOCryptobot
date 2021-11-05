@@ -30,6 +30,7 @@ func init() {
 func (st *SignalTrader) Run(c *cli.Context) {
 	helpers.Logger.Infoln("🖖🏻 Signal Trader started")
 
+	interval := os.Getenv("interval")
 	strategiesString := c.String("strategies")
 	if strategiesString == "" {
 		strategiesString = os.Getenv("strategies")
@@ -60,7 +61,7 @@ func (st *SignalTrader) Run(c *cli.Context) {
 	var strategies []interfaces.Strategy
 
 	for _, strategy := range strategiesList {
-		generatedStrategy, err := strategies2.StrategyFactory(strategy)
+		generatedStrategy, err := strategies2.StrategyFactory(strategy, interval)
 		if err != nil {
 			helpers.Logger.Errorln(err)
 			log.Errorln(err)
@@ -73,7 +74,7 @@ func (st *SignalTrader) Run(c *cli.Context) {
 	marketAnalysisService.PopulateWithPairs(targetCoin, whitelistCoins, blacklistCoins)
 	go marketAnalysisService.AnalyzeMarkets()
 
-	mms := services.NewMultiMarketService(&pairAnalysisResults)
+	mms := services.NewMultiMarketService(&pairAnalysisResults, interval)
 	go mms.StartMonitor()
 
 	// trade on pairAnalysisResults

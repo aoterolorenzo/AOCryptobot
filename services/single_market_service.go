@@ -11,13 +11,15 @@ import (
 type SingleMarketService struct {
 	MarketSnapshotsRecord []models.MarketDepth
 	TimeSeries            techan.TimeSeries
+	Interval              string
 	Pair                  string
 	Active                bool
 }
 
-func NewSingleMarketService(timeSeries techan.TimeSeries, pair string) SingleMarketService {
+func NewSingleMarketService(timeSeries techan.TimeSeries, pair string, interval string) SingleMarketService {
 	return SingleMarketService{
 		MarketSnapshotsRecord: nil,
+		Interval:              interval,
 		TimeSeries:            timeSeries,
 		Pair:                  pair,
 		Active:                false,
@@ -95,7 +97,7 @@ func (sms *SingleMarketService) StartMultiMonitor(pair string) {
 	binanceService := binance.NewBinanceService()
 
 	go binanceService.DepthMonitor(pair, &sms.MarketSnapshotsRecord)
-	go binanceService.TimeSeriesMonitor(pair, "30m", &sms.TimeSeries, &sms.Active)
+	go binanceService.TimeSeriesMonitor(pair, sms.Interval, &sms.TimeSeries, &sms.Active)
 
 }
 
@@ -104,7 +106,7 @@ func (sms *SingleMarketService) StartCandleMonitor(pair string) {
 	sms.Active = true
 	binanceService := binance.NewBinanceService()
 
-	go binanceService.TimeSeriesMonitor(pair, "30m", &sms.TimeSeries, &sms.Active)
+	go binanceService.TimeSeriesMonitor(pair, sms.Interval, &sms.TimeSeries, &sms.Active)
 
 }
 

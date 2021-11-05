@@ -12,10 +12,14 @@ import (
 	"time"
 )
 
-type StochRSIInMACDOutCustomStrategy struct{}
+type StochRSIInMACDOutCustomStrategy struct {
+	Interval string
+}
 
-func NewStochRSIInMACDOutCustomStrategy() StochRSIInMACDOutCustomStrategy {
-	return StochRSIInMACDOutCustomStrategy{}
+func NewStochRSIInMACDOutCustomStrategy(interval string) StochRSIInMACDOutCustomStrategy {
+	return StochRSIInMACDOutCustomStrategy{
+		Interval: interval,
+	}
 }
 
 func (s *StochRSIInMACDOutCustomStrategy) ShouldEnter(timeSeries *techan.TimeSeries) bool {
@@ -209,13 +213,13 @@ func (s *StochRSIInMACDOutCustomStrategy) Analyze(pair string, exchangeService i
 		strings.Replace(reflect.TypeOf(s).String(), "*strategies.", "", 1)))
 
 	// Analyze last 1000 candles
-	result15m1000, err := s.PerformSimulation(pair, exchangeService, "1h", 500, 0, nil)
+	result15m1000, err := s.PerformSimulation(pair, exchangeService, s.Interval, 500, 0, nil)
 	if err != nil {
 		return nil, err
 	}
 	// Analyze last 500 candles
 	strategyAnalysis.StrategyResults = append(strategyAnalysis.StrategyResults, result15m1000)
-	result15m500, err := s.PerformSimulation(pair, exchangeService, "1h", 240, 0, &result15m1000.Constants)
+	result15m500, err := s.PerformSimulation(pair, exchangeService, s.Interval, 240, 0, &result15m1000.Constants)
 	if err != nil {
 		return nil, err
 	}
