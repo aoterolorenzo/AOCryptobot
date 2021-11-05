@@ -30,6 +30,16 @@ func NewDBService(database string, host string, port string, user string, passwo
 	}
 }
 
+func NewDBEnvService() *DBService {
+	return &DBService{
+		DBName: os.Getenv("databaseName"),
+		DBHost: os.Getenv("databaseHost"),
+		DBPort: os.Getenv("databasePort"),
+		DBUser: os.Getenv("databaseUser"),
+		DBPass: os.Getenv("databasePassword"),
+	}
+}
+
 func init() {
 	cwd, _ := os.Getwd()
 	err := godotenv.Load(cwd + "/bot_signal-trader/conf.env")
@@ -245,10 +255,6 @@ func (dbs *DBService) AddOrUpdateCandle(candle techan.Candle, symbol string) {
 	if err != nil {
 		panic("failed to connect database")
 	}
-
-	_ = db.AutoMigrate(&database.Candle{})
-	_ = db.AutoMigrate(&database.Order{})
-	_ = db.AutoMigrate(&database.Position{})
 
 	// Update columns to new value on conflict
 	db.Clauses(clause.OnConflict{

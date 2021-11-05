@@ -64,8 +64,7 @@ func (t *SignalTraderService) Start() {
 	t.tradePctPerPosition, _ = strconv.ParseFloat(os.Getenv("tradePctPerPosition"), 64)
 	t.balancePctToTrade, _ = strconv.ParseFloat(os.Getenv("balancePctToTrade"), 64)
 	t.databaseIsEnabled, _ = strconv.ParseBool(os.Getenv("enableDatabaseRecording"))
-	t.databaseService = database.NewDBService(os.Getenv("databaseName"), os.Getenv("databaseHost"), os.Getenv("databasePort"),
-		os.Getenv("databaseUser"), os.Getenv("databasePassword"))
+	t.databaseService = database.NewDBEnvService()
 
 	t.firstExitTriggered = make(map[string]bool)
 	initialBalance, err := t.marketAnalysisService.ExchangeService.GetAvailableBalance(t.targetCoin)
