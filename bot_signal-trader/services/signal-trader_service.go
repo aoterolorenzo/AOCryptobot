@@ -38,10 +38,11 @@ type SignalTraderService struct {
 	//pairDirection            map[string]models.MarketDirection
 }
 
-func NewSignalTrader(marketAnalysisService *services.MarketAnalysisService, multiMarketService *services.MultiMarketService) SignalTraderService {
+func NewSignalTrader(databaseService *database.DBService, marketAnalysisService *services.MarketAnalysisService, multiMarketService *services.MultiMarketService) SignalTraderService {
 	return SignalTraderService{
 		marketAnalysisService: marketAnalysisService,
 		multiMarketService:    multiMarketService,
+		databaseService:       databaseService,
 	}
 }
 
@@ -64,8 +65,6 @@ func (t *SignalTraderService) Start() {
 	t.tradePctPerPosition, _ = strconv.ParseFloat(os.Getenv("tradePctPerPosition"), 64)
 	t.balancePctToTrade, _ = strconv.ParseFloat(os.Getenv("balancePctToTrade"), 64)
 	t.databaseIsEnabled, _ = strconv.ParseBool(os.Getenv("enableDatabaseRecording"))
-	t.databaseService = database.NewDBEnvService()
-
 	t.firstExitTriggered = make(map[string]bool)
 	initialBalance, err := t.marketAnalysisService.ExchangeService.GetAvailableBalance(t.targetCoin)
 	if err != nil {

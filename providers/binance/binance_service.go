@@ -19,7 +19,7 @@ import (
 
 type BinanceService struct {
 	binanceClient         *binance.Client
-	dBService             database.DBService
+	dBService             *database.DBService
 	timeSeries            *techan.TimeSeries
 	marketSnapshotsRecord *[]models.MarketDepth
 	apiKey                string
@@ -30,9 +30,16 @@ type BinanceService struct {
 }
 
 func NewBinanceService() *BinanceService {
-	dBService := database.NewDBEnvService()
+	binanceService := BinanceService{}
+	binanceService.apiKey = os.Getenv("apiKey")
+	binanceService.apiSecret = os.Getenv("apiSecret")
+	binanceService.binanceClient = binance.NewClient(binanceService.apiKey, binanceService.apiSecret)
+	return &binanceService
+}
+
+func NewBinanceDBService(databaseService *database.DBService) *BinanceService {
 	binanceService := BinanceService{
-		dBService: *dBService,
+		dBService: databaseService,
 	}
 	binanceService.apiKey = os.Getenv("apiKey")
 	binanceService.apiSecret = os.Getenv("apiSecret")
@@ -251,7 +258,7 @@ func (binanceService *BinanceService) TimeSeriesMonitor(pair, interval string, t
 		candle.MinPrice = big.NewFromString(k.Low)
 		candle.TradeCount = uint(k.TradeNum)
 		candle.Volume = big.NewFromString(k.Volume)
-		//binanceService.dBService.AddOrUpdateCandle(*candle, binanceService.pair)
+		binanceService.dBService.AddOrUpdateCandle(*candle, binanceService.pair)
 		binanceService.timeSeries.AddCandle(candle)
 	}
 
@@ -311,7 +318,7 @@ func (binanceService *BinanceService) GetSeries(pair string, interval string, li
 		candle.MinPrice = big.NewFromString(k.Low)
 		candle.TradeCount = uint(k.TradeNum)
 		candle.Volume = big.NewFromString(k.Volume)
-		//binanceService.dBService.AddOrUpdateCandle(*candle, binanceService.pair)
+		binanceService.dBService.AddOrUpdateCandle(*candle, binanceService.pair)
 		timeSeries.AddCandle(candle)
 	}
 
@@ -401,7 +408,7 @@ func (binanceService *BinanceService) wsKlineHandler(event *binance.WsKlineEvent
 	candle.MinPrice = big.NewFromString(event.Kline.Low)
 	candle.TradeCount = uint(event.Kline.TradeNum)
 	candle.Volume = big.NewFromString(event.Kline.Volume)
-	//binanceService.dBService.AddOrUpdateCandle(*candle, binanceService.pair)
+	binanceService.dBService.AddOrUpdateCandle(*candle, binanceService.pair)
 
 	if lastCandle.Period != techan.NewTimePeriod(time.Unix(event.Kline.StartTime/1000, 0), time.Minute*15) {
 		binanceService.timeSeries.AddCandle(candle)

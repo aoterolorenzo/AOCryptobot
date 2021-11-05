@@ -3,7 +3,9 @@ package services
 import (
 	"fmt"
 	"github.com/sdcoffey/techan"
+	"gitlab.com/aoterocom/AOCryptobot/database"
 	"gitlab.com/aoterocom/AOCryptobot/helpers"
+	"gitlab.com/aoterocom/AOCryptobot/interfaces"
 	"gitlab.com/aoterocom/AOCryptobot/models/analytics"
 	"reflect"
 	"strings"
@@ -13,14 +15,16 @@ import (
 type MultiMarketService struct {
 	SingleMarketServices []*SingleMarketService
 	PairAnalysisResults  []*analytics.PairAnalysis
+	ExchangeService      *interfaces.ExchangeService
+	DatabaseService      *database.DBService
 }
 
-func NewMultiMarketService(pairAnalysisResults *[]*analytics.PairAnalysis, interval string) MultiMarketService {
+func NewMultiMarketService(databaseService *database.DBService, pairAnalysisResults *[]*analytics.PairAnalysis, interval string) MultiMarketService {
 	mms := MultiMarketService{}
 	mms.PairAnalysisResults = *pairAnalysisResults
 
 	for _, pairAnalysisResult := range *pairAnalysisResults {
-		sms := NewSingleMarketService(*techan.NewTimeSeries(), pairAnalysisResult.Pair, interval)
+		sms := NewSingleMarketService(databaseService, *techan.NewTimeSeries(), pairAnalysisResult.Pair, interval)
 
 		mms.SingleMarketServices = append(mms.SingleMarketServices, &sms)
 	}

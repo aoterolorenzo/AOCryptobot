@@ -5,6 +5,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	signalTrader "gitlab.com/aoterocom/AOCryptobot/bot_signal-trader/services"
+	"gitlab.com/aoterocom/AOCryptobot/database"
 	"gitlab.com/aoterocom/AOCryptobot/helpers"
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
 	"gitlab.com/aoterocom/AOCryptobot/models/analytics"
@@ -58,6 +59,9 @@ func (st *SignalTrader) Run(c *cli.Context) {
 	bs := binance2.NewPaperService()
 	exchangeService := interfaces.ExchangeService(bs)
 
+	databaseService := database.NewDBService(os.Getenv("databaseHost"), os.Getenv("databasePort"), os.Getenv("databaseName"),
+		os.Getenv("databaseUser"), os.Getenv("databasePassword"))
+
 	var strategies []interfaces.Strategy
 
 	for _, strategy := range strategiesList {
@@ -74,10 +78,10 @@ func (st *SignalTrader) Run(c *cli.Context) {
 	marketAnalysisService.PopulateWithPairs(targetCoin, whitelistCoins, blacklistCoins)
 	go marketAnalysisService.AnalyzeMarkets()
 
-	mms := services.NewMultiMarketService(&pairAnalysisResults, interval)
+	mms := services.NewMultiMarketService(databaseService, &pairAnalysisResults, interval)
 	go mms.StartMonitor()
 
 	// trade on pairAnalysisResults
-	trader := signalTrader.NewSignalTrader(&marketAnalysisService, &mms)
+	trader := signalTrader.NewSignalTrader(databaseService, &marketAnalysisService, &mms)
 	trader.Start()
 }

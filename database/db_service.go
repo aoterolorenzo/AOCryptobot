@@ -13,30 +13,18 @@ import (
 )
 
 type DBService struct {
-	DBName string
-	DBHost string
-	DBPort string
-	DBUser string
-	DBPass string
+	DB *gorm.DB
 }
 
-func NewDBService(database string, host string, port string, user string, password string) *DBService {
-	return &DBService{
-		DBName: database,
-		DBHost: host,
-		DBPort: port,
-		DBUser: user,
-		DBPass: password,
+func NewDBService(dbHost string, dbPort string, dbName string, dbUser string, dbPass string) *DBService {
+	dsn := dbUser + ":" + dbPass + "@tcp(" + dbHost + ":" + dbPort + ")/" + dbName + "?charset=utf8mb4&parseTime=True&loc=Local"
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		panic("failed to connect database")
 	}
-}
 
-func NewDBEnvService() *DBService {
 	return &DBService{
-		DBName: os.Getenv("databaseName"),
-		DBHost: os.Getenv("databaseHost"),
-		DBPort: os.Getenv("databasePort"),
-		DBUser: os.Getenv("databaseUser"),
-		DBPass: os.Getenv("databasePassword"),
+		DB: db,
 	}
 }
 
@@ -131,13 +119,7 @@ func (dbs *DBService) AddPosition(position models.Position, strategy string, con
 		}
 	}
 
-	dsn := dbs.DBUser + ":" + dbs.DBPass + "@tcp(" + dbs.DBHost + ":" + dbs.DBPort + ")/" + dbs.DBName + "?charset=utf8mb4&parseTime=True&loc=Local"
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	if err != nil {
-		panic("failed to connect database")
-	}
-
-	db.Create(&dbPosition)
+	dbs.DB.Create(&dbPosition)
 	return dbPosition.ID
 }
 
@@ -224,16 +206,10 @@ func (dbs *DBService) UpdatePosition(positionID uint, position models.Position, 
 		}
 	}
 
-	dsn := dbs.DBUser + ":" + dbs.DBPass + "@tcp(" + dbs.DBHost + ":" + dbs.DBPort + ")/" + dbs.DBName + "?charset=utf8mb4&parseTime=True&loc=Local"
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	if err != nil {
-		panic("failed to connect database")
-	}
-
-	db.Unscoped().Delete(&database.Order{}, "position_id = ?", positionID)
-	db.Unscoped().Delete(&database.Constant{}, "position_id = ?", positionID)
+	dbs.DB.Unscoped().Delete(&database.Order{}, "position_id = ?", positionID)
+	dbs.DB.Unscoped().Delete(&database.Constant{}, "position_id = ?", positionID)
 	dbPosition.ID = positionID
-	db.Save(dbPosition)
+	dbs.DB.Save(dbPosition)
 }
 
 func (dbs *DBService) AddOrUpdateCandle(candle techan.Candle, symbol string) {
@@ -248,16 +224,8 @@ func (dbs *DBService) AddOrUpdateCandle(candle techan.Candle, symbol string) {
 		TradeCount: candle.TradeCount,
 	}
 
-	dsn := dbs.DBUser + ":" + dbs.DBPass + "@tcp(" + dbs.DBHost + ":" + dbs.DBPort + ")/" + dbs.DBName + "?charset=utf8mb4&parseTime=True&loc=Local"
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
-		SkipDefaultTransaction: true,
-	})
-	if err != nil {
-		panic("failed to connect database")
-	}
-
 	// Update columns to new value on conflict
-	db.Clauses(clause.OnConflict{
+	dbs.DB.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "symbol"}, {Name: "period"}},
 		DoUpdates: clause.AssignmentColumns([]string{"symbol", "period", "open_price", "close_price", "max_price", "min_price", "volume", "trade_count"}), // column needed to be updated
 	}).Create(&dbCandle)
