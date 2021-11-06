@@ -10,6 +10,7 @@ import (
 	"gorm.io/gorm/clause"
 	"log"
 	"os"
+	"time"
 )
 
 type DBService struct {
@@ -209,6 +210,7 @@ func (dbs *DBService) UpdatePosition(positionID uint, position models.Position, 
 	dbs.DB.Unscoped().Delete(&database.Order{}, "position_id = ?", positionID)
 	dbs.DB.Unscoped().Delete(&database.Constant{}, "position_id = ?", positionID)
 	dbPosition.ID = positionID
+	dbPosition.CreatedAt = time.Now()
 	dbs.DB.Save(dbPosition)
 }
 
