@@ -187,12 +187,6 @@ func (t *SignalTraderService) ExitCheck(pair string, strategy interfaces.Strateg
 func (t *SignalTraderService) PerformEntry(pair string, strategy interfaces.Strategy,
 	timeSeries *techan.TimeSeries, constants []float64) {
 
-	lastPosition := t.tradingRecordService.LastOpenPosition(pair)
-
-	if t.databaseIsEnabled {
-		lastPosition.Id = t.databaseService.AddPosition(*lastPosition, strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1), constants, -1000, 0.0, 0.0)
-	}
-
 	_ = t.tradingRecordService.EnterPosition(pair, t.tradeQuantityPerPosition,
 		t.marketAnalysisService.GetPairAnalysisResult(pair).MarketDirection)
 	helpers.Logger.Infoln(
@@ -201,6 +195,12 @@ func (t *SignalTraderService) PerformEntry(pair string, strategy interfaces.Stra
 			fmt.Sprintf("Constants: %v\n", constants) +
 			fmt.Sprintf("Buy Price: %f\n\n", timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float()) +
 			fmt.Sprintf("Updated currentBalance: %f", t.currentBalance))
+
+	lastPosition := t.tradingRecordService.LastOpenPosition(pair)
+
+	if t.databaseIsEnabled {
+		lastPosition.Id = t.databaseService.AddPosition(*lastPosition, strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1), constants, -1000, 0.0, 0.0)
+	}
 }
 
 func (t *SignalTraderService) PerformExit(pair string, strategy interfaces.Strategy,
