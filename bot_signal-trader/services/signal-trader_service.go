@@ -151,15 +151,11 @@ func (t *SignalTraderService) ExitIfDelayedExitCheck(pair string, strategy inter
 }
 
 func (t *SignalTraderService) StopLossCheck(pair string, strategy interfaces.Strategy, timeSeries *techan.TimeSeries, constants []float64, silent bool) bool {
-	if t.tradingRecordService.HasOpenPositions(pair) {
-		entryPrice, _ := strconv.ParseFloat(t.tradingRecordService.OpenPositions[pair][0].EntranceOrder().Price, 64)
-		helpers.Logger.Debugln(fmt.Sprintf("Checking StopLoss for %s. Last price %.2f. Entry price %.2f. Stop-Loss value %.2f. Min value %.2f", pair, timeSeries.LastCandle().ClosePrice.Float(), entryPrice, t.stopLossPct, entryPrice*(1-t.stopLossPct)))
-	}
 	if t.tradingRecordService.HasOpenPositions(pair) && t.stopLoss {
 		entryPrice, _ := strconv.ParseFloat(t.tradingRecordService.OpenPositions[pair][0].EntranceOrder().Price, 64)
 		if entryPrice*(1-t.stopLossPct) > timeSeries.LastCandle().ClosePrice.Float() {
 			if !silent {
-				helpers.Logger.Debugln(fmt.Sprintf("Stop-Loss signal for %s. Last price %.2f. Entry price %.2f. Stop-Loss value %.2f. Min value %.2f", pair, timeSeries.LastCandle().ClosePrice.Float(), entryPrice, t.stopLossPct, entryPrice*(1-t.stopLossPct)))
+				helpers.Logger.Debugln(fmt.Sprintf("Stop-Loss signal for %s. Exiting position", pair))
 			}
 			return true
 		}
