@@ -54,7 +54,7 @@ func (mas *MarketAnalysisService) AnalyzeMarkets() {
 		}
 	}
 
-	//D for _ , item := range mas.GetTradeSignaledMarketsByInvStdDev() {
+	//D for _ , item := range mas.GetTradeSignaledAndOpenMarketsByInvStdDev() {
 	//D 	fmt.Printf("Best strategy for %s: %s Tradeable: %t.\n", item.Pair, item.BestStrategy,
 	//D 		item.TradeSignal)
 	//D }
@@ -155,7 +155,7 @@ func (mas *MarketAnalysisService) GetBestStrategyResults(pairAnalysisResult anal
 	return analytics.StrategyAnalysis{}
 }
 
-func (mas *MarketAnalysisService) GetTradeSignaledMarketsByInvStdDev() []analytics.PairAnalysis {
+func (mas *MarketAnalysisService) GetTradeSignaledAndOpenMarketsByInvStdDev() []analytics.PairAnalysis {
 
 	pairAnalysisResults := []analytics.PairAnalysis{}
 	for _, result := range *mas.PairAnalysisResults {

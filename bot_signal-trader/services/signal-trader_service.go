@@ -76,10 +76,15 @@ func (t *SignalTraderService) Start() {
 	// Infinite loop
 	for {
 		// For each pair
-		for _, pairAnalysisResults := range t.marketAnalysisService.GetTradeSignaledMarketsByInvStdDev() {
+		for _, pairAnalysisResults := range t.marketAnalysisService.GetTradeSignaledAndOpenMarketsByInvStdDev() {
 
 			// Update entry amount
 			t.tradeQuantityPerPosition = t.currentBalance * t.tradePctPerPosition
+
+			// Check results are ready
+			if pairAnalysisResults.BestStrategy == nil {
+				continue
+			}
 
 			// Set necessary variables from analysis results
 			strategy := pairAnalysisResults.BestStrategy.(interfaces.Strategy)
