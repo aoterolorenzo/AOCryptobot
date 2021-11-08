@@ -47,9 +47,7 @@ var Logger = *NewFileLogger()
 func init() {
 	cwd, _ := os.Getwd()
 	err := godotenv.Load(cwd + "/bot_signal-trader/conf.env")
-	if err != nil {
-		log.Fatalln("Error loading go.env file", err)
-	}
+
 	logFile := os.Getenv("logFile")
 	if logFile == "" {
 		logFile = "bot.log"
