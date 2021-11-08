@@ -10,25 +10,29 @@ import (
 
 func main() {
 
-	targetCoin := "UNIEUR"
+	targetCoin := "EUR"
+	var whitelist []string
+	var blacklist []string
 	bs := binance.NewPaperService()
 	exchangeService := interfaces.ExchangeService(bs)
 
 	//lun1MarCustomStrategy := strategies.NewLun1MarCustomStrategy()
-	lun5JulCustomStrategy := strategies.NewLun5JulCustomStrategy()
+	//lun5JulCustomStrategy := strategies.NewLun5JulCustomStrategy()
 	//MACDCustomStrategy := strategies.NewMACDCustomStrategy()
 	//stableStrategy := strategies.NewStableStrategy()
 	//stochRSICustomStrategy := strategies.NewStochRSICustomStrategy()
+	mixedStrategy1 := strategies.NewMixedStrategy1("1h")
 
 	selectedStrategies := []interfaces.Strategy{
 		//&MACDCustomStrategy,
 		//&lun1MarCustomStrategy,
 		//&stochRSICustomStrategy,
-		&lun5JulCustomStrategy,
+		&mixedStrategy1,
+		//&lun5JulCustomStrategy,
 		//&stableStrategy,
 	}
 
-	for _, pair := range exchangeService.GetMarkets(targetCoin) {
+	for _, pair := range exchangeService.GetMarkets(targetCoin, whitelist, blacklist) {
 		helpers.Logger.Infoln("⚠️ Analyzing " + pair + " ⚠️")
 		for _, strategy := range selectedStrategies {
 			_, err := strategy.Analyze(pair, exchangeService)

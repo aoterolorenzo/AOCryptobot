@@ -137,9 +137,16 @@ func (trs *TradingRecordService) HasOpenPositions(pair string) bool {
 	return hasOpenPositions
 }
 
-func (trs *TradingRecordService) LastPosition(pair string) *models.Position {
+func (trs *TradingRecordService) LastClosedPosition(pair string) *models.Position {
 	trs.closedPositionsMutex.Lock()
 	position := trs.ClosedPositions[pair][len(trs.ClosedPositions[pair])-1]
+	trs.closedPositionsMutex.Unlock()
+	return position
+}
+
+func (trs *TradingRecordService) LastOpenPosition(pair string) *models.Position {
+	trs.closedPositionsMutex.Lock()
+	position := trs.OpenPositions[pair][len(trs.OpenPositions[pair])-1]
 	trs.closedPositionsMutex.Unlock()
 	return position
 }

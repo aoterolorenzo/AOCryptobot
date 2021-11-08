@@ -19,6 +19,6 @@ type ExchangeService interface {
 	DepthMonitor(pair string, marketSnapshotsRecord *[]models.MarketDepth)
 	TimeSeriesMonitor(pair string, interval string, timeSeries *techan.TimeSeries, active *bool)
 	GetSeries(pair string, interval string, limit int) (techan.TimeSeries, error)
-	GetMarkets(coin string) []string
+	GetMarkets(coin string, whitelist []string, blacklist []string) []string
 	GetPairInfo(pair string) *models.PairInfo
 }

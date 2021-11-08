@@ -2,21 +2,58 @@ package helpers
 
 import (
 	"fmt"
+	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/tucnak/telebot.v2"
 	"os"
+	"strconv"
 	"time"
 )
 
 type FileLogger struct { /* Your functions */
+	telegramOutput bool
+	telegramToken  string
+	telegramChatId string
+}
+
+func NewFileLogger() *FileLogger {
+	telegramOutput, _ := strconv.ParseBool(os.Getenv("telegramOutput"))
+	var telegramToken string
+	var telegramChatId string
+
+	if telegramOutput {
+		telegramToken = os.Getenv("telegramToken")
+		if telegramToken == "" {
+			log.Errorln("error: telegramOutput set to true but telegramToken parameter not found ")
+			os.Exit(1)
+		}
+		telegramChatId = os.Getenv("telegramChatId")
+		if telegramChatId == "" {
+			log.Errorln("error: telegramOutput set to true but telegramChatId parameter not found ")
+			os.Exit(1)
+		}
+	}
+
+	return &FileLogger{
+		telegramChatId: telegramChatId,
+		telegramOutput: telegramOutput,
+		telegramToken:  telegramToken,
+	}
 }
 
 var defaultLogger *log.Logger
-var Logger = FileLogger{}
+var Logger = *NewFileLogger()
 
 func init() {
+	cwd, _ := os.Getwd()
+	err := godotenv.Load(cwd + "/bot_signal-trader/conf.env")
+
+	logFile := os.Getenv("logFile")
+	if logFile == "" {
+		logFile = "bot.log"
+	}
 	//TODO: got log filename onto env var
-	f, err := os.OpenFile("bot.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	f, err := os.OpenFile(logFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}
@@ -48,7 +85,13 @@ func (l *FileLogger) Warnln(args ...interface{}) {
 
 func (l *FileLogger) Infoln(args ...interface{}) {
 	defaultLogger.Infoln(args...)
-	sendOnTelegramChannel(fmt.Sprintf("%s", args[0]))
+	if l.telegramOutput {
+		err := sendOnTelegramChannel(fmt.Sprintf("%s", args[0]), l.telegramToken, l.telegramChatId)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
 }
 
 func (l *FileLogger) Traceln(args ...interface{}) {
@@ -69,24 +112,28 @@ func (f PlainFormatter) Format(entry *log.Entry) ([]byte, error) {
 	return []byte(fmt.Sprintf("%s %s %s\n", f.LevelDesc[entry.Level], timestamp, entry.Message)), nil
 }
 
-func sendOnTelegramChannel(message string) {
+func sendOnTelegramChannel(message string, token string, chatID string) error {
+
 	b, err := tb.NewBot(tb.Settings{
 		// You can also set custom API URL.
 		// If field is empty it equals to "https://api.telegram.org".
-		URL: "",
-
-		Token:  "1609124058:AAFUiuaD7Aop6BvZYIfxOy8-jNTaPV6xmCo",
+		URL:    "",
+		Token:  token,
 		Poller: &tb.LongPoller{Timeout: 10 * time.Second},
 	})
 
 	if err != nil {
-		log.Fatal(err)
-		return
+		return err
 	}
 
-	/*id , err :=*/
-	b.ChatByID("-1001407056413")
+	id, err := b.ChatByID(chatID)
+	if err != nil {
+		return err
+	}
+	_, err = b.Send(id, message)
+	if err != nil {
+		return err
+	}
 
-	//b.Send(id, message)
-
+	return nil
 }

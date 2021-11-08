@@ -12,10 +12,14 @@ import (
 	"time"
 )
 
-type StochRSIInMACDOutCustomStrategy struct{}
+type StochRSIInMACDOutCustomStrategy struct {
+	Interval string
+}
 
-func NewStochRSIInMACDOutCustomStrategy() StochRSIInMACDOutCustomStrategy {
-	return StochRSIInMACDOutCustomStrategy{}
+func NewStochRSIInMACDOutCustomStrategy(interval string) StochRSIInMACDOutCustomStrategy {
+	return StochRSIInMACDOutCustomStrategy{
+		Interval: interval,
+	}
 }
 
 func (s *StochRSIInMACDOutCustomStrategy) ShouldEnter(timeSeries *techan.TimeSeries) bool {
@@ -81,74 +85,123 @@ func (s *StochRSIInMACDOutCustomStrategy) PerformSimulation(pair string, exchang
 		return strategyResults, err
 	}
 	series.Candles = series.Candles[:len(series.Candles)-omit]
+	lastCandleIndex := len(series.Candles) - 1
+	lastVal := series.Candles[lastCandleIndex].ClosePrice.Float()
+	trendPctCondition := lastVal * 0.0006
+	jump := lastVal * 0.00002
 
 	highestBalance := -1.0
+	highestEnterConstant := -1.0
+	highestExitConstant := -1.0
+
 	balance := 1000.0
 	var buyRate float64
 	var sellRate float64
 	open := false
-	entryConstant := 0.0
-	entryStop := 0.2
-	jump := 0.005
-	selectedEntryConstant := 0.0
+	enterConstant := 0.0
+	exitConstant := lastVal * 0.0006
+	enterStop := lastVal * 0.0008
+	exitStop := lastVal * -0.0002
+
+	selectedEntryConstant := enterConstant
+	selectedExitConstant := exitConstant
 	var bestProfitList []float64
 
 	if constants != nil {
-		entryConstant = (*constants)[0]
+		selectedExitConstant = (*constants)[1]
+		enterConstant = (*constants)[0]
+		enterStop = enterConstant + 1
+		selectedEntryConstant = enterConstant
+		jump = lastVal
 	}
 
-	for ; entryConstant < entryStop; entryConstant += jump {
+	for {
+		for ; enterConstant < enterStop; enterConstant += jump {
+			balance = 1000.0
+			var profitList []float64
+			for i := 5; i < len(series.Candles); i++ {
 
-		var profitList []float64
-		balance = 1000.0
-		for i := 5; i < len(series.Candles); i++ {
+				candles := series.Candles[:i]
+				newSeries := series
+				newSeries.Candles = candles
 
-			candles := series.Candles[:i]
-			newSeries := series
-			newSeries.Candles = candles
-
-			if !open && len(candles) > 4 && s.ParametrizedShouldEnter(&newSeries, []float64{entryConstant, 0}) {
-				open = true
-				buyRate = candles[i-1].ClosePrice.Float()
-			} else if open && s.ParametrizedShouldExit(&newSeries, []float64{entryConstant, 0}) {
-				open = false
-				sellRate = candles[i-1].ClosePrice.Float()
-				profitPct := sellRate * 1 / buyRate
-				if profitPct < 1.5 {
-					balance *= profitPct * (1 - 0.0014)
-					profitList = append(profitList, (profitPct*(1-0.0014))-1)
+				if !open && len(candles) > 4 && s.ParametrizedShouldEnter(&newSeries, []float64{enterConstant, selectedExitConstant, trendPctCondition}) {
+					open = true
+					buyRate = candles[i-1].ClosePrice.Float()
+				} else if open && s.ParametrizedShouldExit(&newSeries, []float64{enterConstant, selectedExitConstant, trendPctCondition}) {
+					open = false
+					sellRate = candles[i-1].ClosePrice.Float()
+					profitPct := sellRate * 1 / buyRate
+					if profitPct < 2 {
+						balance *= profitPct * (1 - 0.0014)
+						profitList = append(profitList, (profitPct*(1-0.0014))-1)
+					}
 				}
+				time.Sleep(500 * time.Microsecond)
 			}
-			time.Sleep(300 * time.Nanosecond)
-		}
+			open = false
+			//return pairAnalysis, nil
 
-		open = false
-		if balance > highestBalance {
-			highestBalance = balance
-			selectedEntryConstant = entryConstant
-			bestProfitList = profitList
+			if balance > highestBalance {
+				highestBalance = balance
+				selectedEntryConstant = enterConstant
+				bestProfitList = profitList
+			}
+			//fmt.Printf("Entry Constant: %.8f Exit Constant %.8f Balance: %.8f\n", enterConstant, selectedExitConstant, balance)
 		}
 
 		if constants != nil {
 			break
 		}
-		//fmt.Printf("Entry constant: %.8f Balance: %.8f\n", entryConstant, balance)
-	}
 
-	//fmt.Printf("BEST CONSTANT COMBINATION FOUND: Entry Constant: %.8f Profit: %.4f%%\n",
-	//	selectedEntryConstant, highestBalance*100/1000-100)
+		var profitList []float64
+		for ; exitConstant > exitStop; exitConstant -= jump {
+			balance = 1000.0
+			for i := 5; i < len(series.Candles); i++ {
 
-	for i, profit := range bestProfitList {
-		if profit > 1.0 {
-			bestProfitList = helpers.RemoveFromSlice(bestProfitList, i)
+				candles := series.Candles[:i]
+				newSeries := series
+				newSeries.Candles = candles
+
+				if !open && len(candles) > 4 && s.ParametrizedShouldEnter(&newSeries, []float64{selectedEntryConstant, exitConstant, trendPctCondition}) {
+					open = true
+					buyRate = candles[i-1].ClosePrice.Float()
+				} else if open && s.ParametrizedShouldExit(&newSeries, []float64{selectedEntryConstant, exitConstant, trendPctCondition}) {
+					open = false
+					sellRate = candles[i-1].ClosePrice.Float()
+					profitPct := sellRate * 1 / buyRate
+					if profitPct < 2 {
+						balance *= profitPct * (1 - 0.0014)
+						profitList = append(profitList, (profitPct*(1-0.0014))-1)
+					}
+				}
+				time.Sleep(500 * time.Microsecond)
+			}
+			open = false
+			if balance > highestBalance {
+				highestBalance = balance
+				selectedExitConstant = exitConstant
+				bestProfitList = profitList
+			}
+			//fmt.Printf("Entry Constant: %.8f Exit constant: %.8f Balance: %.8f\n", selectedEntryConstant, exitConstant, balance)
+		}
+
+		if selectedEntryConstant != highestEnterConstant && selectedExitConstant != highestExitConstant {
+			highestEnterConstant = selectedEntryConstant
+			highestExitConstant = selectedExitConstant
+		} else {
+			//fmt.Printf("BEST CONSTANT COMBINATION FOUND: Entry Constant: %.8f Exit Constant %f Profit: %.4f%%\n",
+			//selectedEntryConstant, selectedExitConstant, highestBalance*100/1000-100)
+			break
 		}
 	}
 
-	strategyResults.Trend = series.Candles[len(series.Candles)-1].ClosePrice.Float() / series.Candles[0].ClosePrice.Float()
 	strategyResults.Profit = highestBalance*100/1000 - 100
-	strategyResults.ProfitList = bestProfitList
 	strategyResults.Period = limit - omit
+	strategyResults.ProfitList = bestProfitList
 	strategyResults.Constants = append(strategyResults.Constants, selectedEntryConstant)
+	strategyResults.Constants = append(strategyResults.Constants, selectedExitConstant)
+	strategyResults.Constants = append(strategyResults.Constants, trendPctCondition)
 	return strategyResults, nil
 }
 
@@ -156,16 +209,17 @@ func (s *StochRSIInMACDOutCustomStrategy) Analyze(pair string, exchangeService i
 	strategyAnalysis := analytics.NewStrategyAnalysis()
 	strategyAnalysis.Strategy = s
 
-	helpers.Logger.Debugln(fmt.Sprintf("→ Analyzing %s", strings.Replace(reflect.TypeOf(s).String(), "*strategies.", "", 1)))
+	helpers.Logger.Debugln(fmt.Sprintf("→ Analizing %s",
+		strings.Replace(reflect.TypeOf(s).String(), "*strategies.", "", 1)))
 
 	// Analyze last 1000 candles
-	result15m1000, err := s.PerformSimulation(pair, exchangeService, "1h", 500, 0, nil)
+	result15m1000, err := s.PerformSimulation(pair, exchangeService, s.Interval, 500, 0, nil)
 	if err != nil {
 		return nil, err
 	}
 	// Analyze last 500 candles
 	strategyAnalysis.StrategyResults = append(strategyAnalysis.StrategyResults, result15m1000)
-	result15m500, err := s.PerformSimulation(pair, exchangeService, "1h", 240, 0, &result15m1000.Constants)
+	result15m500, err := s.PerformSimulation(pair, exchangeService, s.Interval, 240, 0, &result15m1000.Constants)
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +233,8 @@ func (s *StochRSIInMACDOutCustomStrategy) Analyze(pair string, exchangeService i
 	strategyAnalysis.PositivismAvgRatio = (helpers.PositiveNegativeRatio(result15m500.ProfitList) + helpers.PositiveNegativeRatio(result15m1000.ProfitList)) / 2
 
 	// Conditions to accept strategy:
-	if result15m500.Profit > 2.0 &&
+	// Conditions to accept strategy:
+	if result15m1000.Profit > 3.2 && result15m500.Profit > 2.0 &&
 		(helpers.PositiveNegativeRatio(result15m500.ProfitList) >= 1.2 ||
 			(len(result15m500.ProfitList) == 0 && helpers.PositiveNegativeRatio(result15m1000.ProfitList) >= 1.2)) {
 

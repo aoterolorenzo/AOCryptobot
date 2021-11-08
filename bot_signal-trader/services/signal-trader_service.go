@@ -38,10 +38,11 @@ type SignalTraderService struct {
 	//pairDirection            map[string]models.MarketDirection
 }
 
-func NewSignalTrader(marketAnalysisService *services.MarketAnalysisService, multiMarketService *services.MultiMarketService) SignalTraderService {
+func NewSignalTrader(databaseService *database.DBService, marketAnalysisService *services.MarketAnalysisService, multiMarketService *services.MultiMarketService) SignalTraderService {
 	return SignalTraderService{
 		marketAnalysisService: marketAnalysisService,
 		multiMarketService:    multiMarketService,
+		databaseService:       databaseService,
 	}
 }
 
@@ -64,9 +65,6 @@ func (t *SignalTraderService) Start() {
 	t.tradePctPerPosition, _ = strconv.ParseFloat(os.Getenv("tradePctPerPosition"), 64)
 	t.balancePctToTrade, _ = strconv.ParseFloat(os.Getenv("balancePctToTrade"), 64)
 	t.databaseIsEnabled, _ = strconv.ParseBool(os.Getenv("enableDatabaseRecording"))
-	t.databaseService = database.NewDBService(os.Getenv("databaseName"), os.Getenv("databaseHost"), os.Getenv("databasePort"),
-		os.Getenv("databaseUser"), os.Getenv("databasePassword"))
-
 	t.firstExitTriggered = make(map[string]bool)
 	initialBalance, err := t.marketAnalysisService.ExchangeService.GetAvailableBalance(t.targetCoin)
 	if err != nil {
@@ -78,10 +76,15 @@ func (t *SignalTraderService) Start() {
 	// Infinite loop
 	for {
 		// For each pair
-		for _, pairAnalysisResults := range t.marketAnalysisService.GetTradeSignaledMarketsByInvStdDev() {
+		for _, pairAnalysisResults := range t.marketAnalysisService.GetTradeSignaledAndOpenMarketsByInvStdDev() {
 
 			// Update entry amount
 			t.tradeQuantityPerPosition = t.currentBalance * t.tradePctPerPosition
+
+			// Check results are ready
+			if pairAnalysisResults.BestStrategy == nil {
+				continue
+			}
 
 			// Set necessary variables from analysis results
 			strategy := pairAnalysisResults.BestStrategy.(interfaces.Strategy)
@@ -96,7 +99,7 @@ func (t *SignalTraderService) Start() {
 			results := t.marketAnalysisService.GetBestStrategyResults(pairAnalysisResults)
 
 			// Makes another first entry mandatory in case analysis becomes inconclusive
-			if t.firstExitTriggered[pair] && !pairAnalysisResults.TradeSignal {
+			if t.firstExitTriggered[pair] && !pairAnalysisResults.TradeSignal && !pairAnalysisResults.LockedMonitor {
 				t.firstExitTriggered[pair] = false
 			}
 
@@ -137,14 +140,11 @@ func (t *SignalTraderService) EnterIfDelayedEntryCheck(pair string, strategy int
 func (t *SignalTraderService) ExitIfDelayedExitCheck(pair string, strategy interfaces.Strategy,
 	timeSeries *techan.TimeSeries, constants []float64, delay int) {
 
-	if t.tradingRecordService.HasOpenPositions(pair) && t.stopLoss {
-		entryPrice, _ := strconv.ParseFloat(t.tradingRecordService.OpenPositions[pair][0].EntranceOrder().Price, 64)
-
-		if entryPrice*(1-t.stopLossPct) > timeSeries.LastCandle().ClosePrice.Float() {
-			helpers.Logger.Debugln(fmt.Sprintf("Stop-Loss signal for %s", pair))
-			t.PerformExit(pair, strategy, timeSeries, constants)
-			t.UnLockPair(pair)
-		}
+	if t.StopLossCheck(pair, strategy,
+		timeSeries, constants, true) {
+		t.PerformExit(pair, strategy, timeSeries, constants)
+		t.UnLockPair(pair)
+		return
 	}
 
 	// If there's no stop-loss signal, wait delay and exit if recheck
@@ -155,15 +155,32 @@ func (t *SignalTraderService) ExitIfDelayedExitCheck(pair string, strategy inter
 	}
 }
 
+func (t *SignalTraderService) StopLossCheck(pair string, strategy interfaces.Strategy, timeSeries *techan.TimeSeries, constants []float64, silent bool) bool {
+	if t.tradingRecordService.HasOpenPositions(pair) && t.stopLoss {
+		entryPrice, _ := strconv.ParseFloat(t.tradingRecordService.OpenPositions[pair][0].EntranceOrder().Price, 64)
+		if entryPrice*(1-t.stopLossPct) > timeSeries.LastCandle().ClosePrice.Float() {
+			if !silent {
+				helpers.Logger.Debugln(fmt.Sprintf("Stop-Loss signal for %s. Exiting position", pair))
+			}
+			return true
+		}
+	}
+	return false
+}
+
 func (t *SignalTraderService) EntryCheck(pair string, strategy interfaces.Strategy,
 	timeSeries *techan.TimeSeries, constants []float64) bool {
 
 	return strategy.ParametrizedShouldEnter(timeSeries, constants) && !t.tradingRecordService.HasOpenPositions(pair) &&
-		t.tradingRecordService.OpenPositionsCount() != t.maxOpenPositions && t.firstExitTriggered[pair]
+		t.tradingRecordService.OpenPositionsCount() != t.maxOpenPositions && t.firstExitTriggered[pair] && !t.IsPairLocked(pair)
 }
 
 func (t *SignalTraderService) ExitCheck(pair string, strategy interfaces.Strategy,
 	timeSeries *techan.TimeSeries, constants []float64) bool {
+	if t.StopLossCheck(pair, strategy,
+		timeSeries, constants, false) {
+		return true
+	}
 
 	return t.tradingRecordService.HasOpenPositions(pair) && strategy.ParametrizedShouldExit(timeSeries, constants)
 }
@@ -179,6 +196,12 @@ func (t *SignalTraderService) PerformEntry(pair string, strategy interfaces.Stra
 			fmt.Sprintf("Constants: %v\n", constants) +
 			fmt.Sprintf("Buy Price: %f\n\n", timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float()) +
 			fmt.Sprintf("Updated currentBalance: %f", t.currentBalance))
+
+	lastPosition := t.tradingRecordService.LastOpenPosition(pair)
+
+	if t.databaseIsEnabled {
+		lastPosition.Id = t.databaseService.AddPosition(*lastPosition, strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1), constants, -1000, 0.0, 0.0)
+	}
 }
 
 func (t *SignalTraderService) PerformExit(pair string, strategy interfaces.Strategy,
@@ -186,7 +209,7 @@ func (t *SignalTraderService) PerformExit(pair string, strategy interfaces.Strat
 
 	_ = t.tradingRecordService.ExitPositions(pair, t.marketAnalysisService.GetPairAnalysisResult(pair).MarketDirection)
 
-	lastPosition := t.tradingRecordService.LastPosition(pair)
+	lastPosition := t.tradingRecordService.LastClosedPosition(pair)
 
 	var profitEmoji string
 	profitPct := lastPosition.ProfitPct()
@@ -198,7 +221,7 @@ func (t *SignalTraderService) PerformExit(pair string, strategy interfaces.Strat
 		tradingAmount, _ = strconv.ParseFloat(lastPosition.EntranceOrder().ExecutedQuantity, 64)
 	}
 	lastCurrentBalance := t.currentBalance
-	t.currentBalance += tradingAmount * profitPct
+	t.currentBalance += tradingAmount * profitPct / 100
 
 	transactionBenefit := t.currentBalance - lastCurrentBalance
 
@@ -209,7 +232,7 @@ func (t *SignalTraderService) PerformExit(pair string, strategy interfaces.Strat
 	}
 
 	if t.databaseIsEnabled {
-		t.databaseService.AddPosition(*lastPosition, strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1), constants, profitPct*100, transactionBenefit, t.currentBalance-t.initialBalance)
+		t.databaseService.UpdatePosition(lastPosition.Id, *lastPosition, strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1), constants, profitPct, transactionBenefit, t.currentBalance-t.initialBalance)
 	}
 
 	helpers.Logger.Infoln(
@@ -219,13 +242,13 @@ func (t *SignalTraderService) PerformExit(pair string, strategy interfaces.Strat
 			fmt.Sprintf("Sell Price: %f\n", timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float()) +
 			fmt.Sprintf("Updated Balance: %.2f€\n", t.currentBalance) +
 			fmt.Sprintf("Gain/Loss: %.2f€\n", t.currentBalance-t.initialBalance) +
-			fmt.Sprintf("%s Profit: %.2f%%", profitEmoji, profitPct*100))
+			fmt.Sprintf("%s Profit: %.2f%%", profitEmoji, profitPct))
 }
 
 func (t *SignalTraderService) LockPair(pair string) {
 	for _, marketAnalysisService := range *t.marketAnalysisService.PairAnalysisResults {
 		if marketAnalysisService.Pair == pair {
-			*marketAnalysisService.LockedMonitor = true
+			marketAnalysisService.LockedMonitor = true
 		}
 	}
 }
@@ -233,7 +256,17 @@ func (t *SignalTraderService) LockPair(pair string) {
 func (t *SignalTraderService) UnLockPair(pair string) {
 	for _, marketAnalysisService := range *t.marketAnalysisService.PairAnalysisResults {
 		if marketAnalysisService.Pair == pair {
-			*marketAnalysisService.LockedMonitor = false
+			marketAnalysisService.LockedMonitor = false
 		}
 	}
+}
+
+func (t *SignalTraderService) IsPairLocked(pair string) bool {
+	for _, marketAnalysisService := range *t.marketAnalysisService.PairAnalysisResults {
+		if marketAnalysisService.Pair == pair {
+			return marketAnalysisService.LockedMonitor
+		}
+	}
+
+	return false
 }
