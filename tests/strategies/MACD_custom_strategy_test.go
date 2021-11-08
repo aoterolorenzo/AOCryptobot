@@ -27,7 +27,7 @@ func TestMACDCustomStrategy(t *testing.T) {
 	fmt.Printf("Ratio %f Profit: %.2f%%\n", helpers.PositiveNegativeRatio(strategyResults.ProfitList),
 		strategyResults.Profit)
 
-	assert.Equal(t, 1.4444444444444444, ratio)
-	assert.Equal(t, 15.247511749296649, profit)
-	assert.Equal(t, []float64{0.4817956, 0.1313987999999991, 1.313988}, constants)
+	assert.Equal(t, 5.222222222222222, ratio)
+	assert.Equal(t, 13.267470877583236, profit)
+	assert.Equal(t, []float64{1.3577876000000009, 0.1313987999999991, 1.313988}, constants)
 }
