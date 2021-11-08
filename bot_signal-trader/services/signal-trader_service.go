@@ -23,10 +23,19 @@ type SignalTraderService struct {
 	tradingRecordService  *services.TradingRecordService
 	databaseService       *database.DBService
 
-	maxOpenPositions    int
-	targetCoin          string
-	stopLoss            bool
-	stopLossPct         float64
+	maxOpenPositions int
+	targetCoin       string
+
+	// Stop Loss
+	stopLoss    bool
+	stopLossPct float64
+
+	// Trailing Stop Loss
+	trailingStopLoss           bool
+	trailingStopLossTriggerPct float64
+	trailingStopLossPct        float64
+	trailingStopLossTriggered  map[string]bool
+
 	tradePctPerPosition float64
 	balancePctToTrade   float64
 	databaseIsEnabled   bool
@@ -35,7 +44,6 @@ type SignalTraderService struct {
 	initialBalance           float64
 	tradeQuantityPerPosition float64
 	firstExitTriggered       map[string]bool
-	//pairDirection            map[string]models.MarketDirection
 }
 
 func NewSignalTrader(databaseService *database.DBService, marketAnalysisService *services.MarketAnalysisService, multiMarketService *services.MultiMarketService) SignalTraderService {
@@ -66,6 +74,7 @@ func (t *SignalTraderService) Start() {
 	t.balancePctToTrade, _ = strconv.ParseFloat(os.Getenv("balancePctToTrade"), 64)
 	t.databaseIsEnabled, _ = strconv.ParseBool(os.Getenv("enableDatabaseRecording"))
 	t.firstExitTriggered = make(map[string]bool)
+	t.trailingStopLossTriggered = make(map[string]bool)
 	initialBalance, err := t.marketAnalysisService.ExchangeService.GetAvailableBalance(t.targetCoin)
 	if err != nil {
 		helpers.Logger.Fatalln(fmt.Sprintf("Couldn't get the initial currentBalance: %s", err.Error()))
@@ -140,8 +149,8 @@ func (t *SignalTraderService) EnterIfDelayedEntryCheck(pair string, strategy int
 func (t *SignalTraderService) ExitIfDelayedExitCheck(pair string, strategy interfaces.Strategy,
 	timeSeries *techan.TimeSeries, constants []float64, delay int) {
 
-	if t.StopLossCheck(pair, strategy,
-		timeSeries, constants, true) {
+	if t.MiddleChecks(pair,
+		timeSeries) {
 		t.PerformExit(pair, strategy, timeSeries, constants)
 		t.UnLockPair(pair)
 		return
@@ -155,13 +164,52 @@ func (t *SignalTraderService) ExitIfDelayedExitCheck(pair string, strategy inter
 	}
 }
 
-func (t *SignalTraderService) StopLossCheck(pair string, strategy interfaces.Strategy, timeSeries *techan.TimeSeries, constants []float64, silent bool) bool {
-	if t.tradingRecordService.HasOpenPositions(pair) && t.stopLoss {
-		entryPrice, _ := strconv.ParseFloat(t.tradingRecordService.OpenPositions[pair][0].EntranceOrder().Price, 64)
-		if entryPrice*(1-t.stopLossPct) > timeSeries.LastCandle().ClosePrice.Float() {
-			if !silent {
-				helpers.Logger.Debugln(fmt.Sprintf("Stop-Loss signal for %s. Exiting position", pair))
-			}
+func (t *SignalTraderService) MiddleChecks(pair string, timeSeries *techan.TimeSeries) bool {
+	entryPrice, _ := strconv.ParseFloat(t.tradingRecordService.OpenPositions[pair][0].EntranceOrder().Price, 64)
+
+	// STOP - LOSS CHECK
+	if t.stopLoss {
+		if t.StopLossCheck(pair, entryPrice, timeSeries) {
+			return true
+		}
+	}
+
+	// TRIGGER STOP - LOSS CHECK
+	if t.trailingStopLoss {
+		if t.TrailingStopLossCheck(pair, entryPrice, timeSeries) {
+			return true
+		}
+	}
+	return false
+}
+
+func (t *SignalTraderService) StopLossCheck(pair string, entryPrice float64, timeSeries *techan.TimeSeries) bool {
+	currentPrice := timeSeries.LastCandle().ClosePrice.Float()
+
+	if t.tradingRecordService.HasOpenPositions(pair) {
+
+		if entryPrice*(1-t.stopLossPct) > currentPrice {
+			helpers.Logger.Debugln(fmt.Sprintf("Stop-Loss signal for %s. Exiting position", pair))
+			return true
+		}
+	}
+	return false
+}
+
+func (t *SignalTraderService) TrailingStopLossCheck(pair string, entryPrice float64, timeSeries *techan.TimeSeries) bool {
+	currentPrice := timeSeries.LastCandle().ClosePrice.Float()
+
+	// Firstly, if price overpass triggerPct, we activate triggerStopLoss
+	if !t.trailingStopLossTriggered[pair] && entryPrice*(1+t.trailingStopLossTriggerPct) <= currentPrice {
+		t.trailingStopLossTriggered[pair] = true
+		helpers.Logger.Debugln(fmt.Sprintf("Trailing stop-Loss armed at %.6f€", currentPrice))
+	}
+
+	// If already triggered
+	if t.trailingStopLossTriggered[pair] {
+		targetPrice := entryPrice * (1 + t.trailingStopLossTriggerPct - t.trailingStopLossPct)
+		if targetPrice > currentPrice {
+			helpers.Logger.Debugln(fmt.Sprintf("Trailing stop-Loss signal for %s. Exiting position", pair))
 			return true
 		}
 	}
@@ -177,10 +225,6 @@ func (t *SignalTraderService) EntryCheck(pair string, strategy interfaces.Strate
 
 func (t *SignalTraderService) ExitCheck(pair string, strategy interfaces.Strategy,
 	timeSeries *techan.TimeSeries, constants []float64) bool {
-	if t.StopLossCheck(pair, strategy,
-		timeSeries, constants, false) {
-		return true
-	}
 
 	return t.tradingRecordService.HasOpenPositions(pair) && strategy.ParametrizedShouldExit(timeSeries, constants)
 }
