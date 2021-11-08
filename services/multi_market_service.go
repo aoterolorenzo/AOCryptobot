@@ -3,7 +3,9 @@ package services
 import (
 	"fmt"
 	"github.com/sdcoffey/techan"
+	"gitlab.com/aoterocom/AOCryptobot/database"
 	"gitlab.com/aoterocom/AOCryptobot/helpers"
+	"gitlab.com/aoterocom/AOCryptobot/interfaces"
 	"gitlab.com/aoterocom/AOCryptobot/models/analytics"
 	"reflect"
 	"strings"
@@ -13,14 +15,16 @@ import (
 type MultiMarketService struct {
 	SingleMarketServices []*SingleMarketService
 	PairAnalysisResults  []*analytics.PairAnalysis
+	ExchangeService      *interfaces.ExchangeService
+	DatabaseService      *database.DBService
 }
 
-func NewMultiMarketService(pairAnalysisResults *[]*analytics.PairAnalysis) MultiMarketService {
+func NewMultiMarketService(databaseService *database.DBService, pairAnalysisResults *[]*analytics.PairAnalysis, interval string) MultiMarketService {
 	mms := MultiMarketService{}
 	mms.PairAnalysisResults = *pairAnalysisResults
 
 	for _, pairAnalysisResult := range *pairAnalysisResults {
-		sms := NewSingleMarketService(*techan.NewTimeSeries(), pairAnalysisResult.Pair)
+		sms := NewSingleMarketService(databaseService, *techan.NewTimeSeries(), pairAnalysisResult.Pair, interval)
 
 		mms.SingleMarketServices = append(mms.SingleMarketServices, &sms)
 	}
@@ -38,11 +42,6 @@ func (mms *MultiMarketService) StartMonitor() {
 						pairAnalysisResult.Pair, strings.Replace(reflect.TypeOf(pairAnalysisResult.BestStrategy).String(),
 							"*strategies.", "", 1)))
 					mms.startMonitor(pairAnalysisResult.Pair)
-				}
-			} else {
-				if isMonitoring && !*(*pairAnalysisResult).LockedMonitor {
-					helpers.Logger.Infoln(fmt.Sprintf("%s: Monitor stopped", pairAnalysisResult.Pair))
-					mms.stopMonitor(pairAnalysisResult.Pair)
 				}
 			}
 		}

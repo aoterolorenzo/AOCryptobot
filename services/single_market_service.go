@@ -2,6 +2,7 @@ package services
 
 import (
 	"github.com/sdcoffey/techan"
+	"gitlab.com/aoterocom/AOCryptobot/database"
 	"gitlab.com/aoterocom/AOCryptobot/models"
 	"gitlab.com/aoterocom/AOCryptobot/providers/binance"
 	"math"
@@ -11,14 +12,18 @@ import (
 type SingleMarketService struct {
 	MarketSnapshotsRecord []models.MarketDepth
 	TimeSeries            techan.TimeSeries
+	DatabaseService       *database.DBService
+	Interval              string
 	Pair                  string
 	Active                bool
 }
 
-func NewSingleMarketService(timeSeries techan.TimeSeries, pair string) SingleMarketService {
+func NewSingleMarketService(databaseService *database.DBService, timeSeries techan.TimeSeries, pair string, interval string) SingleMarketService {
 	return SingleMarketService{
 		MarketSnapshotsRecord: nil,
+		Interval:              interval,
 		TimeSeries:            timeSeries,
+		DatabaseService:       databaseService,
 		Pair:                  pair,
 		Active:                false,
 	}
@@ -92,19 +97,19 @@ func (sms *SingleMarketService) PctVariation(s int) (float64, error) {
 func (sms *SingleMarketService) StartMultiMonitor(pair string) {
 	sms.Pair = pair
 	sms.Active = true
-	binanceService := binance.NewBinanceService()
+	binanceService := binance.NewBinanceDBService(sms.DatabaseService)
 
 	go binanceService.DepthMonitor(pair, &sms.MarketSnapshotsRecord)
-	go binanceService.TimeSeriesMonitor(pair, "30m", &sms.TimeSeries, &sms.Active)
+	go binanceService.TimeSeriesMonitor(pair, sms.Interval, &sms.TimeSeries, &sms.Active)
 
 }
 
 func (sms *SingleMarketService) StartCandleMonitor(pair string) {
 	sms.Pair = pair
 	sms.Active = true
-	binanceService := binance.NewBinanceService()
+	binanceService := binance.NewBinanceDBService(sms.DatabaseService)
 
-	go binanceService.TimeSeriesMonitor(pair, "30m", &sms.TimeSeries, &sms.Active)
+	go binanceService.TimeSeriesMonitor(pair, sms.Interval, &sms.TimeSeries, &sms.Active)
 
 }
 

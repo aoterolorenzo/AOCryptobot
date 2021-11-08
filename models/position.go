@@ -6,6 +6,7 @@ import (
 
 // Position is a pair of two Order objects
 type Position struct {
+	Id     uint
 	orders [2]*Order
 }
 
@@ -90,5 +91,5 @@ func (p *Position) ProfitPct() float64 {
 	exitOrder := p.ExitOrder()
 	enterCumulativeQuoteQuantity, _ := strconv.ParseFloat(entranceOrder.CumulativeQuoteQuantity, 64)
 	exitCumulativeQuoteQuantity, _ := strconv.ParseFloat(exitOrder.CumulativeQuoteQuantity, 64)
-	return (exitCumulativeQuoteQuantity/enterCumulativeQuoteQuantity - 1) * (1 - 0.0015)
+	return ((exitCumulativeQuoteQuantity/enterCumulativeQuoteQuantity - 1) - 0.0015) * 100
 }

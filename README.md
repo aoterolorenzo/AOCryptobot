@@ -6,6 +6,26 @@ Signal trading is here!! You can now develop your own strategies with some well 
 
 ## Changelog
 
+[07 NOV 2021]
+- Add basic database implementation for Positions
+- Activate basic database implementation for Positions
+- Add snippet to fulfill database from logs
+- Add stop-loss feature 
+- Fix paper service not filling create and update times
+- Delegate config parameters into config file
+- Add support for whitelisted and blacklisted markets
+- Add CLI implementation to send strategies via cmd args
+- Fix monitor locks
+- Add lock check to trading enter conditions
+- Add candle limit to avoid memory overloads
+- Improve database support to allow database candle inserts
+- Fix TradeSignal false left open order in limbo
+- Fix interval dissociation between strategies and monitor
+- Fix database concurrency problems
+- Add missing interval conf value
+- Fix breaking error due using an unready analysis
+- Add telegram output for trade logging
+
 [07 APR 2020]
 - Add signal-trading system with strategy analysis algorithms
 - Add exit rules to oscillator system

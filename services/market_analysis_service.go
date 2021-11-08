@@ -25,8 +25,8 @@ func NewMarketAnalysisService(exchangeService interfaces.ExchangeService,
 	}
 }
 
-func (mas *MarketAnalysisService) PopulateWithPairs(coin string) {
-	for _, pair := range mas.ExchangeService.GetMarkets(coin) {
+func (mas *MarketAnalysisService) PopulateWithPairs(coin string, whitelist []string, blacklist []string) {
+	for _, pair := range mas.ExchangeService.GetMarkets(coin, whitelist, blacklist) {
 		pairAnalysis := analytics.PairAnalysis{Pair: pair}
 		pairAnalysis.TradeSignal = false
 
@@ -46,6 +46,7 @@ func (mas *MarketAnalysisService) AnalyzeMarkets() {
 		for _, pairAnalysis := range *mas.PairAnalysisResults {
 			pairAnalysisResultPtr := mas.GetPairAnalysisResult(pairAnalysis.Pair)
 			newPairAnalysisResult, err := mas.analyzePair(pairAnalysis.Pair)
+			newPairAnalysisResult.LockedMonitor = pairAnalysisResultPtr.LockedMonitor
 			newPairAnalysisResult.MarketDirection = pairAnalysisResultPtr.MarketDirection
 			if err == nil {
 				*pairAnalysisResultPtr = newPairAnalysisResult
@@ -53,18 +54,17 @@ func (mas *MarketAnalysisService) AnalyzeMarkets() {
 		}
 	}
 
-	//D for _ , item := range mas.GetTradeSignaledMarketsByInvStdDev() {
+	//D for _ , item := range mas.GetTradeSignaledAndOpenMarketsByInvStdDev() {
 	//D 	fmt.Printf("Best strategy for %s: %s Tradeable: %t.\n", item.Pair, item.BestStrategy,
 	//D 		item.TradeSignal)
 	//D }
 }
 
 func (mas *MarketAnalysisService) analyzePair(pair string) (analytics.PairAnalysis, error) {
-	varFalse := false
 	pairAnalysisResult := analytics.PairAnalysis{
 		StrategiesAnalysis: nil,
 		TradeSignal:        false,
-		LockedMonitor:      &varFalse,
+		LockedMonitor:      false,
 		Pair:               pair,
 	}
 
@@ -84,7 +84,7 @@ func (mas *MarketAnalysisService) analyzePair(pair string) (analytics.PairAnalys
 
 	//Once the results are set for the pair, we check the strategies and choose between them if they are valid
 	chosenStrategy := mas.chooseStrategy(pairAnalysisResult)
-	if chosenStrategy != nil && !*pairAnalysisResult.LockedMonitor {
+	if chosenStrategy != nil && !pairAnalysisResult.LockedMonitor {
 		pairAnalysisResult.TradeSignal = true
 		pairAnalysisResult.BestStrategy = chosenStrategy
 	}
@@ -99,7 +99,7 @@ func (mas *MarketAnalysisService) chooseStrategy(pairAnalysisResult analytics.Pa
 	for _, strategy := range pairAnalysisResult.StrategiesAnalysis {
 		strategyRatio := (strategy.Mean / strategy.StdDev) * strategy.PositivismAvgRatio
 		//D fmt.Printf("Strategy: %s Ratio: %.2f (Analyze %t)\n",strategy.Strategy, strategy.Mean / strategy.StdDev,  strategy.Analyze)
-		if strategy.IsCandidate && strategyRatio > bestRatio {
+		if strategy.IsCandidate && (strategyRatio > bestRatio || bestRatio == -10000.0) {
 			//D fmt.Printf("Strategy %s with ratio %.2f%% is better than %.2f\n", strategy.Strategy,
 			//D 	strategy.Mean / strategy.StdDev, bestRatio)
 			bestRatio = strategyRatio
@@ -110,7 +110,6 @@ func (mas *MarketAnalysisService) chooseStrategy(pairAnalysisResult analytics.Pa
 			//D 	strategy.Mean / strategy.StdDev, bestRatio)
 		}
 	}
-	//D fmt.Printf("Better Strategy: %s\n", betterStrategy)
 
 	return betterStrategy
 }
@@ -156,11 +155,12 @@ func (mas *MarketAnalysisService) GetBestStrategyResults(pairAnalysisResult anal
 	return analytics.StrategyAnalysis{}
 }
 
-func (mas *MarketAnalysisService) GetTradeSignaledMarketsByInvStdDev() []analytics.PairAnalysis {
+func (mas *MarketAnalysisService) GetTradeSignaledAndOpenMarketsByInvStdDev() []analytics.PairAnalysis {
 
 	pairAnalysisResults := []analytics.PairAnalysis{}
 	for _, result := range *mas.PairAnalysisResults {
-		if result.TradeSignal {
+
+		if result.TradeSignal || result.LockedMonitor {
 			pairAnalysisResults = append(pairAnalysisResults, *result)
 		}
 	}

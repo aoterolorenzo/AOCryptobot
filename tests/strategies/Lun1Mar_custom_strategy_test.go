@@ -10,10 +10,11 @@ import (
 )
 
 func TestLun1MarCustomStrategy(t *testing.T) {
-	strategy := strategies.NewLun1MarCustomStrategy()
+	interval := "1h"
+	strategy := strategies.NewLun1MarCustomStrategy(interval)
 	exchangeService := &mocks.ProviderMock{}
 	symbol := "ETHEUR"
-	strategyResults, _ := strategy.PerformSimulation(symbol, exchangeService, "1h", 240, 0, nil)
+	strategyResults, _ := strategy.PerformSimulation(symbol, exchangeService, interval, 240, 0, nil)
 
 	ratio := helpers.PositiveNegativeRatio(strategyResults.ProfitList)
 	profit := strategyResults.Profit

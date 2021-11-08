@@ -2,6 +2,7 @@ package bot_oscillator
 
 import (
 	"github.com/sdcoffey/techan"
+	"github.com/urfave/cli/v2"
 	marketMakerServices "gitlab.com/aoterocom/AOCryptobot/bot_oscillator/services"
 	"gitlab.com/aoterocom/AOCryptobot/bot_oscillator/ui"
 	"gitlab.com/aoterocom/AOCryptobot/helpers"
@@ -27,7 +28,7 @@ type MarketMaker struct {
 	waitTime         int
 }
 
-func (mm *MarketMaker) Run() {
+func (mm *MarketMaker) Run(c *cli.Context) {
 
 	threadNumber, err := strconv.Atoi(os.Getenv("threadNumber"))
 	monitorWindow, err := strconv.Atoi(os.Getenv("monitorWindow"))
@@ -45,7 +46,7 @@ func (mm *MarketMaker) Run() {
 	coin2 := strings.Split(os.Getenv("pair"), "-")[1]
 	pair := strings.ReplaceAll(os.Getenv("pair"), "-", "")
 
-	sms := services.NewSingleMarketService(*techan.NewTimeSeries(), pair)
+	sms := services.NewSingleMarketService(nil, *techan.NewTimeSeries(), pair, "30m")
 	mm.marketService = &sms
 	ws := services.NewWalletService(coin1, coin2)
 	mm.walletService = &ws

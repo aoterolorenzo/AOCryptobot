@@ -12,10 +12,14 @@ import (
 	"time"
 )
 
-type StableStrategy struct{}
+type StableStrategy struct {
+	Interval string
+}
 
-func NewStableStrategy() StableStrategy {
-	return StableStrategy{}
+func NewStableStrategy(interval string) StableStrategy {
+	return StableStrategy{
+		Interval: interval,
+	}
 }
 
 func (s *StableStrategy) ShouldEnter(timeSeries *techan.TimeSeries) bool {
@@ -156,14 +160,14 @@ func (s *StableStrategy) Analyze(pair string, exchangeService interfaces.Exchang
 	helpers.Logger.Debugln(fmt.Sprintf("→ Analyzing %s", strings.Replace(reflect.TypeOf(s).String(), "*strategies.", "", 1)))
 
 	// Analyze last 1000 candles
-	result15m1000, err := s.PerformSimulation(pair, exchangeService, "1h", 500, 0, nil)
+	result15m1000, err := s.PerformSimulation(pair, exchangeService, s.Interval, 500, 0, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	// Analyze last 500 candles
 	strategyAnalysis.StrategyResults = append(strategyAnalysis.StrategyResults, result15m1000)
-	result15m500, err := s.PerformSimulation(pair, exchangeService, "1h", 240, 0, &result15m1000.Constants)
+	result15m500, err := s.PerformSimulation(pair, exchangeService, s.Interval, 240, 0, &result15m1000.Constants)
 	if err != nil {
 		return nil, err
 	}
@@ -177,10 +181,8 @@ func (s *StableStrategy) Analyze(pair string, exchangeService interfaces.Exchang
 	strategyAnalysis.PositivismAvgRatio = (helpers.PositiveNegativeRatio(result15m500.ProfitList) + helpers.PositiveNegativeRatio(result15m1000.ProfitList)) / 2
 
 	// Conditions to accept strategy:
-	if len(result15m1000.ProfitList) > 0 &&
-		helpers.AllValuesPositive(result15m1000.ProfitList) &&
-		helpers.AllValuesPositive(result15m500.ProfitList) {
-
+	if result15m1000.Profit >= 0 &&
+		result15m500.Profit >= 0 {
 		strategyAnalysis.IsCandidate = true
 		helpers.Logger.Debugln(fmt.Sprintf("✔️  Strategy is tradeable: 1000CandleProfit, %f 500CandleProfit %f, 60%% of the Mean %f, Std Deviation %f, 1000 Profit Ratio %f 500 Profit Ratio %f", result15m1000.Profit, result15m500.Profit,
 			strategyAnalysis.Mean/0.6, strategyAnalysis.StdDev, helpers.PositiveNegativeRatio(result15m1000.ProfitList),

@@ -9,86 +9,83 @@ import (
 	"gitlab.com/aoterocom/AOCryptobot/strategies/indicators"
 	"reflect"
 	"strings"
+	"time"
 )
 
-type Lun1MarCustomStrategy struct {
+type MixedStrategy1 struct {
 	Interval string
 }
 
-func NewLun1MarCustomStrategy(interval string) Lun1MarCustomStrategy {
-	return Lun1MarCustomStrategy{
+func NewMixedStrategy1(interval string) MixedStrategy1 {
+	return MixedStrategy1{
 		Interval: interval,
 	}
 }
 
-func (s *Lun1MarCustomStrategy) ShouldEnter(timeSeries *techan.TimeSeries) bool {
+func (s *MixedStrategy1) ShouldEnter(timeSeries *techan.TimeSeries) bool {
 	return s.ParametrizedShouldEnter(timeSeries, []float64{0.15, 0})
 }
 
-func (s *Lun1MarCustomStrategy) ShouldExit(timeSeries *techan.TimeSeries) bool {
+func (s *MixedStrategy1) ShouldExit(timeSeries *techan.TimeSeries) bool {
 	return s.ParametrizedShouldExit(timeSeries, []float64{0.15, 0})
 }
 
-func (s *Lun1MarCustomStrategy) ParametrizedShouldEnter(timeSeries *techan.TimeSeries, constants []float64) bool {
+func (s *MixedStrategy1) ParametrizedShouldEnter(timeSeries *techan.TimeSeries, constants []float64) bool {
 	lastCandleIndex := len(timeSeries.Candles) - 1
+	// Left some margin after the candle start
+	if time.Now().Unix()-120 < timeSeries.Candles[lastCandleIndex].Period.Start.Unix() {
+		return false
+	}
 
-	myRSI := techan.NewRelativeStrengthIndexIndicator(techan.NewClosePriceIndicator(timeSeries), 12)
-	stochRSI := indicators.NewStochasticRelativeStrengthIndicator(myRSI, 12)
+	myRSI := techan.NewRelativeStrengthIndexIndicator(techan.NewClosePriceIndicator(timeSeries), 14)
+	stochRSI := indicators.NewStochasticRelativeStrengthIndicator(myRSI, 14)
 	smoothK := techan.NewSimpleMovingAverage(stochRSI, 3)
 	smoothD := techan.NewSimpleMovingAverage(smoothK, 3)
 
-	//currentRSIValue := myRSI.Calculate(lastCandleIndex).Float()
-	//lastRSIValue := myRSI.Calculate(lastCandleIndex-1).Float()
-	currentSmoothKValue := smoothK.Calculate(lastCandleIndex).Float()
-	currentSmoothDValue := smoothD.Calculate(lastCandleIndex).Float()
+	closePrices := techan.NewClosePriceIndicator(timeSeries)
+	MACD := techan.NewMACDIndicator(closePrices, 8, 21)
+	MACDHistogram := techan.NewMACDHistogramIndicator(MACD, 5)
 
-	lastSmoothKValue := smoothK.Calculate(lastCandleIndex - 1).Float()
-	lastSmoothDValue := smoothD.Calculate(lastCandleIndex - 1).Float()
-	distanceCurrentKD := currentSmoothKValue - currentSmoothDValue
-	distanceLastKD := lastSmoothKValue - lastSmoothDValue
-
-	myRSI5 := techan.NewRelativeStrengthIndexIndicator(techan.NewClosePriceIndicator(timeSeries), 5)
-	myRSI5Value := myRSI5.Calculate(lastCandleIndex).Float()
-
-	//closePrices := techan.NewClosePriceIndicator(timeSeries)
-	//MACD := techan.NewMACDIndicator(closePrices, 12, 26)
-	//MACDHistogram := techan.NewMACDHistogramIndicator(MACD, 9)
-	//
-	//currentMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex).Float()
-	//lastMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex - 1).Float()
-	//lastLastMACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex - 2).Float()
-
-	return currentSmoothKValue > currentSmoothDValue &&
-		distanceCurrentKD > distanceLastKD+constants[0] && myRSI5Value < 70
-
-}
-
-func (s *Lun1MarCustomStrategy) ParametrizedShouldExit(timeSeries *techan.TimeSeries, constants []float64) bool {
-	myRSI := techan.NewRelativeStrengthIndexIndicator(techan.NewClosePriceIndicator(timeSeries), 12)
-	stochRSI := indicators.NewStochasticRelativeStrengthIndicator(myRSI, 12)
-	smoothK := techan.NewSimpleMovingAverage(stochRSI, 3)
-	smoothD := techan.NewSimpleMovingAverage(smoothK, 3)
-
-	lastCandleIndex := len(timeSeries.Candles) - 1
-
-	lastSmoothKValue := smoothK.Calculate(lastCandleIndex).Float()
-	lastSmoothDValue := smoothD.Calculate(lastCandleIndex).Float()
-	distanceLastKD := lastSmoothKValue - lastSmoothDValue
-
+	// Values:
+	myRSIValue := myRSI.Calculate(lastCandleIndex).Float()
+	MACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex - 1).Float()
 	lastLastSmoothKValue := smoothK.Calculate(lastCandleIndex - 1).Float()
 	lastLastSmoothDValue := smoothD.Calculate(lastCandleIndex - 1).Float()
-	distanceLastLastKD := lastLastSmoothKValue - lastLastSmoothDValue
 
-	lastRsiValue := myRSI.Calculate(lastCandleIndex).Float()
-	lastLastRsiValue := myRSI.Calculate(lastCandleIndex - 1).Float()
-	exitRuleSetCheck := distanceLastKD < distanceLastLastKD-constants[0] ||
-		lastRsiValue < lastLastRsiValue*0.85 ||
-		lastSmoothKValue < lastSmoothDValue-0.03
+	// Conditions:
+	return myRSIValue < 50 && lastLastSmoothKValue < 0.5 && lastLastSmoothDValue < 0.5 && MACDHistogramValue > 0
 
-	return exitRuleSetCheck
 }
 
-func (s *Lun1MarCustomStrategy) PerformSimulation(pair string, exchangeService interfaces.ExchangeService, interval string, limit int, omit int, constants *[]float64) (analytics.StrategySimulationResult, error) {
+func (s *MixedStrategy1) ParametrizedShouldExit(timeSeries *techan.TimeSeries, constants []float64) bool {
+	lastCandleIndex := len(timeSeries.Candles) - 1
+	// Left some margin after the candle start
+	if time.Now().Unix()-120 < timeSeries.Candles[lastCandleIndex].Period.Start.Unix() {
+		return false
+	}
+
+	myRSI := techan.NewRelativeStrengthIndexIndicator(techan.NewClosePriceIndicator(timeSeries), 14)
+	stochRSI := indicators.NewStochasticRelativeStrengthIndicator(myRSI, 14)
+	smoothK := techan.NewSimpleMovingAverage(stochRSI, 3)
+	smoothD := techan.NewSimpleMovingAverage(smoothK, 3)
+
+	closePrices := techan.NewClosePriceIndicator(timeSeries)
+	MACD := techan.NewMACDIndicator(closePrices, 8, 21)
+	MACDHistogram := techan.NewMACDHistogramIndicator(MACD, 5)
+
+	// Values:
+	myRSIValue := myRSI.Calculate(lastCandleIndex).Float()
+	MACDHistogramValue := MACDHistogram.Calculate(lastCandleIndex).Float()
+	lastSmoothKValue := smoothK.Calculate(lastCandleIndex).Float()
+	lastSmoothDValue := smoothD.Calculate(lastCandleIndex).Float()
+
+	// Conditions:
+	return (myRSIValue > 50 && lastSmoothKValue > 0.5 && lastSmoothDValue > 0.5 &&
+		MACDHistogramValue < 0) || (myRSIValue < 30 && lastSmoothKValue < 0.3 && lastSmoothDValue < 0.3 &&
+		MACDHistogramValue < 0 && !s.ParametrizedShouldEnter(timeSeries, constants))
+}
+
+func (s *MixedStrategy1) PerformSimulation(pair string, exchangeService interfaces.ExchangeService, interval string, limit int, omit int, constants *[]float64) (analytics.StrategySimulationResult, error) {
 	strategyResults := analytics.NewStrategySimulationResult()
 	series, err := exchangeService.GetSeries(pair, interval, limit)
 	if err != nil {
@@ -103,7 +100,7 @@ func (s *Lun1MarCustomStrategy) PerformSimulation(pair string, exchangeService i
 	open := false
 	entryConstant := 0.0
 	entryStop := 0.2
-	jump := 0.005
+	jump := 0.01
 	selectedEntryConstant := 0.0
 	var bestProfitList []float64
 
@@ -128,10 +125,11 @@ func (s *Lun1MarCustomStrategy) PerformSimulation(pair string, exchangeService i
 				open = false
 				sellRate = candles[i-1].ClosePrice.Float()
 				profitPct := sellRate * 1 / buyRate
-				if profitPct < 2 {
+				if profitPct < 2.0 {
 					balance *= profitPct * (1 - 0.0014)
 					profitList = append(profitList, (profitPct*(1-0.0014))-1)
 				}
+				time.Sleep(500 * time.Microsecond)
 			}
 		}
 
@@ -159,7 +157,7 @@ func (s *Lun1MarCustomStrategy) PerformSimulation(pair string, exchangeService i
 	return strategyResults, nil
 }
 
-func (s *Lun1MarCustomStrategy) Analyze(pair string, exchangeService interfaces.ExchangeService) (*analytics.StrategyAnalysis, error) {
+func (s *MixedStrategy1) Analyze(pair string, exchangeService interfaces.ExchangeService) (*analytics.StrategyAnalysis, error) {
 	strategyAnalysis := analytics.NewStrategyAnalysis()
 	strategyAnalysis.Strategy = s
 
@@ -186,9 +184,9 @@ func (s *Lun1MarCustomStrategy) Analyze(pair string, exchangeService interfaces.
 	strategyAnalysis.PositivismAvgRatio = (helpers.PositiveNegativeRatio(result15m500.ProfitList) + helpers.PositiveNegativeRatio(result15m1000.ProfitList)) / 2
 
 	// Conditions to accept strategy:
-	if result15m1000.Profit > 3.2 && result15m500.Profit > 2.0 &&
-		(helpers.PositiveNegativeRatio(result15m500.ProfitList) >= 1.2 ||
-			(len(result15m500.ProfitList) == 0 && helpers.PositiveNegativeRatio(result15m1000.ProfitList) >= 1.2)) {
+	if result15m500.Profit > 2.0 && result15m1000.Profit > 3.5 &&
+		(helpers.PositiveNegativeRatio(result15m500.ProfitList) >= 1.0 || len(result15m500.ProfitList) == 0 || helpers.PositiveNegativeRatio(result15m500.ProfitList) == 0.0) &&
+		(helpers.PositiveNegativeRatio(result15m1000.ProfitList) >= 1.0 || len(result15m1000.ProfitList) == 0 || helpers.PositiveNegativeRatio(result15m1000.ProfitList) == 0.0) {
 
 		strategyAnalysis.IsCandidate = true
 		helpers.Logger.Debugln(fmt.Sprintf("✔️  Strategy is tradeable: 1000CandleProfit, %f 500CandleProfit %f, 60%% of the Mean %f, Std Deviation %f, 1000 Profit Ratio %f 500 Profit Ratio %f", result15m1000.Profit, result15m500.Profit,

@@ -38,11 +38,11 @@ func init() {
 }
 
 func (paperService *PaperService) GetTotalBalance(asset string) (float64, error) {
-	return 10000.0, nil
+	return 10670.73, nil
 }
 
 func (paperService *PaperService) GetAvailableBalance(asset string) (float64, error) {
-	return 10000.0, nil
+	return 10670.73, nil
 }
 
 func (paperService *PaperService) GetLockedBalance(asset string) (float64, error) {
@@ -74,7 +74,7 @@ func (paperService *PaperService) MakeOrder(pair string, quantity float64, rate 
 	}
 
 	order := models.NewOrder(pair, 0, "0", rateString, quantityString, quantityString, cumulativeQuantityString, models.OrderStatusTypeFilled,
-		orderType, sideType, 0, 0, false, false)
+		orderType, sideType, time.Now().Unix(), time.Now().Unix(), false, false)
 
 	return order, nil
 }
@@ -162,11 +162,18 @@ func (paperService *PaperService) GetSeries(pair string, interval string, limit 
 	return timeSeries, nil
 }
 
-func (paperService *PaperService) GetMarkets(coin string) []string {
+func (paperService *PaperService) GetMarkets(coin string, whitelist []string, blacklist []string) []string {
 	var pairList []string
+
+	blacklistStringify := strings.Join(blacklist, ",")
+	whitelistStringify := strings.Join(whitelist, ",")
+
 	info, _ := paperService.binanceClient.NewExchangeInfoService().Do(context.Background())
 	for _, symbol := range info.Symbols {
-		if strings.Contains(symbol.Symbol, coin) {
+
+		if strings.Contains(symbol.Symbol, coin) &&
+			(len(blacklist) == 0 || (len(blacklist) > 0 && !strings.Contains(blacklistStringify, symbol.Symbol))) &&
+			(len(whitelist) == 0 || (len(whitelist) > 0 && strings.Contains(whitelistStringify, symbol.Symbol))) {
 			pairList = append(pairList, symbol.Symbol)
 		}
 	}

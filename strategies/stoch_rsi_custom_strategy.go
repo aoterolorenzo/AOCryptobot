@@ -12,10 +12,14 @@ import (
 	"time"
 )
 
-type StochRSICustomStrategy struct{}
+type StochRSICustomStrategy struct {
+	Interval string
+}
 
-func NewStochRSICustomStrategy() StochRSICustomStrategy {
-	return StochRSICustomStrategy{}
+func NewStochRSICustomStrategy(interval string) StochRSICustomStrategy {
+	return StochRSICustomStrategy{
+		Interval: interval,
+	}
 }
 
 func (s *StochRSICustomStrategy) ShouldEnter(timeSeries *techan.TimeSeries) bool {
@@ -119,13 +123,12 @@ func (s *StochRSICustomStrategy) PerformSimulation(pair string, exchangeService 
 				open = false
 				sellRate = candles[i-1].ClosePrice.Float()
 				profitPct := sellRate * 1 / buyRate
-				if profitPct < 1.5 {
+				if profitPct < 2 {
 					balance *= profitPct * (1 - 0.0014)
 					profitList = append(profitList, (profitPct*(1-0.0014))-1)
 				}
-
+				time.Sleep(500 * time.Microsecond)
 			}
-			time.Sleep(300 * time.Nanosecond)
 		}
 
 		open = false
@@ -159,13 +162,13 @@ func (s *StochRSICustomStrategy) Analyze(pair string, exchangeService interfaces
 	helpers.Logger.Debugln(fmt.Sprintf("→ Analyzing %s", strings.Replace(reflect.TypeOf(s).String(), "*strategies.", "", 1)))
 
 	// Analyze last 1000 candles
-	result15m1000, err := s.PerformSimulation(pair, exchangeService, "1h", 500, 0, nil)
+	result15m1000, err := s.PerformSimulation(pair, exchangeService, s.Interval, 500, 0, nil)
 	if err != nil {
 		return nil, err
 	}
 	// Analyze last 500 candles
 	strategyAnalysis.StrategyResults = append(strategyAnalysis.StrategyResults, result15m1000)
-	result15m500, err := s.PerformSimulation(pair, exchangeService, "1h", 240, 0, &result15m1000.Constants)
+	result15m500, err := s.PerformSimulation(pair, exchangeService, s.Interval, 240, 0, &result15m1000.Constants)
 	if err != nil {
 		return nil, err
 	}

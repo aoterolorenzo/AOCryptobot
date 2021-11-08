@@ -6,7 +6,9 @@ import (
 	"gitlab.com/aoterocom/AOCryptobot/models/analytics"
 )
 
-type StopLossTriggerStrategy struct{}
+type StopLossTriggerStrategy struct {
+	Interval string
+}
 
 func (s *StopLossTriggerStrategy) ShouldEnter(timeSeries *techan.TimeSeries) bool {
 	return s.ParametrizedShouldEnter(timeSeries, []float64{0.10, 0, 0.05})

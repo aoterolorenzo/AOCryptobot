@@ -7,6 +7,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/sdcoffey/big"
 	"github.com/sdcoffey/techan"
+	"gitlab.com/aoterocom/AOCryptobot/database"
 	"gitlab.com/aoterocom/AOCryptobot/helpers"
 	"gitlab.com/aoterocom/AOCryptobot/models"
 	"os"
@@ -18,6 +19,7 @@ import (
 
 type BinanceService struct {
 	binanceClient         *binance.Client
+	dBService             *database.DBService
 	timeSeries            *techan.TimeSeries
 	marketSnapshotsRecord *[]models.MarketDepth
 	apiKey                string
@@ -29,6 +31,16 @@ type BinanceService struct {
 
 func NewBinanceService() *BinanceService {
 	binanceService := BinanceService{}
+	binanceService.apiKey = os.Getenv("apiKey")
+	binanceService.apiSecret = os.Getenv("apiSecret")
+	binanceService.binanceClient = binance.NewClient(binanceService.apiKey, binanceService.apiSecret)
+	return &binanceService
+}
+
+func NewBinanceDBService(databaseService *database.DBService) *BinanceService {
+	binanceService := BinanceService{
+		dBService: databaseService,
+	}
 	binanceService.apiKey = os.Getenv("apiKey")
 	binanceService.apiSecret = os.Getenv("apiSecret")
 	binanceService.binanceClient = binance.NewClient(binanceService.apiKey, binanceService.apiSecret)
@@ -246,6 +258,7 @@ func (binanceService *BinanceService) TimeSeriesMonitor(pair, interval string, t
 		candle.MinPrice = big.NewFromString(k.Low)
 		candle.TradeCount = uint(k.TradeNum)
 		candle.Volume = big.NewFromString(k.Volume)
+		binanceService.dBService.AddOrUpdateCandle(*candle, binanceService.pair)
 		binanceService.timeSeries.AddCandle(candle)
 	}
 
@@ -305,17 +318,25 @@ func (binanceService *BinanceService) GetSeries(pair string, interval string, li
 		candle.MinPrice = big.NewFromString(k.Low)
 		candle.TradeCount = uint(k.TradeNum)
 		candle.Volume = big.NewFromString(k.Volume)
+		binanceService.dBService.AddOrUpdateCandle(*candle, binanceService.pair)
 		timeSeries.AddCandle(candle)
 	}
 
 	return timeSeries, nil
 }
 
-func (binanceService *BinanceService) GetMarkets(coin string) []string {
+func (binanceService *BinanceService) GetMarkets(coin string, whitelist []string, blacklist []string) []string {
 	var pairList []string
+
+	blacklistStringify := strings.Join(blacklist, ",")
+	whitelistStringify := strings.Join(whitelist, ",")
+
 	info, _ := binanceService.binanceClient.NewExchangeInfoService().Do(context.Background())
 	for _, symbol := range info.Symbols {
-		if strings.Contains(symbol.Symbol, coin) {
+
+		if strings.Contains(symbol.Symbol, coin) &&
+			(len(blacklist) == 0 || (len(blacklist) > 0 && !strings.Contains(blacklistStringify, symbol.Symbol))) &&
+			(len(whitelist) == 0 || (len(whitelist) > 0 && strings.Contains(whitelistStringify, symbol.Symbol))) {
 			pairList = append(pairList, symbol.Symbol)
 		}
 	}
@@ -387,6 +408,7 @@ func (binanceService *BinanceService) wsKlineHandler(event *binance.WsKlineEvent
 	candle.MinPrice = big.NewFromString(event.Kline.Low)
 	candle.TradeCount = uint(event.Kline.TradeNum)
 	candle.Volume = big.NewFromString(event.Kline.Volume)
+	binanceService.dBService.AddOrUpdateCandle(*candle, binanceService.pair)
 
 	if lastCandle.Period != techan.NewTimePeriod(time.Unix(event.Kline.StartTime/1000, 0), time.Minute*15) {
 		binanceService.timeSeries.AddCandle(candle)
@@ -412,6 +434,10 @@ func (binanceService *BinanceService) wsDepthHandler(event *binance.WsDepthEvent
 		*binanceService.marketSnapshotsRecord = append(*binanceService.marketSnapshotsRecord, marketSnapshot)
 		reverseAny(*binanceService.marketSnapshotsRecord)
 
+		if len(*binanceService.marketSnapshotsRecord) > 1020 {
+			remove(*binanceService.marketSnapshotsRecord, 0)
+		}
+
 	}
 }
 
@@ -431,4 +457,8 @@ func reverseAny(s interface{}) {
 	for i, j := 0, n-1; i < j; i, j = i+1, j-1 {
 		swap(i, j)
 	}
+}
+
+func remove(slice []models.MarketDepth, s int) []models.MarketDepth {
+	return append(slice[:s], slice[s+1:]...)
 }
