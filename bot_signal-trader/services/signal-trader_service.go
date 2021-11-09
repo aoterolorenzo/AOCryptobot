@@ -34,7 +34,7 @@ type SignalTraderService struct {
 	trailingStopLoss           bool
 	trailingStopLossTriggerPct float64
 	trailingStopLossPct        float64
-	trailingStopLossTriggered  map[string]bool
+	trailingStopLossArmedPct   map[string]float64
 
 	tradePctPerPosition float64
 	balancePctToTrade   float64
@@ -74,7 +74,7 @@ func (t *SignalTraderService) Start() {
 	t.balancePctToTrade, _ = strconv.ParseFloat(os.Getenv("balancePctToTrade"), 64)
 	t.databaseIsEnabled, _ = strconv.ParseBool(os.Getenv("enableDatabaseRecording"))
 	t.firstExitTriggered = make(map[string]bool)
-	t.trailingStopLossTriggered = make(map[string]bool)
+	t.trailingStopLossArmedPct = make(map[string]float64)
 	initialBalance, err := t.marketAnalysisService.ExchangeService.GetAvailableBalance(t.targetCoin)
 	if err != nil {
 		helpers.Logger.Fatalln(fmt.Sprintf("Couldn't get the initial currentBalance: %s", err.Error()))
@@ -200,13 +200,15 @@ func (t *SignalTraderService) TrailingStopLossCheck(pair string, entryPrice floa
 	currentPrice := timeSeries.LastCandle().ClosePrice.Float()
 
 	// Firstly, if price overpass triggerPct, we activate triggerStopLoss
-	if !t.trailingStopLossTriggered[pair] && entryPrice*(1+t.trailingStopLossTriggerPct) <= currentPrice {
-		t.trailingStopLossTriggered[pair] = true
-		helpers.Logger.Debugln(fmt.Sprintf("Trailing stop-Loss armed at %.6f€", currentPrice))
+	if entryPrice*(1+t.trailingStopLossTriggerPct) <= currentPrice {
+		t.trailingStopLossArmedPct[pair] = currentPrice
+		if t.trailingStopLossArmedPct[pair] != 0.0 {
+			helpers.Logger.Debugln(fmt.Sprintf("Trailing stop-Loss armed at %.6f€", currentPrice))
+		}
 	}
 
 	// If already triggered
-	if t.trailingStopLossTriggered[pair] {
+	if t.trailingStopLossArmedPct[pair] != 0.0 {
 		targetPrice := entryPrice * (1 + (t.trailingStopLossTriggerPct / 100) - (t.trailingStopLossPct / 100))
 		if targetPrice > currentPrice {
 			helpers.Logger.Debugln(fmt.Sprintf("Trailing stop-Loss signal for %s. Exiting position", pair))
