@@ -188,7 +188,7 @@ func (t *SignalTraderService) StopLossCheck(pair string, entryPrice float64, tim
 
 	if t.tradingRecordService.HasOpenPositions(pair) {
 
-		if entryPrice*(1-t.stopLossPct) > currentPrice {
+		if entryPrice*(1-(t.stopLossPct/100)) > currentPrice {
 			helpers.Logger.Debugln(fmt.Sprintf("Stop-Loss signal for %s. Exiting position", pair))
 			return true
 		}
@@ -207,7 +207,7 @@ func (t *SignalTraderService) TrailingStopLossCheck(pair string, entryPrice floa
 
 	// If already triggered
 	if t.trailingStopLossTriggered[pair] {
-		targetPrice := entryPrice * (1 + t.trailingStopLossTriggerPct - t.trailingStopLossPct)
+		targetPrice := entryPrice * (1 + (t.trailingStopLossTriggerPct / 100) - (t.trailingStopLossPct / 100))
 		if targetPrice > currentPrice {
 			helpers.Logger.Debugln(fmt.Sprintf("Trailing stop-Loss signal for %s. Exiting position", pair))
 			return true
