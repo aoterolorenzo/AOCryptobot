@@ -149,38 +149,38 @@ func (t *SignalTraderService) EnterIfDelayedEntryCheck(pair string, strategy int
 func (t *SignalTraderService) ExitIfDelayedExitCheck(pair string, strategy interfaces.Strategy,
 	timeSeries *techan.TimeSeries, constants []float64, delay int) {
 
-	if t.MiddleChecks(pair,
-		timeSeries) {
-		t.PerformExit(pair, strategy, timeSeries, constants)
+	shouldExit, exitTrigger := t.MiddleChecks(pair, timeSeries)
+	if shouldExit {
+		t.PerformExit(pair, strategy, timeSeries, constants, exitTrigger)
 		t.UnLockPair(pair)
 		return
 	}
 
-	// If there's no stop-loss signal, wait delay and exit if recheck
+	// If there's no middleChecks exit signal, wait delay and exit if recheck
 	time.Sleep(time.Duration(delay) * time.Second)
 	if t.ExitCheck(pair, strategy, timeSeries, constants) {
-		t.PerformExit(pair, strategy, timeSeries, constants)
+		t.PerformExit(pair, strategy, timeSeries, constants, models.ExitTriggerStrategy)
 		t.UnLockPair(pair)
 	}
 }
 
-func (t *SignalTraderService) MiddleChecks(pair string, timeSeries *techan.TimeSeries) bool {
+func (t *SignalTraderService) MiddleChecks(pair string, timeSeries *techan.TimeSeries) (bool, models.ExitTrigger) {
 	entryPrice, _ := strconv.ParseFloat(t.tradingRecordService.OpenPositions[pair][0].EntranceOrder().Price, 64)
 
 	// STOP - LOSS CHECK
 	if t.stopLoss {
 		if t.StopLossCheck(pair, entryPrice, timeSeries) {
-			return true
+			return true, models.ExitTriggerStopLoss
 		}
 	}
 
 	// TRIGGER STOP - LOSS CHECK
 	if t.trailingStopLoss {
 		if t.TrailingStopLossCheck(pair, entryPrice, timeSeries) {
-			return true
+			return true, models.ExitTriggerTrailingStopLoss
 		}
 	}
-	return false
+	return false, models.ExitTriggerNone
 }
 
 func (t *SignalTraderService) StopLossCheck(pair string, entryPrice float64, timeSeries *techan.TimeSeries) bool {
@@ -244,12 +244,12 @@ func (t *SignalTraderService) PerformEntry(pair string, strategy interfaces.Stra
 	lastPosition := t.tradingRecordService.LastOpenPosition(pair)
 
 	if t.databaseIsEnabled {
-		lastPosition.Id = t.databaseService.AddPosition(*lastPosition, strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1), constants, -1000, 0.0, 0.0)
+		lastPosition.Id = t.databaseService.AddPosition(*lastPosition, strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1), constants, -1000, 0.0, models.ExitTriggerNone)
 	}
 }
 
 func (t *SignalTraderService) PerformExit(pair string, strategy interfaces.Strategy,
-	timeSeries *techan.TimeSeries, constants []float64) {
+	timeSeries *techan.TimeSeries, constants []float64, exitTrigger models.ExitTrigger) {
 
 	_ = t.tradingRecordService.ExitPositions(pair, t.marketAnalysisService.GetPairAnalysisResult(pair).MarketDirection)
 
@@ -276,7 +276,7 @@ func (t *SignalTraderService) PerformExit(pair string, strategy interfaces.Strat
 	}
 
 	if t.databaseIsEnabled {
-		t.databaseService.UpdatePosition(lastPosition.Id, *lastPosition, strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1), constants, profitPct, transactionBenefit, t.currentBalance-t.initialBalance)
+		t.databaseService.UpdatePosition(lastPosition.Id, *lastPosition, strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1), constants, profitPct, transactionBenefit, exitTrigger)
 	}
 
 	helpers.Logger.Infoln(
