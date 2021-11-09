@@ -200,11 +200,11 @@ func (t *SignalTraderService) TrailingStopLossCheck(pair string, entryPrice floa
 	currentPrice := timeSeries.LastCandle().ClosePrice.Float()
 
 	// Firstly, if price overpass triggerPct, we activate triggerStopLoss
-	if entryPrice*(1+t.trailingStopLossTriggerPct) <= currentPrice {
-		t.trailingStopLossArmedPct[pair] = currentPrice
-		if t.trailingStopLossArmedPct[pair] != 0.0 {
+	if entryPrice*(1+(t.trailingStopLossTriggerPct/100)) <= currentPrice {
+		if t.trailingStopLossArmedPct[pair] == 0.0 {
 			helpers.Logger.Debugln(fmt.Sprintf("Trailing stop-Loss armed at %.6f€", currentPrice))
 		}
+		t.trailingStopLossArmedPct[pair] = currentPrice
 	}
 
 	// If already triggered
