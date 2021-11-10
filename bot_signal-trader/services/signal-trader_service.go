@@ -313,6 +313,7 @@ func (t *SignalTraderService) PerformExit(pair string, strategy interfaces.Strat
 	helpers.Logger.Infoln(
 		fmt.Sprintf("📉 **%s: ❕ Exit signal**\n", pair) +
 			fmt.Sprintf("Strategy: %s\n", strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1)) +
+			fmt.Sprintf("Trigger: %s\n", exitTrigger) +
 			fmt.Sprintf("Constants: %v\n", constants) +
 			fmt.Sprintf("Sell Price: %f\n", timeSeries.Candles[len(timeSeries.Candles)-1].ClosePrice.Float()) +
 			fmt.Sprintf("Updated Balance: %.2f€\n", t.currentBalance) +
