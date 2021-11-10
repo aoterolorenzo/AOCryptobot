@@ -174,13 +174,6 @@ func (t *SignalTraderService) EnterIfDelayedEntryCheck(pair string, strategy int
 func (t *SignalTraderService) ExitIfDelayedExitCheck(pair string, strategy interfaces.Strategy,
 	timeSeries *techan.TimeSeries, constants []float64, delay int) {
 
-	shouldExit, exitTrigger := t.MiddleChecks(pair, timeSeries)
-	if shouldExit {
-		t.PerformExit(pair, strategy, timeSeries, constants, exitTrigger)
-		t.UnLockPair(pair)
-		return
-	}
-
 	// If there's no middleChecks exit signal, wait delay and exit if recheck
 	time.Sleep(time.Duration(delay) * time.Second)
 	if t.ExitCheck(pair, strategy, timeSeries, constants) {
@@ -234,7 +227,7 @@ func (t *SignalTraderService) TrailingStopLossCheck(pair string, entryPrice floa
 
 	// If already triggered
 	if t.trailingStopLossArmedAt[pair] != 0.0 {
-		targetPrice := entryPrice * (1 + (t.trailingStopLossTriggerPct / 100) - (t.trailingStopLossPct / 100))
+		targetPrice := t.trailingStopLossArmedAt[pair] * (1 - (t.trailingStopLossPct / 100))
 		if targetPrice > currentPrice {
 			helpers.Logger.Debugln(fmt.Sprintf("Trailing stop-Loss signal for %s. Exiting position", pair))
 			return true
@@ -253,7 +246,18 @@ func (t *SignalTraderService) EntryCheck(pair string, strategy interfaces.Strate
 func (t *SignalTraderService) ExitCheck(pair string, strategy interfaces.Strategy,
 	timeSeries *techan.TimeSeries, constants []float64) bool {
 
-	return t.tradingRecordService.HasOpenPositions(pair) && strategy.ParametrizedShouldExit(timeSeries, constants)
+	if t.tradingRecordService.HasOpenPositions(pair) {
+		shouldExit, _ := t.MiddleChecks(pair, timeSeries)
+		if shouldExit {
+			t.PerformExit(pair, strategy, timeSeries, constants, models.ExitTriggerStrategy)
+			t.UnLockPair(pair)
+			return false
+		}
+
+		return strategy.ParametrizedShouldExit(timeSeries, constants)
+	}
+
+	return false
 }
 
 func (t *SignalTraderService) PerformEntry(pair string, strategy interfaces.Strategy,
