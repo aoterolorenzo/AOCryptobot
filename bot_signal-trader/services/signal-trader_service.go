@@ -9,7 +9,6 @@ import (
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
 	"gitlab.com/aoterocom/AOCryptobot/models"
 	"gitlab.com/aoterocom/AOCryptobot/services"
-	"log"
 	"os"
 	"reflect"
 	"strconv"
@@ -34,7 +33,7 @@ type SignalTraderService struct {
 	trailingStopLoss           bool
 	trailingStopLossTriggerPct float64
 	trailingStopLossPct        float64
-	trailingStopLossArmedPct   map[string]float64
+	trailingStopLossArmedAt    map[string]float64
 
 	tradePctPerPosition float64
 	balancePctToTrade   float64
@@ -54,12 +53,35 @@ func NewSignalTrader(databaseService *database.DBService, marketAnalysisService 
 	}
 }
 
+func NewSignalTraderFullFilled(marketAnalysisService *services.MarketAnalysisService, multiMarketService *services.MultiMarketService, tradingRecordService *services.TradingRecordService, databaseService *database.DBService,
+	maxOpenPositions int, targetCoin string, stopLoss bool, stopLossPct float64, trailingStopLoss bool, trailingStopLossTriggerPct float64, trailingStopLossPct float64, trailingStopLossArmedPct map[string]float64,
+	tradePctPerPosition float64, balancePctToTrade float64, databaseIsEnabled bool, currentBalance float64, initialBalance float64, tradeQuantityPerPosition float64, firstExitTriggered map[string]bool) SignalTraderService {
+	return SignalTraderService{
+		marketAnalysisService:      marketAnalysisService,
+		multiMarketService:         multiMarketService,
+		tradingRecordService:       tradingRecordService,
+		databaseService:            databaseService,
+		maxOpenPositions:           maxOpenPositions,
+		targetCoin:                 targetCoin,
+		stopLoss:                   stopLoss,
+		stopLossPct:                stopLossPct,
+		trailingStopLoss:           trailingStopLoss,
+		trailingStopLossTriggerPct: trailingStopLossTriggerPct,
+		trailingStopLossPct:        trailingStopLossPct,
+		trailingStopLossArmedAt:    trailingStopLossArmedPct,
+		tradePctPerPosition:        tradePctPerPosition,
+		balancePctToTrade:          balancePctToTrade,
+		databaseIsEnabled:          databaseIsEnabled,
+		currentBalance:             currentBalance,
+		initialBalance:             initialBalance,
+		tradeQuantityPerPosition:   tradeQuantityPerPosition,
+		firstExitTriggered:         firstExitTriggered,
+	}
+}
+
 func init() {
 	cwd, _ := os.Getwd()
-	err := godotenv.Load(cwd + "/bot_signal-trader/conf.env")
-	if err != nil {
-		log.Fatalln("Error loading go.env file", err)
-	}
+	_ = godotenv.Load(cwd + "/bot_signal-trader/conf.env")
 }
 
 func (t *SignalTraderService) Start() {
@@ -74,7 +96,10 @@ func (t *SignalTraderService) Start() {
 	t.balancePctToTrade, _ = strconv.ParseFloat(os.Getenv("balancePctToTrade"), 64)
 	t.databaseIsEnabled, _ = strconv.ParseBool(os.Getenv("enableDatabaseRecording"))
 	t.firstExitTriggered = make(map[string]bool)
-	t.trailingStopLossArmedPct = make(map[string]float64)
+	t.trailingStopLoss, _ = strconv.ParseBool(os.Getenv("trailingStopLoss"))
+	t.trailingStopLossTriggerPct, _ = strconv.ParseFloat(os.Getenv("trailingStopLossTriggerPct"), 64)
+	t.trailingStopLossPct, _ = strconv.ParseFloat(os.Getenv("trailingStopLossPct"), 64)
+	t.trailingStopLossArmedAt = make(map[string]float64)
 	initialBalance, err := t.marketAnalysisService.ExchangeService.GetAvailableBalance(t.targetCoin)
 	if err != nil {
 		helpers.Logger.Fatalln(fmt.Sprintf("Couldn't get the initial currentBalance: %s", err.Error()))
@@ -200,15 +225,15 @@ func (t *SignalTraderService) TrailingStopLossCheck(pair string, entryPrice floa
 	currentPrice := timeSeries.LastCandle().ClosePrice.Float()
 
 	// Firstly, if price overpass triggerPct, we activate triggerStopLoss
-	if entryPrice*(1+(t.trailingStopLossTriggerPct/100)) <= currentPrice {
-		if t.trailingStopLossArmedPct[pair] == 0.0 {
-			helpers.Logger.Debugln(fmt.Sprintf("Trailing stop-Loss armed at %.6f€", currentPrice))
+	if currentPrice >= entryPrice*(1+(t.trailingStopLossTriggerPct/100)) && currentPrice > t.trailingStopLossArmedAt[pair] {
+		if t.trailingStopLossArmedAt[pair] == 0.0 {
+			helpers.Logger.Debugln(fmt.Sprintf("Trailing stop-Loss armed for %s", pair))
 		}
-		t.trailingStopLossArmedPct[pair] = currentPrice
+		t.trailingStopLossArmedAt[pair] = currentPrice
 	}
 
 	// If already triggered
-	if t.trailingStopLossArmedPct[pair] != 0.0 {
+	if t.trailingStopLossArmedAt[pair] != 0.0 {
 		targetPrice := entryPrice * (1 + (t.trailingStopLossTriggerPct / 100) - (t.trailingStopLossPct / 100))
 		if targetPrice > currentPrice {
 			helpers.Logger.Debugln(fmt.Sprintf("Trailing stop-Loss signal for %s. Exiting position", pair))
