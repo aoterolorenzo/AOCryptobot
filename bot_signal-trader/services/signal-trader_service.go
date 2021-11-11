@@ -247,9 +247,9 @@ func (t *SignalTraderService) ExitCheck(pair string, strategy interfaces.Strateg
 	timeSeries *techan.TimeSeries, constants []float64) bool {
 
 	if t.tradingRecordService.HasOpenPositions(pair) {
-		shouldExit, _ := t.MiddleChecks(pair, timeSeries)
+		shouldExit, exitTrigger := t.MiddleChecks(pair, timeSeries)
 		if shouldExit {
-			t.PerformExit(pair, strategy, timeSeries, constants, models.ExitTriggerStrategy)
+			t.PerformExit(pair, strategy, timeSeries, constants, exitTrigger)
 			t.UnLockPair(pair)
 			return false
 		}
