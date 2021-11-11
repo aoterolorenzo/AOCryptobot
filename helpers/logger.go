@@ -88,7 +88,7 @@ func (l *FileLogger) Infoln(args ...interface{}) {
 	if l.telegramOutput {
 		err := sendOnTelegramChannel(fmt.Sprintf("%s", args[0]), l.telegramToken, l.telegramChatId)
 		if err != nil {
-			log.Fatal(err)
+			log.Errorln(err)
 		}
 	}
 
