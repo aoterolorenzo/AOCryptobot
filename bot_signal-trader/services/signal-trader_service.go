@@ -230,6 +230,8 @@ func (t *SignalTraderService) TrailingStopLossCheck(pair string, entryPrice floa
 		targetPrice := t.trailingStopLossArmedAt[pair] * (1 - (t.trailingStopLossPct / 100))
 		if targetPrice > currentPrice {
 			helpers.Logger.Debugln(fmt.Sprintf("Trailing stop-Loss signal for %s. Target Price %f. Current price %f. Exiting position", pair, targetPrice, currentPrice))
+			t.trailingStopLossArmedAt[pair] = 0.0
+			t.firstExitTriggered[pair] = false
 			return true
 		}
 	}
