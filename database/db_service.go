@@ -97,7 +97,7 @@ func (dbs *DBService) AddPosition(position models.Position, strategy string, con
 			Constants:   dbConstants,
 			Profit:      profitPct,
 			EntryTime:   position.EntranceOrder().Time,
-			ExitTime:    0,
+			ExitTime:    position.ExitOrder().Time,
 			Gain:        benefits,
 			ExitTrigger: exitTrigger,
 			Orders: []database.Order{{

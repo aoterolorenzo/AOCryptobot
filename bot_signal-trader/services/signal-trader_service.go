@@ -21,9 +21,8 @@ type SignalTraderService struct {
 	multiMarketService    *services.MultiMarketService
 	tradingRecordService  *services.TradingRecordService
 	databaseService       *database.DBService
-
-	maxOpenPositions int
-	targetCoin       string
+	maxOpenPositions      int
+	targetCoin            string
 
 	// Stop Loss
 	stopLoss    bool
@@ -174,7 +173,7 @@ func (t *SignalTraderService) EnterIfDelayedEntryCheck(pair string, strategy int
 func (t *SignalTraderService) ExitIfDelayedExitCheck(pair string, strategy interfaces.Strategy,
 	timeSeries *techan.TimeSeries, constants []float64, delay int) {
 
-	// If there's no middleChecks exit signal, wait delay and exit if recheck
+	// Wait delay and exit if recheck
 	time.Sleep(time.Duration(delay) * time.Second)
 	if t.ExitCheck(pair, strategy, timeSeries, constants) {
 		t.PerformExit(pair, strategy, timeSeries, constants, models.ExitTriggerStrategy)
