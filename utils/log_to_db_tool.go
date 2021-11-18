@@ -192,15 +192,14 @@ func main() {
 					c2 = append(c2, database.Constant{Value: constant})
 				}
 				position := database.Position{
-					Symbol:        symbol,
-					EntryTime:     order1.Time,
-					ExitTime:      t.Unix(),
-					Orders:        []database.Order{order1, order2},
-					Strategy:      strategy,
-					Constants:     c2,
-					Profit:        profit,
-					Gain:          finalquant * -1,
-					CumulatedGain: gain,
+					Symbol:    symbol,
+					EntryTime: order1.Time,
+					ExitTime:  t.Unix(),
+					Orders:    []database.Order{order1, order2},
+					Strategy:  strategy,
+					Constants: c2,
+					Profit:    profit,
+					Gain:      finalquant * -1,
 				}
 
 				db.Create(&position)

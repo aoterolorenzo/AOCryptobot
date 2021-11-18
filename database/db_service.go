@@ -38,7 +38,7 @@ func init() {
 }
 
 func (dbs *DBService) AddPosition(position models.Position, strategy string, constants []float64,
-	profitPct float64, benefits float64, cumulatedGain float64) uint {
+	profitPct float64, benefits float64, exitTrigger models.ExitTrigger) uint {
 
 	var dbConstants []database.Constant
 	for _, constant := range constants {
@@ -48,14 +48,14 @@ func (dbs *DBService) AddPosition(position models.Position, strategy string, con
 	var dbPosition database.Position
 	if position.IsClosed() {
 		dbPosition = database.Position{
-			Symbol:        position.EntranceOrder().Symbol,
-			Strategy:      strategy,
-			Constants:     dbConstants,
-			Profit:        profitPct,
-			EntryTime:     position.EntranceOrder().Time,
-			ExitTime:      position.ExitOrder().Time,
-			Gain:          benefits,
-			CumulatedGain: cumulatedGain,
+			Symbol:      position.EntranceOrder().Symbol,
+			Strategy:    strategy,
+			Constants:   dbConstants,
+			Profit:      profitPct,
+			EntryTime:   position.EntranceOrder().Time,
+			ExitTime:    position.ExitOrder().Time,
+			Gain:        benefits,
+			ExitTrigger: exitTrigger,
 			Orders: []database.Order{{
 				OrderID:                 position.EntranceOrder().OrderID,
 				ClientOrderID:           position.EntranceOrder().ClientOrderID,
@@ -92,14 +92,14 @@ func (dbs *DBService) AddPosition(position models.Position, strategy string, con
 		}
 	} else {
 		dbPosition = database.Position{
-			Symbol:        position.EntranceOrder().Symbol,
-			Strategy:      strategy,
-			Constants:     dbConstants,
-			Profit:        profitPct,
-			EntryTime:     position.EntranceOrder().Time,
-			ExitTime:      0,
-			Gain:          benefits,
-			CumulatedGain: cumulatedGain,
+			Symbol:      position.EntranceOrder().Symbol,
+			Strategy:    strategy,
+			Constants:   dbConstants,
+			Profit:      profitPct,
+			EntryTime:   position.EntranceOrder().Time,
+			ExitTime:    position.ExitOrder().Time,
+			Gain:        benefits,
+			ExitTrigger: exitTrigger,
 			Orders: []database.Order{{
 				OrderID:                 position.EntranceOrder().OrderID,
 				ClientOrderID:           position.EntranceOrder().ClientOrderID,
@@ -125,7 +125,7 @@ func (dbs *DBService) AddPosition(position models.Position, strategy string, con
 }
 
 func (dbs *DBService) UpdatePosition(positionID uint, position models.Position, strategy string, constants []float64,
-	profitPct float64, benefits float64, cumulatedGain float64) {
+	profitPct float64, benefits float64, exitTrigger models.ExitTrigger) {
 
 	var dbConstants []database.Constant
 	for _, constant := range constants {
@@ -135,14 +135,14 @@ func (dbs *DBService) UpdatePosition(positionID uint, position models.Position, 
 	var dbPosition database.Position
 	if position.IsClosed() {
 		dbPosition = database.Position{
-			Symbol:        position.EntranceOrder().Symbol,
-			Strategy:      strategy,
-			Constants:     dbConstants,
-			Profit:        profitPct,
-			EntryTime:     position.EntranceOrder().Time,
-			ExitTime:      position.ExitOrder().Time,
-			Gain:          benefits,
-			CumulatedGain: cumulatedGain,
+			Symbol:      position.EntranceOrder().Symbol,
+			Strategy:    strategy,
+			Constants:   dbConstants,
+			Profit:      profitPct,
+			EntryTime:   position.EntranceOrder().Time,
+			ExitTime:    position.ExitOrder().Time,
+			Gain:        benefits,
+			ExitTrigger: exitTrigger,
 			Orders: []database.Order{{
 				OrderID:                 position.EntranceOrder().OrderID,
 				ClientOrderID:           position.EntranceOrder().ClientOrderID,
@@ -179,14 +179,14 @@ func (dbs *DBService) UpdatePosition(positionID uint, position models.Position, 
 		}
 	} else {
 		dbPosition = database.Position{
-			Symbol:        position.EntranceOrder().Symbol,
-			Strategy:      strategy,
-			Constants:     dbConstants,
-			Profit:        profitPct,
-			EntryTime:     position.EntranceOrder().Time,
-			ExitTime:      0,
-			Gain:          benefits,
-			CumulatedGain: cumulatedGain,
+			Symbol:      position.EntranceOrder().Symbol,
+			Strategy:    strategy,
+			Constants:   dbConstants,
+			Profit:      profitPct,
+			EntryTime:   position.EntranceOrder().Time,
+			ExitTime:    0,
+			Gain:        benefits,
+			ExitTrigger: exitTrigger,
 			Orders: []database.Order{{
 				OrderID:                 position.EntranceOrder().OrderID,
 				ClientOrderID:           position.EntranceOrder().ClientOrderID,
