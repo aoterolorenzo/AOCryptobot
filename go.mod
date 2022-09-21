@@ -7,6 +7,7 @@ require (
 	github.com/buger/goterm v0.0.0-20200322175922-2f3e71b85129 // indirect
 	github.com/gizak/termui/v3 v3.1.0
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible // indirect
+	github.com/goml/gobrain v0.0.0-20201212123421-2e2d98ca8249
 	github.com/joho/godotenv v1.3.0
 	github.com/maruel/panicparse v1.6.1 // indirect
 	github.com/mattn/go-runewidth v0.0.10 // indirect
@@ -16,6 +17,7 @@ require (
 	github.com/sdcoffey/techan v0.12.0
 	github.com/sirupsen/logrus v1.7.0
 	github.com/stretchr/testify v1.5.1
+	github.com/surenderthakran/gomind v0.0.0-20180731125518-a31b8878d726 // indirect
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
 	github.com/urfave/cli/v2 v2.3.0
 	github.com/xhit/go-str2duration/v2 v2.0.0

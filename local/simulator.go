@@ -16,19 +16,19 @@ func main() {
 	bs := binance.NewPaperService()
 	exchangeService := interfaces.ExchangeService(bs)
 
-	//lun1MarCustomStrategy := strategies.NewLun1MarCustomStrategy()
-	//lun5JulCustomStrategy := strategies.NewLun5JulCustomStrategy()
-	//MACDCustomStrategy := strategies.NewMACDCustomStrategy()
+	lun1MarCustomStrategy := strategies.NewLun1MarCustomStrategy("1h")
+	lun5JulCustomStrategy := strategies.NewLun5JulCustomStrategy("1h")
+	MACDCustomStrategy := strategies.NewMACDCustomStrategy("1h")
 	//stableStrategy := strategies.NewStableStrategy()
-	//stochRSICustomStrategy := strategies.NewStochRSICustomStrategy()
+	stochRSICustomStrategy := strategies.NewStochRSICustomStrategy("1h")
 	mixedStrategy1 := strategies.NewMixedStrategy1("1h")
 
 	selectedStrategies := []interfaces.Strategy{
-		//&MACDCustomStrategy,
-		//&lun1MarCustomStrategy,
-		//&stochRSICustomStrategy,
+		&MACDCustomStrategy,
+		&lun1MarCustomStrategy,
+		&stochRSICustomStrategy,
 		&mixedStrategy1,
-		//&lun5JulCustomStrategy,
+		&lun5JulCustomStrategy,
 		//&stableStrategy,
 	}
 

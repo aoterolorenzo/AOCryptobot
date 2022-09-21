@@ -29,5 +29,5 @@ func TestLun1MarCustomStrategy(t *testing.T) {
 
 	assert.Equal(t, 1.0, ratio)
 	assert.Equal(t, 3.1977614488366584, profit)
-	assert.Equal(t, []float64{0.075}, constants)
+	assert.Equal(t, []float64{0.07200000000000001}, constants)
 }
