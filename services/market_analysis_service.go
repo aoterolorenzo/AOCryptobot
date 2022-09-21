@@ -43,6 +43,10 @@ func (mas *MarketAnalysisService) PopulateWithPairs(coin string, whitelist []str
 
 func (mas *MarketAnalysisService) AnalyzeMarkets() {
 	for {
+		if *mas.PairAnalysisResults == nil {
+			continue
+		}
+
 		for _, pairAnalysis := range *mas.PairAnalysisResults {
 			pairAnalysisResultPtr := mas.GetPairAnalysisResult(pairAnalysis.Pair)
 			newPairAnalysisResult, err := mas.analyzePair(pairAnalysis.Pair)

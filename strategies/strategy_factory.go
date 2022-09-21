@@ -32,6 +32,9 @@ func StrategyFactory(strategyName string, interval string) (interfaces.Strategy,
 	case "mixedStrategy1":
 		mixedStrategy1 := NewMixedStrategy1(interval)
 		return interfaces.Strategy(&mixedStrategy1), nil
+	case "stopLossTriggerStrategy":
+		stopLossTriggerStrategy := StopLossTriggerStrategy{Interval: interval}
+		return interfaces.Strategy(&stopLossTriggerStrategy), nil
 	default:
 		return nil, fmt.Errorf("%s is not a known strategy", strategyName)
 	}
