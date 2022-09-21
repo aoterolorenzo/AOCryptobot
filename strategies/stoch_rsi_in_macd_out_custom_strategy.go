@@ -238,12 +238,16 @@ func (s *StochRSIInMACDOutCustomStrategy) Analyze(pair string, exchangeService i
 	}
 
 	lastCandleIndex := len(timeSeries.Candles) - 1
-	maIndicator := techan.NewSimpleMovingAverage(techan.NewOpenPriceIndicator(&timeSeries), 5)
-	lastMA := maIndicator.Calculate(lastCandleIndex)
-	lastlastMA := maIndicator.Calculate(lastCandleIndex - 1)
+	var lastMA big.Decimal
+	var lastlastMA big.Decimal
+	if lastCandleIndex >= 4 {
+		maIndicator := techan.NewSimpleMovingAverage(techan.NewOpenPriceIndicator(&timeSeries), 5)
+		lastMA = maIndicator.Calculate(lastCandleIndex)
+		lastlastMA = maIndicator.Calculate(lastCandleIndex - 1)
+	}
 
 	// Conditions to accept strategy:
-	if result2000.Profit > 3.2 && result500.Profit > 1.0 && lastMA.Float() >= lastlastMA.Float() {
+	if lastCandleIndex >= 4 && result2000.Profit > 3.2 && result500.Profit > 1.0 && lastMA.Float() >= lastlastMA.Float() {
 
 		strategyAnalysis.IsCandidate = true
 		helpers.Logger.Debugln(fmt.Sprintf("✅️  Strategy is tradeable: 2000CandleProfit, %f 500CandleProfit %f, Profit Mean %f, Std Deviation %f, 2000 Profit Ratio %f 500 Profit Ratio %f", result2000.Profit, result500.Profit,
