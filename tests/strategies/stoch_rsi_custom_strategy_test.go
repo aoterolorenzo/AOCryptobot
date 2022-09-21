@@ -29,5 +29,5 @@ func TestStochRSICustomStrategy(t *testing.T) {
 
 	assert.Equal(t, 1.2, ratio)
 	assert.Equal(t, -2.0870777152029802, profit)
-	assert.Equal(t, []float64{0.11500000000000003}, constants)
+	assert.Equal(t, []float64{0.11200000000000004}, constants)
 }
