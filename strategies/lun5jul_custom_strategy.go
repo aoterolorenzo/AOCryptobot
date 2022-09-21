@@ -2,6 +2,7 @@ package strategies
 
 import (
 	"fmt"
+	"github.com/sdcoffey/big"
 	"github.com/sdcoffey/techan"
 	"gitlab.com/aoterocom/AOCryptobot/helpers"
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
@@ -164,40 +165,52 @@ func (s *Lun5JulCustomStrategy) Analyze(pair string, exchangeService interfaces.
 
 	helpers.Logger.Debugln(fmt.Sprintf("→ Analyzing %s", strings.Replace(reflect.TypeOf(s).String(), "*strategies.", "", 1)))
 
-	// Analyze last 1000 candles
-	result15m1000, err := s.PerformSimulation(pair, exchangeService, s.Interval, 500, 0, nil)
+	// Analyze last 2000 candles
+	result2000, err := s.PerformSimulation(pair, exchangeService, s.Interval, 2000, 0, nil)
 	if err != nil {
 		return nil, err
 	}
 	// Analyze last 500 candles
-	strategyAnalysis.StrategyResults = append(strategyAnalysis.StrategyResults, result15m1000)
-	result15m500, err := s.PerformSimulation(pair, exchangeService, s.Interval, 240, 0, &result15m1000.Constants)
+	strategyAnalysis.StrategyResults = append(strategyAnalysis.StrategyResults, result2000)
+	result500, err := s.PerformSimulation(pair, exchangeService, s.Interval, 500, 0, &result2000.Constants)
 	if err != nil {
 		return nil, err
 	}
-	strategyAnalysis.StrategyResults = append(strategyAnalysis.StrategyResults, result15m500)
+	strategyAnalysis.StrategyResults = append(strategyAnalysis.StrategyResults, result500)
 
-	//Calculate profit mean and standard deviation
-	profits := []float64{result15m1000.Profit, result15m500.Profit}
-	sum := helpers.Sum(profits)
-	strategyAnalysis.Mean = sum / float64(len(profits))
-	strategyAnalysis.StdDev = helpers.StdDev(profits, strategyAnalysis.Mean)
-	strategyAnalysis.PositivismAvgRatio = (helpers.PositiveNegativeRatio(result15m500.ProfitList) + helpers.PositiveNegativeRatio(result15m1000.ProfitList)) / 2
+	sum := helpers.Sum(result2000.ProfitList)
+	strategyAnalysis.Mean = sum / float64(len(result2000.ProfitList))
+	strategyAnalysis.StdDev = helpers.StdDev(result2000.ProfitList, strategyAnalysis.Mean)
+	strategyAnalysis.PositivismAvgRatio = (helpers.PositiveNegativeRatio(result500.ProfitList) + helpers.PositiveNegativeRatio(result2000.ProfitList)) / 2
+
+	timeSeries := techan.TimeSeries{}
+	for i, profit := range result2000.ProfitList {
+		candle := techan.NewCandle(techan.TimePeriod{Start: time.Unix(int64(i-1), 0), End: time.Unix(int64(i-1), 0)})
+		candle.OpenPrice = big.NewDecimal(profit)
+		timeSeries.AddCandle(candle)
+	}
+
+	lastCandleIndex := len(timeSeries.Candles) - 1
+	var lastMA big.Decimal
+	var lastlastMA big.Decimal
+	if lastCandleIndex >= 4 {
+		maIndicator := techan.NewSimpleMovingAverage(techan.NewOpenPriceIndicator(&timeSeries), 5)
+		lastMA = maIndicator.Calculate(lastCandleIndex)
+		lastlastMA = maIndicator.Calculate(lastCandleIndex - 1)
+	}
 
 	// Conditions to accept strategy:
-	if result15m1000.Profit > 3.2 && result15m500.Profit > 2.0 &&
-		(helpers.PositiveNegativeRatio(result15m500.ProfitList) >= 1.2 ||
-			(len(result15m500.ProfitList) == 0 && helpers.PositiveNegativeRatio(result15m1000.ProfitList) >= 1.2)) {
+	if lastCandleIndex >= 4 && result2000.Profit > 3.2 && result500.Profit > 1.0 && lastMA.Float() >= lastlastMA.Float() {
 
 		strategyAnalysis.IsCandidate = true
-		helpers.Logger.Debugln(fmt.Sprintf("✔️  Strategy is tradeable: 1000CandleProfit, %f 500CandleProfit %f, 60%% of the Mean %f, Std Deviation %f, 1000 Profit Ratio %f 500 Profit Ratio %f", result15m1000.Profit, result15m500.Profit,
-			strategyAnalysis.Mean/0.6, strategyAnalysis.StdDev, helpers.PositiveNegativeRatio(result15m1000.ProfitList),
-			helpers.PositiveNegativeRatio(result15m500.ProfitList)))
+		helpers.Logger.Debugln(fmt.Sprintf("✅️  Strategy is tradeable: 2000CandleProfit, %f 500CandleProfit %f, Profit Mean %f, Std Deviation %f, 2000 Profit Ratio %f 500 Profit Ratio %f", result2000.Profit, result500.Profit,
+			strategyAnalysis.Mean, strategyAnalysis.StdDev, helpers.PositiveNegativeRatio(result2000.ProfitList),
+			helpers.PositiveNegativeRatio(result500.ProfitList)))
 	} else {
 		strategyAnalysis.IsCandidate = false
-		helpers.Logger.Debugln(fmt.Sprintf("❌️ Strategy is NOT tradeable: 1000CandleProfit, %f 500CandleProfit %f, 60%% of the Mean %f, Std Deviation %f, 1000 Profit Ratio %f 500 Profit Ratio %f", result15m1000.Profit, result15m500.Profit,
-			strategyAnalysis.Mean/0.6, strategyAnalysis.StdDev, helpers.PositiveNegativeRatio(result15m1000.ProfitList),
-			helpers.PositiveNegativeRatio(result15m500.ProfitList)))
+		helpers.Logger.Debugln(fmt.Sprintf("❌️ Strategy is NOT tradeable: 2000CandleProfit, %f 500CandleProfit %f, Profit Mean %f, Std Deviation %f, 2000 Profit Ratio %f 500 Profit Ratio %f", result2000.Profit, result500.Profit,
+			strategyAnalysis.Mean, strategyAnalysis.StdDev, helpers.PositiveNegativeRatio(result2000.ProfitList),
+			helpers.PositiveNegativeRatio(result500.ProfitList)))
 	}
 
 	return &strategyAnalysis, nil
