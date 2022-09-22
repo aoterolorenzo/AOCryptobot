@@ -124,6 +124,41 @@ func (dbs *DBService) AddPosition(position models.Position, strategy string, con
 	return dbPosition.ID
 }
 
+func (dbs *DBService) GetOpenPositions() []database.Position {
+	rows, _ := dbs.DB.Raw("SELECT * FROM positions WHERE exit_time IS NULL").Rows()
+	defer rows.Close()
+
+	var positions []database.Position
+	for rows.Next() {
+		var position database.Position
+		dbs.DB.ScanRows(rows, &position)
+
+		rows, _ := dbs.DB.Raw("SELECT * FROM orders WHERE position_id = ? ORDER BY id LIMIT 1", position.ID).Rows()
+		var orders []database.Order
+		for rows.Next() {
+			var order database.Order
+			dbs.DB.ScanRows(rows, &order)
+			position.Orders = append(position.Orders, order)
+
+			orders = append(orders, order)
+			rows.Close()
+		}
+
+		rows, _ = dbs.DB.Raw("SELECT * FROM constants WHERE position_id = ?", position.ID).Rows()
+		var constants []database.Constant
+		for rows.Next() {
+			var constant database.Constant
+			dbs.DB.ScanRows(rows, &constant)
+			constants = append(constants, constant)
+		}
+		position.Constants = constants
+
+		positions = append(positions, position)
+		rows.Close()
+	}
+	return positions
+}
+
 func (dbs *DBService) UpdatePosition(positionID uint, position models.Position, strategy string, constants []float64,
 	profitPct float64, benefits float64, exitTrigger models.ExitTrigger) {
 
@@ -233,3 +268,5 @@ func (dbs *DBService) AddOrUpdateCandle(candle techan.Candle, symbol string) {
 	}).Create(&dbCandle)
 
 }
+
+//func (dbs *DBService) databasePositionToOrdersPosition{}

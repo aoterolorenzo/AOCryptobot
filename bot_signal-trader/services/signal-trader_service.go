@@ -8,7 +8,9 @@ import (
 	"gitlab.com/aoterocom/AOCryptobot/helpers"
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
 	"gitlab.com/aoterocom/AOCryptobot/models"
+	"gitlab.com/aoterocom/AOCryptobot/models/analytics"
 	"gitlab.com/aoterocom/AOCryptobot/services"
+	"gitlab.com/aoterocom/AOCryptobot/strategies"
 	"os"
 	"reflect"
 	"strconv"
@@ -23,6 +25,7 @@ type SignalTraderService struct {
 	databaseService       *database.DBService
 	maxOpenPositions      int
 	targetCoin            string
+	interval              string
 
 	// Stop Loss
 	stopLoss    bool
@@ -91,6 +94,7 @@ func (t *SignalTraderService) Start() {
 	t.stopLossPct, _ = strconv.ParseFloat(os.Getenv("stopLossPct"), 64)
 	t.maxOpenPositions, _ = strconv.Atoi(os.Getenv("maxOpenPositions"))
 	t.targetCoin = os.Getenv("targetCoin")
+	t.interval = os.Getenv("interval")
 	t.tradePctPerPosition, _ = strconv.ParseFloat(os.Getenv("tradePctPerPosition"), 64)
 	t.balancePctToTrade, _ = strconv.ParseFloat(os.Getenv("balancePctToTrade"), 64)
 	t.databaseIsEnabled, _ = strconv.ParseBool(os.Getenv("enableDatabaseRecording"))
@@ -105,6 +109,9 @@ func (t *SignalTraderService) Start() {
 	}
 	t.initialBalance = initialBalance
 	t.currentBalance = initialBalance
+
+	// Recover open positions for a previous execution
+	t.RecoverOpenPositions()
 
 	// Infinite loop
 	for {
@@ -147,7 +154,7 @@ func (t *SignalTraderService) Start() {
 				go t.EnterIfDelayedEntryCheck(pair, strategy, timeSeries, results.StrategyResults[0].Constants, 180)
 			}
 
-			// Checks just an initial strategy exit signal. This avoid entry in the middle of a market raise
+			// Checks just an initial strategy exit signal. This avoids entry in the middle of a market raise
 			if !t.firstExitTriggered[pair] {
 				if strategy.ParametrizedShouldExit(timeSeries, results.StrategyResults[0].Constants) {
 					t.firstExitTriggered[pair] = true
@@ -346,4 +353,89 @@ func (t *SignalTraderService) IsPairLocked(pair string) bool {
 	}
 
 	return false
+}
+
+func (t *SignalTraderService) RecoverOpenPositions() {
+	for _, position := range t.databaseService.GetOpenPositions() {
+
+		var constants []float64
+		for _, constant := range position.Constants {
+			constants = append(constants, constant.Value)
+		}
+
+		strategy, err := strategies.StrategyFactory("stopLossTriggerStrategy", t.interval)
+		if err != nil {
+			continue
+		}
+
+		fakeStrategiesAnalysis := []analytics.StrategyAnalysis{
+			{
+				StrategyResults: []analytics.StrategySimulationResult{
+					{
+						Period:     2000,
+						Profit:     0,
+						ProfitList: []float64{},
+						Trend:      0,
+						Constants:  constants,
+					},
+				},
+				Strategy:           strategy,
+				IsCandidate:        true,
+				Mean:               10,
+				PositivismAvgRatio: 10,
+				StdDev:             0,
+			},
+		}
+
+		exists := false
+		for _, result := range *t.marketAnalysisService.PairAnalysisResults {
+			if result.Pair == position.Symbol {
+				result.TradeSignal = false
+				result.BestStrategy = strategy
+				result.StrategiesAnalysis = fakeStrategiesAnalysis
+				result.MarketDirection = models.MarketDirection(position.Orders[0].Side)
+
+				exists = true
+			}
+		}
+
+		if !exists {
+			*t.marketAnalysisService.PairAnalysisResults = append(*t.marketAnalysisService.PairAnalysisResults, &analytics.PairAnalysis{
+				StrategiesAnalysis: fakeStrategiesAnalysis,
+				TradeSignal:        true,
+				LockedMonitor:      false,
+				BestStrategy:       strategy,
+				MarketDirection:    models.MarketDirection(position.Orders[0].Side),
+				Pair:               position.Symbol,
+			})
+		}
+
+		modelsPosition := models.Position{Id: position.ID}
+		modelsPosition.Enter(models.Order{
+			Symbol:                  position.Symbol,
+			OrderID:                 int64(position.Orders[0].ID),
+			ClientOrderID:           position.Orders[0].ClientOrderID,
+			Price:                   position.Orders[0].Price,
+			OrigQuantity:            position.Orders[0].OrigQuantity,
+			ExecutedQuantity:        position.Orders[0].ExecutedQuantity,
+			CumulativeQuoteQuantity: position.Orders[0].CumulativeQuoteQuantity,
+			Status:                  models.OrderStatusType(position.Orders[0].Status),
+			Type:                    models.OrderType(position.Orders[0].Type),
+			Side:                    models.SideType(position.Orders[0].Side),
+			StopPrice:               position.Orders[0].StopPrice,
+			IcebergQuantity:         position.Orders[0].IcebergQuantity,
+			Time:                    position.Orders[0].Time,
+			UpdateTime:              position.Orders[0].UpdateTime,
+			IsWorking:               position.Orders[0].IsWorking,
+			IsIsolated:              position.Orders[0].IsIsolated,
+		})
+
+		//TODO: Check position status against exchange service
+		// Get order from service. If order is OK, go ahead. If not, return.
+
+		t.multiMarketService.ForceMonitor(position.Symbol, t.databaseService, t.interval)
+		t.LockPair(position.Symbol)
+		t.firstExitTriggered[position.Symbol] = true
+		t.tradingRecordService.GrabMemoryPosition(position.Symbol, &modelsPosition)
+	}
 }

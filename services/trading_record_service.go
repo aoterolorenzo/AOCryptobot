@@ -54,10 +54,14 @@ func (trs *TradingRecordService) EnterPosition(pair string, amount float64, dire
 		return err
 	}
 	position := models.NewPosition(order)
+	trs.GrabMemoryPosition(pair, position)
+	return nil
+}
+
+func (trs *TradingRecordService) GrabMemoryPosition(pair string, position *models.Position) {
 	trs.openPositionsMutex.Lock()
 	trs.OpenPositions[pair] = append(trs.OpenPositions[position.EntranceOrder().Symbol], position)
 	trs.openPositionsMutex.Unlock()
-	return nil
 }
 
 func (trs *TradingRecordService) ExitPositions(pair string, direction models.MarketDirection) error {

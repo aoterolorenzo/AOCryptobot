@@ -24,9 +24,10 @@ func NewMultiMarketService(databaseService *database.DBService, pairAnalysisResu
 	mms.PairAnalysisResults = *pairAnalysisResults
 
 	for _, pairAnalysisResult := range *pairAnalysisResults {
-		sms := NewSingleMarketService(databaseService, *techan.NewTimeSeries(), pairAnalysisResult.Pair, interval)
-
-		mms.SingleMarketServices = append(mms.SingleMarketServices, &sms)
+		if !mms.IsMonitoring(pairAnalysisResult.Pair) {
+			sms := NewSingleMarketService(databaseService, *techan.NewTimeSeries(), pairAnalysisResult.Pair, interval)
+			mms.SingleMarketServices = append(mms.SingleMarketServices, &sms)
+		}
 	}
 
 	return mms
@@ -47,6 +48,12 @@ func (mms *MultiMarketService) StartMonitor() {
 		}
 		time.Sleep(1 * time.Second)
 	}
+}
+
+func (mms *MultiMarketService) ForceMonitor(pair string, databaseService *database.DBService, interval string) {
+	sms := NewSingleMarketService(databaseService, *techan.NewTimeSeries(), pair, interval)
+	mms.SingleMarketServices = append(mms.SingleMarketServices, &sms)
+	go mms.startMonitor(pair)
 }
 
 func (mms *MultiMarketService) startMonitor(pair string) {
