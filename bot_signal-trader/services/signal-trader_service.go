@@ -430,6 +430,9 @@ func (t *SignalTraderService) RecoverOpenPositions() {
 			IsIsolated:              position.Orders[0].IsIsolated,
 		})
 
+		//TODO: Check position status against exchange service
+		// Get order from service. If order is OK, go ahead. If not, return.
+
 		t.multiMarketService.ForceMonitor(position.Symbol, t.databaseService, t.interval)
 		t.LockPair(position.Symbol)
 		t.firstExitTriggered[position.Symbol] = true
