@@ -1,6 +1,6 @@
 module gitlab.com/aoterocom/AOCryptobot
 
-go 1.15
+go 1.19
 
 require (
 	github.com/adshao/go-binance/v2 v2.2.1
