@@ -144,8 +144,6 @@ func (s *StableStrategy) PerformSimulation(pair string, exchangeService interfac
 	//fmt.Println(data2)
 	//fmt.Printf("BEST CONSTANT COMBINATION FOUND: Entry Constant: %.8f Profit: %.4f%%\n",
 	//	selectedEntryConstant, highestBalance*100/1000-100)
-
-	strategyResults.Trend = series.Candles[len(series.Candles)-1].ClosePrice.Float() / series.Candles[0].ClosePrice.Float()
 	strategyResults.Profit = highestBalance*100/1000 - 100
 	strategyResults.ProfitList = data2
 	strategyResults.Period = limit - omit
