@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"gitlab.com/aoterocom/AOCryptobot/helpers"
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
 	"gitlab.com/aoterocom/AOCryptobot/models"
@@ -42,6 +43,14 @@ func (mas *MarketAnalysisService) PopulateWithPairs(coin string, whitelist []str
 }
 
 func (mas *MarketAnalysisService) AnalyzeMarkets() {
+	defer func() {
+		if r := recover(); r != nil {
+			helpers.Logger.Errorln(fmt.Sprintf("Recovered. Error on AnalyzeMarkets: %v", r))
+			time.Sleep(1 * time.Second)
+			mas.AnalyzeMarkets()
+		}
+	}()
+
 	for {
 		if *mas.PairAnalysisResults == nil {
 			continue
