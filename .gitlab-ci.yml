@@ -1,4 +1,4 @@
-image: golang:1.15.2
+image: golang:1.19
 
 variables:
   REPO_NAME: gitlab.com/aoterocom/AOCryptobot
