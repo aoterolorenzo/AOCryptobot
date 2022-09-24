@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/urfave/cli/v2"
-	botSignalTrader "gitlab.com/aoterocom/AOCryptobot/bot_signal-trader"
+	botBot "gitlab.com/aoterocom/AOCryptobot/bot"
 	"gitlab.com/aoterocom/AOCryptobot/helpers"
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
 	"log"
@@ -24,7 +24,7 @@ func main() {
 			},
 		},
 		Action: func(c *cli.Context) error {
-			bot := &botSignalTrader.SignalTrader{}
+			bot := &botBot.Bot{}
 			rubBot(bot, c)
 			return nil
 		},

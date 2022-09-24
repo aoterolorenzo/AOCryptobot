@@ -46,7 +46,7 @@ var Logger = *NewFileLogger()
 
 func init() {
 	cwd, _ := os.Getwd()
-	err := godotenv.Load(cwd + "/bot_signal-trader/conf.env")
+	err := godotenv.Load(cwd + "/bot/conf.env")
 
 	logFile := os.Getenv("logFile")
 	if logFile == "" {
