@@ -170,6 +170,15 @@ func (t *BotService) Start() {
 
 func (t *BotService) EnterIfDelayedEntryCheck(pair string, strategy interfaces.Strategy,
 	timeSeries *techan.TimeSeries, constants []float64, delay int) {
+	defer func() {
+		if r := recover(); r != nil {
+			helpers.Logger.Errorln(fmt.Sprintf("Recovered. Error on EnterIfDelayedEntryCheck: %v", r))
+			time.Sleep(1 * time.Second)
+			t.EnterIfDelayedEntryCheck(pair, strategy,
+				timeSeries, constants, delay)
+		}
+	}()
+
 	time.Sleep(time.Duration(delay) * time.Second)
 	if t.EntryCheck(pair, strategy, timeSeries, constants) {
 		t.LockPair(pair)
@@ -179,7 +188,14 @@ func (t *BotService) EnterIfDelayedEntryCheck(pair string, strategy interfaces.S
 
 func (t *BotService) ExitIfDelayedExitCheck(pair string, strategy interfaces.Strategy,
 	timeSeries *techan.TimeSeries, constants []float64, delay int) {
-
+	defer func() {
+		if r := recover(); r != nil {
+			helpers.Logger.Errorln(fmt.Sprintf("Recovered. Error on ExitIfDelayedExitCheck: %v", r))
+			time.Sleep(1 * time.Second)
+			t.ExitIfDelayedExitCheck(pair, strategy,
+				timeSeries, constants, delay)
+		}
+	}()
 	// Wait delay and exit if recheck
 	time.Sleep(time.Duration(delay) * time.Second)
 	if t.ExitCheck(pair, strategy, timeSeries, constants) {

@@ -226,6 +226,13 @@ func (binanceService *BinanceService) GetOrderStatus(order models.Order) (models
 }
 
 func (binanceService *BinanceService) DepthMonitor(pair string, marketSnapshotsRecord *[]models.MarketDepth) {
+	defer func() {
+		if r := recover(); r != nil {
+			helpers.Logger.Errorln(fmt.Sprintf("Recovered. Error on DepthMonitor: (pair %s): %v, ", pair, r))
+			time.Sleep(1 * time.Second)
+			binanceService.DepthMonitor(pair, marketSnapshotsRecord)
+		}
+	}()
 	binanceService.marketSnapshotsRecord = marketSnapshotsRecord
 	binanceService.pair = pair
 
@@ -238,6 +245,13 @@ func (binanceService *BinanceService) DepthMonitor(pair string, marketSnapshotsR
 }
 
 func (binanceService *BinanceService) TimeSeriesMonitor(pair, interval string, timeSeries *techan.TimeSeries, active *bool) {
+	defer func() {
+		if r := recover(); r != nil {
+			helpers.Logger.Errorln(fmt.Sprintf("Recovered. Error on TimeSeriesMonitor (pair %s): %v, ", pair, r))
+			time.Sleep(1 * time.Second)
+			binanceService.TimeSeriesMonitor(pair, interval, timeSeries, active)
+		}
+	}()
 	binanceService.timeSeries = timeSeries
 	binanceService.pair = pair
 	binanceService.interval = interval

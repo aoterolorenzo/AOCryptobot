@@ -34,6 +34,14 @@ func NewMultiMarketService(databaseService *database.DBService, pairAnalysisResu
 }
 
 func (mms *MultiMarketService) StartMonitor() {
+	defer func() {
+		if r := recover(); r != nil {
+			helpers.Logger.Errorln(fmt.Sprintf("Recovered. Error on StartMonitor: %v", r))
+			time.Sleep(1 * time.Second)
+			mms.StartMonitor()
+		}
+	}()
+
 	for {
 		for _, pairAnalysisResult := range mms.PairAnalysisResults {
 			isMonitoring := mms.IsMonitoring(pairAnalysisResult.Pair)
@@ -57,6 +65,14 @@ func (mms *MultiMarketService) ForceMonitor(pair string, databaseService *databa
 }
 
 func (mms *MultiMarketService) startMonitor(pair string) {
+	defer func() {
+		if r := recover(); r != nil {
+			helpers.Logger.Errorln(fmt.Sprintf("Recovered. Error on startMonitor: %v", r))
+			time.Sleep(1 * time.Second)
+			mms.startMonitor(pair)
+		}
+	}()
+
 	for _, singleMarketService := range mms.SingleMarketServices {
 		if singleMarketService.Pair == pair {
 			singleMarketService.StartCandleMonitor(pair)
