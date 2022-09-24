@@ -40,7 +40,7 @@ func rubBot(b interfaces.MarketBot, c *cli.Context) {
 	// Panic recovery. Relaunch application.
 	defer func() {
 		if r := recover(); r != nil {
-			helpers.Logger.Errorln(fmt.Sprintf("Recovered. Error:\n %v", r))
+			helpers.Logger.Errorln(fmt.Sprintf("Recovered. Error: %v", r))
 			time.Sleep(1 * time.Second)
 			rubBot(b, c)
 		}
