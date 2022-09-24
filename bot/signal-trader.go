@@ -1,10 +1,10 @@
-package bot_signal_trader
+package bot
 
 import (
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
-	signalTrader "gitlab.com/aoterocom/AOCryptobot/bot_signal-trader/services"
+	bot "gitlab.com/aoterocom/AOCryptobot/bot/services"
 	"gitlab.com/aoterocom/AOCryptobot/database"
 	"gitlab.com/aoterocom/AOCryptobot/helpers"
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
@@ -16,19 +16,19 @@ import (
 	"strings"
 )
 
-type SignalTrader struct {
+type Bot struct {
 }
 
 func init() {
 
 	cwd, _ := os.Getwd()
-	err := godotenv.Load(cwd + "/bot_signal-trader/conf.env")
+	err := godotenv.Load(cwd + "/bot/conf.env")
 	if err != nil {
 		log.Fatalln("Error loading go.env file", err)
 	}
 }
 
-func (st *SignalTrader) Run(c *cli.Context) {
+func (st *Bot) Run(c *cli.Context) {
 	helpers.Logger.Infoln("🖖🏻 Signal Trader started")
 
 	interval := os.Getenv("interval")
@@ -82,6 +82,6 @@ func (st *SignalTrader) Run(c *cli.Context) {
 	go mms.StartMonitor()
 
 	// trade on pairAnalysisResults
-	trader := signalTrader.NewSignalTrader(databaseService, &marketAnalysisService, &mms)
+	trader := bot.NewBot(databaseService, &marketAnalysisService, &mms)
 	trader.Start()
 }

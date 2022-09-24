@@ -1,4 +1,4 @@
-package bot_signaltrader
+package aocryptobot
 
 import (
 	"fmt"
@@ -18,7 +18,7 @@ import (
 	"time"
 )
 
-type SignalTraderService struct {
+type BotService struct {
 	marketAnalysisService *services.MarketAnalysisService
 	multiMarketService    *services.MultiMarketService
 	tradingRecordService  *services.TradingRecordService
@@ -47,18 +47,18 @@ type SignalTraderService struct {
 	firstExitTriggered       map[string]bool
 }
 
-func NewSignalTrader(databaseService *database.DBService, marketAnalysisService *services.MarketAnalysisService, multiMarketService *services.MultiMarketService) SignalTraderService {
-	return SignalTraderService{
+func NewBot(databaseService *database.DBService, marketAnalysisService *services.MarketAnalysisService, multiMarketService *services.MultiMarketService) BotService {
+	return BotService{
 		marketAnalysisService: marketAnalysisService,
 		multiMarketService:    multiMarketService,
 		databaseService:       databaseService,
 	}
 }
 
-func NewSignalTraderFullFilled(marketAnalysisService *services.MarketAnalysisService, multiMarketService *services.MultiMarketService, tradingRecordService *services.TradingRecordService, databaseService *database.DBService,
+func NewBotFullFilled(marketAnalysisService *services.MarketAnalysisService, multiMarketService *services.MultiMarketService, tradingRecordService *services.TradingRecordService, databaseService *database.DBService,
 	maxOpenPositions int, targetCoin string, stopLoss bool, stopLossPct float64, trailingStopLoss bool, trailingStopLossTriggerPct float64, trailingStopLossPct float64, trailingStopLossArmedPct map[string]float64,
-	tradePctPerPosition float64, balancePctToTrade float64, databaseIsEnabled bool, currentBalance float64, initialBalance float64, tradeQuantityPerPosition float64, firstExitTriggered map[string]bool) SignalTraderService {
-	return SignalTraderService{
+	tradePctPerPosition float64, balancePctToTrade float64, databaseIsEnabled bool, currentBalance float64, initialBalance float64, tradeQuantityPerPosition float64, firstExitTriggered map[string]bool) BotService {
+	return BotService{
 		marketAnalysisService:      marketAnalysisService,
 		multiMarketService:         multiMarketService,
 		tradingRecordService:       tradingRecordService,
@@ -83,10 +83,10 @@ func NewSignalTraderFullFilled(marketAnalysisService *services.MarketAnalysisSer
 
 func init() {
 	cwd, _ := os.Getwd()
-	_ = godotenv.Load(cwd + "/bot_signal-trader/conf.env")
+	_ = godotenv.Load(cwd + "/bot/conf.env")
 }
 
-func (t *SignalTraderService) Start() {
+func (t *BotService) Start() {
 
 	t.tradingRecordService = services.NewTradingRecordService(t.multiMarketService, t.marketAnalysisService.ExchangeService)
 	// Get .env file strategy variables
@@ -168,7 +168,7 @@ func (t *SignalTraderService) Start() {
 	}
 }
 
-func (t *SignalTraderService) EnterIfDelayedEntryCheck(pair string, strategy interfaces.Strategy,
+func (t *BotService) EnterIfDelayedEntryCheck(pair string, strategy interfaces.Strategy,
 	timeSeries *techan.TimeSeries, constants []float64, delay int) {
 	time.Sleep(time.Duration(delay) * time.Second)
 	if t.EntryCheck(pair, strategy, timeSeries, constants) {
@@ -177,7 +177,7 @@ func (t *SignalTraderService) EnterIfDelayedEntryCheck(pair string, strategy int
 	}
 }
 
-func (t *SignalTraderService) ExitIfDelayedExitCheck(pair string, strategy interfaces.Strategy,
+func (t *BotService) ExitIfDelayedExitCheck(pair string, strategy interfaces.Strategy,
 	timeSeries *techan.TimeSeries, constants []float64, delay int) {
 
 	// Wait delay and exit if recheck
@@ -188,7 +188,7 @@ func (t *SignalTraderService) ExitIfDelayedExitCheck(pair string, strategy inter
 	}
 }
 
-func (t *SignalTraderService) MiddleChecks(pair string, timeSeries *techan.TimeSeries) (bool, models.ExitTrigger) {
+func (t *BotService) MiddleChecks(pair string, timeSeries *techan.TimeSeries) (bool, models.ExitTrigger) {
 	entryPrice, _ := strconv.ParseFloat(t.tradingRecordService.OpenPositions[pair][0].EntranceOrder().Price, 64)
 
 	// STOP - LOSS CHECK
@@ -207,7 +207,7 @@ func (t *SignalTraderService) MiddleChecks(pair string, timeSeries *techan.TimeS
 	return false, models.ExitTriggerNone
 }
 
-func (t *SignalTraderService) StopLossCheck(pair string, entryPrice float64, timeSeries *techan.TimeSeries) bool {
+func (t *BotService) StopLossCheck(pair string, entryPrice float64, timeSeries *techan.TimeSeries) bool {
 	currentPrice := timeSeries.LastCandle().ClosePrice.Float()
 
 	if t.tradingRecordService.HasOpenPositions(pair) {
@@ -220,7 +220,7 @@ func (t *SignalTraderService) StopLossCheck(pair string, entryPrice float64, tim
 	return false
 }
 
-func (t *SignalTraderService) TrailingStopLossCheck(pair string, entryPrice float64, timeSeries *techan.TimeSeries) bool {
+func (t *BotService) TrailingStopLossCheck(pair string, entryPrice float64, timeSeries *techan.TimeSeries) bool {
 	currentPrice := timeSeries.LastCandle().ClosePrice.Float()
 
 	// Firstly, if price overpass triggerPct, we activate triggerStopLoss
@@ -244,14 +244,14 @@ func (t *SignalTraderService) TrailingStopLossCheck(pair string, entryPrice floa
 	return false
 }
 
-func (t *SignalTraderService) EntryCheck(pair string, strategy interfaces.Strategy,
+func (t *BotService) EntryCheck(pair string, strategy interfaces.Strategy,
 	timeSeries *techan.TimeSeries, constants []float64) bool {
 
 	return strategy.ParametrizedShouldEnter(timeSeries, constants) && !t.tradingRecordService.HasOpenPositions(pair) &&
 		t.tradingRecordService.OpenPositionsCount() != t.maxOpenPositions && t.firstExitTriggered[pair] && !t.IsPairLocked(pair)
 }
 
-func (t *SignalTraderService) ExitCheck(pair string, strategy interfaces.Strategy,
+func (t *BotService) ExitCheck(pair string, strategy interfaces.Strategy,
 	timeSeries *techan.TimeSeries, constants []float64) bool {
 
 	if t.tradingRecordService.HasOpenPositions(pair) {
@@ -268,7 +268,7 @@ func (t *SignalTraderService) ExitCheck(pair string, strategy interfaces.Strateg
 	return false
 }
 
-func (t *SignalTraderService) PerformEntry(pair string, strategy interfaces.Strategy,
+func (t *BotService) PerformEntry(pair string, strategy interfaces.Strategy,
 	timeSeries *techan.TimeSeries, constants []float64) {
 
 	_ = t.tradingRecordService.EnterPosition(pair, t.tradeQuantityPerPosition,
@@ -287,7 +287,7 @@ func (t *SignalTraderService) PerformEntry(pair string, strategy interfaces.Stra
 	}
 }
 
-func (t *SignalTraderService) PerformExit(pair string, strategy interfaces.Strategy,
+func (t *BotService) PerformExit(pair string, strategy interfaces.Strategy,
 	timeSeries *techan.TimeSeries, constants []float64, exitTrigger models.ExitTrigger) {
 
 	_ = t.tradingRecordService.ExitPositions(pair, t.marketAnalysisService.GetPairAnalysisResult(pair).MarketDirection)
@@ -329,7 +329,7 @@ func (t *SignalTraderService) PerformExit(pair string, strategy interfaces.Strat
 			fmt.Sprintf("%s Profit: %.2f%%", profitEmoji, profitPct))
 }
 
-func (t *SignalTraderService) LockPair(pair string) {
+func (t *BotService) LockPair(pair string) {
 	for _, marketAnalysisService := range *t.marketAnalysisService.PairAnalysisResults {
 		if marketAnalysisService.Pair == pair {
 			marketAnalysisService.LockedMonitor = true
@@ -337,7 +337,7 @@ func (t *SignalTraderService) LockPair(pair string) {
 	}
 }
 
-func (t *SignalTraderService) UnLockPair(pair string) {
+func (t *BotService) UnLockPair(pair string) {
 	for _, marketAnalysisService := range *t.marketAnalysisService.PairAnalysisResults {
 		if marketAnalysisService.Pair == pair {
 			marketAnalysisService.LockedMonitor = false
@@ -345,7 +345,7 @@ func (t *SignalTraderService) UnLockPair(pair string) {
 	}
 }
 
-func (t *SignalTraderService) IsPairLocked(pair string) bool {
+func (t *BotService) IsPairLocked(pair string) bool {
 	for _, marketAnalysisService := range *t.marketAnalysisService.PairAnalysisResults {
 		if marketAnalysisService.Pair == pair {
 			return marketAnalysisService.LockedMonitor
@@ -355,7 +355,7 @@ func (t *SignalTraderService) IsPairLocked(pair string) bool {
 	return false
 }
 
-func (t *SignalTraderService) RecoverOpenPositions() {
+func (t *BotService) RecoverOpenPositions() {
 	for _, position := range t.databaseService.GetOpenPositions() {
 
 		var constants []float64
