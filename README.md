@@ -85,45 +85,7 @@ Choice rules are taking the best profit / std dev ratio, so MACD is selected. St
 
 Alanlyzer algorithms can, in addition to calculate profits with backtest, try the backtests with different parameters. Lets say you develop an strategy with the enter rule "enter if EMA increases in X (being X a parameter)" and the exit rule the same, but inverse. **The backtesting algorithm can calculate the best parameters combination** in terms of profit. So the bot calculates not only your past profit but the best combination of parameters to get the maximum profit. This is because if the market is, for example, more stable, the slope necessary to get the bigger profit could be different than in other situations, so the slope (or what you parametrize) changes in different market situations, **the bot will calculate it and proceed to trade always with the best combination**. Pretty amazing :)
 
-
-# Market Maker Mode
-
-![](./images/screenshot.png)
-
-
-#### Market monitor
-The bot monitors the market during `monitorWindow` seconds with a `monitorFrequency` also in seconds.
-
-#### Buy
-The signal it uses to do a buy is calculated through the percentil in which the current center price is, and
-a strategy-given variables `topPercentileToTrade` and `lowPercentileToTrade`. This means that if the current center
-price is on a percentil between that values, the buy is triggered.
-
-Example:
-Monitor window higher price: 1100
-Monitor window lower price: 900
-topPercentileToTrade: 100 
-lowPercentileToTrade: 50
-
-The buy will be triggered when the current center price be from 1000 and 1000.
-The amount and the value of the buy will be defined in the strategy (`strategy.env`)
-as `pctAmountToTrade` (over your wallet total) and `buyMargin` (pct below the center price)
-
-#### Sell
-At the moment that a buy is successful, a OCO sell order is triggered.
-
-An OCO order is a One-Cancel-Other order, so it implies the creation or 2 mutually exclusive order:
- - Sell order for the value of the buy including the `sellMargin` (pct over the buy cost)
- - Stop loss-limit order for the value of the `stopLossPct` percentage
- 
-That implies that the sell order will be complete or taking the benefit or by the stop-loss percentage
-
-##### This buy-sell process will be infinite repeated
- 
-
-
 ### Usage
-
 
 1. Install dependencies with
 `go mod download`
@@ -134,17 +96,7 @@ That implies that the sell order will be complete or taking the benefit or by th
 2. Run with
 `go run main.go`
 
-
-### Strategy file
-
-The strategy file is `marketmaker/strategy.env`
-
 ### Open Source
 
 The development is open to everyone and everything, to new market strategies such as arbitrage,
 perpetual market making... Just use as you need.
-
-I would like to integrate market signals as MACD, RSI, BoilerBands, etcetc... and create a real strategy, being able 
-to choose between or combine them.
-
-A very interesting lib to do it is github.com/sdcoffey/techan
