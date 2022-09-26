@@ -33,7 +33,7 @@ func init() {
 	cwd, _ := os.Getwd()
 	err := godotenv.Load(cwd + "/providers/binance/conf.env")
 	if err != nil {
-		helpers.Logger.Fatalln("Error loading go.env file", err)
+		helpers.Logger.Errorln("Error loading go.env file", err)
 	}
 }
 
@@ -105,7 +105,7 @@ func (paperService *PaperService) TimeSeriesMonitor(pair string, interval string
 	klines, err := paperService.binanceClient.NewKlinesService().Symbol(pair).
 		Interval(interval).Do(context.Background())
 	if err != nil {
-		helpers.Logger.Fatalln("error getting klines: " + err.Error())
+		helpers.Logger.Errorln("error getting klines: " + err.Error())
 	}
 
 	for _, k := range klines {

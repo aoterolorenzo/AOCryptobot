@@ -105,7 +105,7 @@ func (t *BotService) Start() {
 	t.trailingStopLossArmedAt = make(map[string]float64)
 	initialBalance, err := t.marketAnalysisService.ExchangeService.GetAvailableBalance(t.targetCoin)
 	if err != nil {
-		helpers.Logger.Fatalln(fmt.Sprintf("Couldn't get the initial currentBalance: %s", err.Error()))
+		helpers.Logger.Errorln(fmt.Sprintf("Couldn't get the initial currentBalance: %s", err.Error()))
 	}
 	t.initialBalance = initialBalance
 	t.currentBalance = initialBalance
@@ -372,14 +372,15 @@ func (t *BotService) IsPairLocked(pair string) bool {
 }
 
 func (t *BotService) RecoverOpenPositions() {
+	helpers.Logger.Debugln("Recovering open positions...")
 	for _, position := range t.databaseService.GetOpenPositions() {
-
+		helpers.Logger.Debugln(fmt.Sprintf("Recovering position for %s with Strategy %s", position.Symbol, position.Strategy))
 		var constants []float64
 		for _, constant := range position.Constants {
 			constants = append(constants, constant.Value)
 		}
 
-		strategy, err := strategies.StrategyFactory("stopLossTriggerStrategy", t.interval)
+		strategy, err := strategies.StrategyFactory(position.Strategy, t.interval)
 		if err != nil {
 			continue
 		}
@@ -454,4 +455,5 @@ func (t *BotService) RecoverOpenPositions() {
 		t.firstExitTriggered[position.Symbol] = true
 		t.tradingRecordService.GrabMemoryPosition(position.Symbol, &modelsPosition)
 	}
+	helpers.Logger.Debugln("Recovery checks finished")
 }

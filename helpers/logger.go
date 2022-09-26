@@ -72,7 +72,7 @@ func (l *FileLogger) Errorln(args ...interface{}) {
 }
 
 func (l *FileLogger) Fatalln(args ...interface{}) {
-	defaultLogger.Fatalln(args...)
+	defaultLogger.Errorln(args...)
 }
 
 func (l *FileLogger) Panicln(args ...interface{}) {

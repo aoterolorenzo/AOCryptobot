@@ -125,7 +125,7 @@ func (dbs *DBService) AddPosition(position models.Position, strategy string, con
 }
 
 func (dbs *DBService) GetOpenPositions() []database.Position {
-	rows, _ := dbs.DB.Raw("SELECT * FROM positions WHERE exit_time IS NULL").Rows()
+	rows, _ := dbs.DB.Raw("SELECT * FROM positions WHERE profit = -1000").Rows()
 	defer rows.Close()
 
 	var positions []database.Position

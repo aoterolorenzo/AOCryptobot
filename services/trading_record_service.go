@@ -96,7 +96,7 @@ func (trs *TradingRecordService) ExitPositions(pair string, direction models.Mar
 				if err == nil {
 					break
 				} else if count > 15 {
-					helpers.Logger.Fatalln(err)
+					helpers.Logger.Errorln(err)
 					return err
 				}
 
