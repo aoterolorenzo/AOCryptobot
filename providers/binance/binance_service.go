@@ -50,7 +50,7 @@ func NewBinanceDBService(databaseService *database.DBService) *BinanceService {
 func init() {
 	cwd, _ := os.Getwd()
 	var dir string
-	dir = os.Getenv("CONF_DIR")
+	dir = os.Getenv("CONF_FILE")
 	if dir == "" {
 		dir = "/conf.env"
 	}

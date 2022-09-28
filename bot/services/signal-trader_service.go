@@ -84,7 +84,7 @@ func NewBotFullFilled(marketAnalysisService *services.MarketAnalysisService, mul
 func init() {
 	cwd, _ := os.Getwd()
 	var dir string
-	dir = os.Getenv("CONF_DIR")
+	dir = os.Getenv("CONF_FILE")
 	if dir == "" {
 		dir = "/conf.env"
 	}
