@@ -83,7 +83,12 @@ func NewBotFullFilled(marketAnalysisService *services.MarketAnalysisService, mul
 
 func init() {
 	cwd, _ := os.Getwd()
-	_ = godotenv.Load(cwd + "/bot/conf.env")
+	var dir string
+	dir = os.Getenv("CONF_DIR")
+	if dir == "" {
+		dir = "/conf.env"
+	}
+	_ = godotenv.Load(cwd + dir)
 }
 
 func (t *BotService) Start() {

@@ -31,8 +31,8 @@ type BinanceService struct {
 
 func NewBinanceService() *BinanceService {
 	binanceService := BinanceService{}
-	binanceService.apiKey = os.Getenv("apiKey")
-	binanceService.apiSecret = os.Getenv("apiSecret")
+	binanceService.apiKey = os.Getenv("binanceAPIKey")
+	binanceService.apiSecret = os.Getenv("binanceAPISecret")
 	binanceService.binanceClient = binance.NewClient(binanceService.apiKey, binanceService.apiSecret)
 	return &binanceService
 }
@@ -41,18 +41,20 @@ func NewBinanceDBService(databaseService *database.DBService) *BinanceService {
 	binanceService := BinanceService{
 		dBService: databaseService,
 	}
-	binanceService.apiKey = os.Getenv("apiKey")
-	binanceService.apiSecret = os.Getenv("apiSecret")
+	binanceService.apiKey = os.Getenv("binanceAPIKey")
+	binanceService.apiSecret = os.Getenv("binanceAPISecret")
 	binanceService.binanceClient = binance.NewClient(binanceService.apiKey, binanceService.apiSecret)
 	return &binanceService
 }
 
 func init() {
 	cwd, _ := os.Getwd()
-	err := godotenv.Load(cwd + "/providers/binance/conf.env")
-	if err != nil {
-		helpers.Logger.Errorln("Error loading go.env file", err)
+	var dir string
+	dir = os.Getenv("CONF_DIR")
+	if dir == "" {
+		dir = "/conf.env"
 	}
+	_ = godotenv.Load(cwd + dir)
 }
 
 func (binanceService *BinanceService) GetTotalBalance(asset string) (float64, error) {
