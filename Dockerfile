@@ -9,7 +9,6 @@ RUN ls
 # Download necessary Go modules
 COPY . .
 RUN go build -o /aocryptobot
-RUN /aocryptobot
 
 ## Deploy
 FROM bitnami/minideb:bullseye as deploy
@@ -17,6 +16,7 @@ FROM bitnami/minideb:bullseye as deploy
 WORKDIR /
 
 COPY --from=build /aocryptobot /aocryptobot
+COPY --from=build /bot/conf.env /conf.env
 
 USER nonroot:nonroot
 
