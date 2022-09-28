@@ -22,7 +22,7 @@ type Bot struct {
 func init() {
 
 	cwd, _ := os.Getwd()
-	err := godotenv.Load(cwd + "/bot/conf.env")
+	err := godotenv.Load(cwd + "/conf.env")
 	if err != nil {
 		log.Fatalln("Error loading go.env file", err)
 	}
