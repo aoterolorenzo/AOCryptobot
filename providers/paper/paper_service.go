@@ -21,8 +21,8 @@ type PaperService struct {
 }
 
 func NewPaperService() *PaperService {
-	apiKey := os.Getenv("apiKey")
-	apiSecret := os.Getenv("apiSecret")
+	apiKey := os.Getenv("binanceAPIKey")
+	apiSecret := os.Getenv("binanceAPISecret")
 	binanceClient := binance.NewClient(apiKey, apiSecret)
 	return &PaperService{
 		binanceClient: binanceClient,
