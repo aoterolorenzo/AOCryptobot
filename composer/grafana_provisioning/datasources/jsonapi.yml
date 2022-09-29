@@ -1,0 +1,18 @@
+apiVersion: 1
+
+datasources:
+- name: 'JSON API'
+  orgId: 1
+  uid: json_api
+  type: marcusolsson-json-datasource
+  typeName: 'JSON API'
+  access: proxy
+  url: https://api1.binance.com/api/v3/klines
+  user: ''
+  database: ''
+  basicAuth: false
+  isDefault: false
+  jsonData:
+    queryParams: symbol=symbol=BTCEUR&interval=1d
+  readOnly: false
+  editable: true

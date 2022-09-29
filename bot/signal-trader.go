@@ -13,6 +13,7 @@ import (
 	"gitlab.com/aoterocom/AOCryptobot/services"
 	strategies2 "gitlab.com/aoterocom/AOCryptobot/strategies"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -59,8 +60,17 @@ func (st *Bot) Run(c *cli.Context) {
 	bs := binance2.NewPaperService()
 	exchangeService := interfaces.ExchangeService(bs)
 
-	databaseService := database.NewDBService(os.Getenv("databaseHost"), os.Getenv("databasePort"), os.Getenv("databaseName"),
-		os.Getenv("databaseUser"), os.Getenv("databasePassword"))
+	var databaseService *database.DBService
+	var err error
+	databaseIsEnabled, _ := strconv.ParseBool(os.Getenv("enableDatabaseRecording"))
+
+	if databaseIsEnabled == true {
+		databaseService, err = database.NewDBService(os.Getenv("databaseHost"), os.Getenv("databasePort"), os.Getenv("databaseName"),
+			os.Getenv("databaseUser"), os.Getenv("databasePassword"))
+		if err != nil {
+			panic(err)
+		}
+	}
 
 	var strategies []interfaces.Strategy
 
