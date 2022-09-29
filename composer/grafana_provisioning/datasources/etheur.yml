@@ -1,0 +1,17 @@
+apiVersion: 1
+ 
+datasources:
+- name: ETHEUR
+  orgId: 1
+  type: marcusolsson-json-datasource
+  typeName: 'JSON API'
+  access: proxy
+  url: https://api1.binance.com/api/v3/klines
+  user: ''
+  database: ''
+  basicAuth: false
+  isDefault: false
+  jsonData:
+    queryParams: symbol=ETHEUR&interval=1h
+  readOnly: false
+  editable: true

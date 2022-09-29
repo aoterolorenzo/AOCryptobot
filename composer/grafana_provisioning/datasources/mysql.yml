@@ -1,0 +1,16 @@
+apiVersion: 1
+ 
+datasources:
+- name: MySQL
+  type: mysql
+  uid: mysql
+  access: proxy
+  orgId: 1
+  url: mysql:3306
+  basicAuth: false
+  user: AOCryptoBot
+  secureJsonData:
+    password: admin
+  database: AOCryptoBot
+  isDefault: true
+  editable: true
