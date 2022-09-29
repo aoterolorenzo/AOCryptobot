@@ -1,0 +1,41 @@
+version: "2"
+
+services:
+  mysql:
+    image: docker.io/bitnami/mysql:8.0
+    ports:
+      - '3306:3306'
+    environment:
+      - MYSQL_ROOT_USER=AOCryptoBot
+      - MYSQL_ROOT_PASSWORD=admin
+      - MYSQL_DATABASE=AOCryptoBot
+    volumes:
+      - 'mysql_data:/bitnami/mysql/data'
+    healthcheck:
+      test: ['CMD', '/opt/bitnami/scripts/mysql/healthcheck.sh']
+      interval: 15s
+      timeout: 5s
+      retries: 6
+  aocryptobot:
+    image: aocryptobot:development
+    user: "${UID}:${GID}"
+    entrypoint: ["./wait-for-it.sh", "--timeout=60", "-q", "mysql:3306", "--", "/aocryptobot"]
+    volumes:
+      - /Users/alberto/GolandProyects/AOCryptobotGit/conf.env:/conf.env 
+  grafana:
+    image: docker.io/bitnami/grafana:9
+    ports:
+      - '3000:3000'
+    environment:
+      - 'GF_SECURITY_ADMIN_PASSWORD=bitnami'
+      - 'GF_PATHS_PROVISIONING=/opt/bitnami/grafana/provisioning/'
+      - 'GF_INSTALL_PLUGINS=marcusolsson-json-datasource,yesoreyeram-infinity-datasource'
+    volumes:
+      - grafana_data:/opt/bitnami/grafana/data
+      - ./grafana/provisioning/datasources:/opt/bitnami/grafana/provisioning/datasources
+      - ./grafana/provisioning/dashboards:/opt/bitnami/grafana/provisioning/dashboards
+volumes:
+  grafana_data:
+    driver: local
+  mysql_data:
+    driver: local

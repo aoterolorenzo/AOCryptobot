@@ -17,16 +17,23 @@ type DBService struct {
 	DB *gorm.DB
 }
 
-func NewDBService(dbHost string, dbPort string, dbName string, dbUser string, dbPass string) *DBService {
+func NewDBService(dbHost string, dbPort string, dbName string, dbUser string, dbPass string) (*DBService, error) {
 	dsn := dbUser + ":" + dbPass + "@tcp(" + dbHost + ":" + dbPort + ")/" + dbName + "?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-		panic("failed to connect database")
+		return nil, err
 	}
 
-	return &DBService{
+	dbs := &DBService{
 		DB: db,
 	}
+
+	err = dbs.DB.AutoMigrate(&database.Position{}, &database.Order{}, &database.Candle{}, &database.Constant{})
+	if err != nil {
+		return nil, err
+	}
+
+	return dbs, nil
 }
 
 func init() {
