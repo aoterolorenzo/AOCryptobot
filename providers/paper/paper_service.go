@@ -31,7 +31,7 @@ func NewPaperService() *PaperService {
 
 func init() {
 	cwd, _ := os.Getwd()
-	err := godotenv.Load(cwd + "/providers/binance/conf.env")
+	err := godotenv.Load(cwd + "/conf.env")
 	if err != nil {
 		helpers.Logger.Errorln("Error loading go.env file", err)
 	}
