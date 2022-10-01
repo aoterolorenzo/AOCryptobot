@@ -360,6 +360,18 @@ func (dbs *DBService) AddPairAnalysisResult(analysis analytics.PairAnalysis) uin
 func (dbs *DBService) AddSignal(pair string, tradeSignal string, strategy interfaces.Strategy) uint {
 	signal := signals.Signal{TradeSignal: tradeSignal, Pair: pair, Strategy: strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1)}
 
-	dbs.DB.Create(&signal)
+	var retSignal signals.Signal
+	dbs.DB.Where("strategy = ? AND pair = ?",
+		signal.Strategy, signal.Pair).Order("created_at DESC").Find(&retSignal)
+
+	if retSignal.TradeSignal == signal.TradeSignal {
+		// UPDATE SIGNAL
+		dbs.DB.Model(&signals.Signal{}).Where("updated_at > NOW() - 60 AND strategy = ? AND trade_signal = ? AND pair = ?",
+			signal.Strategy, signal.TradeSignal, signal.Pair).Update("trade_signal", signal.TradeSignal)
+	} else {
+		//NEW SIGNAL
+		dbs.DB.Create(&signal)
+	}
+
 	return signal.ID
 }
