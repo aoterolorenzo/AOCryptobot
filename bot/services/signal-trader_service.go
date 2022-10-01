@@ -405,6 +405,7 @@ func (t *BotService) RecoverOpenPositions() {
 
 			strategy, err := strategies.StrategyFactory(position.Strategy, t.interval)
 			if err != nil {
+				helpers.Logger.Debugln(err)
 				continue
 			}
 
