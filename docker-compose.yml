@@ -5,6 +5,7 @@ services:
     image: docker.io/bitnami/mysql:8.0
     ports:
       - '3306:3306'
+    command: "/opt/bitnami/scripts/mysql/run.sh --sql_mode="
     environment:
       - MYSQL_ROOT_USER=AOCryptoBot
       - MYSQL_ROOT_PASSWORD=admin

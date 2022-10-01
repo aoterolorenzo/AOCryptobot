@@ -4,12 +4,18 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/sdcoffey/techan"
 	database "gitlab.com/aoterocom/AOCryptobot/database/models"
+	dbAnalytics "gitlab.com/aoterocom/AOCryptobot/database/models/analytics"
+	"gitlab.com/aoterocom/AOCryptobot/database/models/signals"
+	"gitlab.com/aoterocom/AOCryptobot/interfaces"
 	"gitlab.com/aoterocom/AOCryptobot/models"
+	"gitlab.com/aoterocom/AOCryptobot/models/analytics"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"log"
 	"os"
+	"reflect"
+	"strings"
 	"time"
 )
 
@@ -28,7 +34,13 @@ func NewDBService(dbHost string, dbPort string, dbName string, dbUser string, db
 		DB: db,
 	}
 
-	err = dbs.DB.AutoMigrate(&database.Position{}, &database.Order{}, &database.Candle{}, &database.Constant{})
+	err = dbs.DB.AutoMigrate(&database.Position{}, &database.Order{}, &database.Candle{}, &database.Constant{},
+		&dbAnalytics.PairAnalysis{},
+		&dbAnalytics.StrategyAnalysis{},
+		&dbAnalytics.StrategySimulationResult{},
+		&dbAnalytics.StrategySimulationResultProfitList{},
+		&dbAnalytics.StrategySimulationResultConstant{},
+		&signals.Signal{})
 	if err != nil {
 		return nil, err
 	}
@@ -276,4 +288,78 @@ func (dbs *DBService) AddOrUpdateCandle(candle techan.Candle, symbol string) {
 
 }
 
-//func (dbs *DBService) databasePositionToOrdersPosition{}
+func (dbs *DBService) AddPairAnalysisResult(analysis analytics.PairAnalysis) uint {
+	var bestStrategy string
+	if analysis.BestStrategy != nil {
+		bestStrategy = strings.Replace(reflect.TypeOf(analysis.BestStrategy).String(),
+			"*strategies.", "", 1)
+	}
+	dbPairAnalysis := dbAnalytics.PairAnalysis{
+		StrategiesAnalysis: nil,
+		TradeSignal:        analysis.TradeSignal,
+		LockedMonitor:      analysis.LockedMonitor,
+		BestStrategy:       bestStrategy,
+		MarketDirection:    string(analysis.MarketDirection),
+		Pair:               analysis.Pair,
+	}
+
+	var dbStrategiesAnalysises []dbAnalytics.StrategyAnalysis
+	for _, strategyAnalysis := range analysis.StrategiesAnalysis {
+
+		dbStrategyAnalysis := dbAnalytics.StrategyAnalysis{
+			StrategySimulationsResults: nil,
+			Strategy:                   strings.Replace(reflect.TypeOf(strategyAnalysis.Strategy).String(), "*strategies.", "", 1),
+			IsCandidate:                false,
+			Mean:                       0,
+			PositivismAvgRatio:         0,
+			StdDev:                     0,
+		}
+
+		var dbStrategySimulationResults []dbAnalytics.StrategySimulationResult
+		for _, strategyResult := range strategyAnalysis.StrategyResults {
+
+			dbStrategySimulationResult := dbAnalytics.StrategySimulationResult{
+				Model:      gorm.Model{},
+				Period:     strategyResult.Period,
+				Profit:     strategyResult.Profit,
+				ProfitList: nil,
+				Trend:      strategyResult.Trend,
+				Constants:  nil,
+			}
+
+			var dbProfitList []dbAnalytics.StrategySimulationResultProfitList
+			for _, profit := range strategyResult.ProfitList {
+				dbProfitList = append(dbProfitList, dbAnalytics.StrategySimulationResultProfitList{
+					Value: profit,
+				})
+			}
+
+			var dbSimulationConstants []dbAnalytics.StrategySimulationResultConstant
+			for _, constant := range strategyResult.Constants {
+				dbSimulationConstants = append(dbSimulationConstants, dbAnalytics.StrategySimulationResultConstant{
+					Value: constant,
+				})
+			}
+
+			dbStrategySimulationResult.Constants = dbSimulationConstants
+			dbStrategySimulationResult.ProfitList = dbProfitList
+
+			dbStrategySimulationResults = append(dbStrategySimulationResults, dbStrategySimulationResult)
+		}
+
+		dbStrategyAnalysis.StrategySimulationsResults = dbStrategySimulationResults
+		dbStrategiesAnalysises = append(dbStrategiesAnalysises, dbStrategyAnalysis)
+	}
+
+	dbPairAnalysis.StrategiesAnalysis = dbStrategiesAnalysises
+
+	dbs.DB.Create(&dbPairAnalysis)
+	return dbPairAnalysis.ID
+}
+
+func (dbs *DBService) AddSignal(pair string, tradeSignal string, strategy interfaces.Strategy) uint {
+	signal := signals.Signal{TradeSignal: tradeSignal, Pair: pair, Strategy: strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1)}
+
+	dbs.DB.Create(&signal)
+	return signal.ID
+}

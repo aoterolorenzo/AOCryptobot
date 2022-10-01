@@ -84,7 +84,7 @@ func (st *Bot) Run(c *cli.Context) {
 		strategies = append(strategies, generatedStrategy)
 	}
 
-	marketAnalysisService := services.NewMarketAnalysisService(exchangeService, strategies, &pairAnalysisResults)
+	marketAnalysisService := services.NewMarketAnalysisService(exchangeService, strategies, &pairAnalysisResults, databaseService)
 	marketAnalysisService.PopulateWithPairs(targetCoin, whitelistCoins, blacklistCoins)
 	go marketAnalysisService.AnalyzeMarkets()
 
