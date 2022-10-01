@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"gitlab.com/aoterocom/AOCryptobot/database"
 	"gitlab.com/aoterocom/AOCryptobot/helpers"
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
 	"gitlab.com/aoterocom/AOCryptobot/models"
@@ -15,14 +16,16 @@ type MarketAnalysisService struct {
 	PairAnalysisResults *[]*analytics.PairAnalysis
 	ExchangeService     interfaces.ExchangeService
 	strategies          []interfaces.Strategy
+	dbService           *database.DBService
 }
 
 func NewMarketAnalysisService(exchangeService interfaces.ExchangeService,
-	strategies []interfaces.Strategy, pairAnalysisResults *[]*analytics.PairAnalysis) MarketAnalysisService {
+	strategies []interfaces.Strategy, pairAnalysisResults *[]*analytics.PairAnalysis, dbService *database.DBService) MarketAnalysisService {
 	return MarketAnalysisService{
 		PairAnalysisResults: pairAnalysisResults,
 		ExchangeService:     exchangeService,
 		strategies:          strategies,
+		dbService:           dbService,
 	}
 }
 
@@ -43,13 +46,6 @@ func (mas *MarketAnalysisService) PopulateWithPairs(coin string, whitelist []str
 }
 
 func (mas *MarketAnalysisService) AnalyzeMarkets() {
-	defer func() {
-		if r := recover(); r != nil {
-			helpers.Logger.Errorln(fmt.Sprintf("Recovered. Error on AnalyzeMarkets: %v", r))
-			time.Sleep(1 * time.Second)
-			mas.AnalyzeMarkets()
-		}
-	}()
 
 	for {
 		if *mas.PairAnalysisResults == nil {
@@ -63,6 +59,10 @@ func (mas *MarketAnalysisService) AnalyzeMarkets() {
 			newPairAnalysisResult.MarketDirection = pairAnalysisResultPtr.MarketDirection
 			if err == nil {
 				*pairAnalysisResultPtr = newPairAnalysisResult
+				if mas.dbService != nil {
+					helpers.Logger.Debugln(fmt.Sprintf("Added analisys results: %s ", newPairAnalysisResult.Pair))
+					mas.dbService.AddPairAnalysisResult(newPairAnalysisResult)
+				}
 			}
 		}
 	}
@@ -101,6 +101,8 @@ func (mas *MarketAnalysisService) analyzePair(pair string) (analytics.PairAnalys
 		pairAnalysisResult.TradeSignal = true
 		pairAnalysisResult.BestStrategy = chosenStrategy
 	}
+
+	//
 
 	return pairAnalysisResult, nil
 }

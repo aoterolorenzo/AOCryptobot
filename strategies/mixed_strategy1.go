@@ -101,7 +101,7 @@ func (s *MixedStrategy1) PerformSimulation(pair string, exchangeService interfac
 	open := false
 	entryConstant := 0.0
 	entryStop := 0.2
-	jump := 0.01
+	jump := 0.1
 	selectedEntryConstant := 0.0
 	var bestProfitList []float64
 
