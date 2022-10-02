@@ -266,7 +266,8 @@ func (binanceService *BinanceService) TimeSeriesMonitor(pair, interval string, t
 	}
 
 	for _, k := range klines {
-		period := techan.NewTimePeriod(time.Unix(k.OpenTime/1000, 0), time.Minute*15)
+		//TODO: INTERVAL NOT STATIC!!
+		period := techan.NewTimePeriod(time.Unix(k.OpenTime/1000, 0), time.Minute*60)
 		candle := techan.NewCandle(period)
 		candle.OpenPrice = big.NewFromString(k.Open)
 		candle.ClosePrice = big.NewFromString(k.Close)
