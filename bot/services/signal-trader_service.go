@@ -270,9 +270,13 @@ func (t *BotService) EntryCheck(pair string, strategy interfaces.Strategy,
 	entrySignal := strategy.ParametrizedShouldEnter(timeSeries, constants) && !t.tradingRecordService.HasOpenPositions(pair) &&
 		t.tradingRecordService.OpenPositionsCount() != t.maxOpenPositions && t.firstExitTriggered[pair] && !t.IsPairLocked(pair)
 
+	exitSignal := strategy.ShouldExit(timeSeries)
 	signal := "NEUTRAL"
-	if entrySignal == true {
-		signal = "ENTER"
+
+	if entrySignal == true && exitSignal == false {
+		signal = "ENTRY"
+	} else if exitSignal == true {
+		signal = "EXIT"
 	}
 
 	if t.databaseIsEnabled {
@@ -285,12 +289,6 @@ func (t *BotService) ExitCheck(pair string, strategy interfaces.Strategy,
 	timeSeries *techan.TimeSeries, constants []float64) bool {
 
 	exitSignal := strategy.ParametrizedShouldExit(timeSeries, constants)
-
-	signal := "NEUTRAL"
-	if exitSignal == true {
-		signal = "EXIT"
-	}
-	t.databaseService.AddSignal(pair, signal, strategy)
 
 	if t.tradingRecordService.HasOpenPositions(pair) {
 		shouldExit, exitTrigger := t.MiddleChecks(pair, timeSeries)
