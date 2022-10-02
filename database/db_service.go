@@ -12,6 +12,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"gorm.io/gorm/logger"
 	"log"
 	"os"
 	"reflect"
@@ -25,7 +26,9 @@ type DBService struct {
 
 func NewDBService(dbHost string, dbPort string, dbName string, dbUser string, dbPass string) (*DBService, error) {
 	dsn := dbUser + ":" + dbPass + "@tcp(" + dbHost + ":" + dbPort + ")/" + dbName + "?charset=utf8mb4&parseTime=True&loc=Local"
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Error),
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -357,17 +360,17 @@ func (dbs *DBService) AddPairAnalysisResult(analysis analytics.PairAnalysis) uin
 	return dbPairAnalysis.ID
 }
 
-func (dbs *DBService) AddSignal(pair string, tradeSignal string, strategy interfaces.Strategy) uint {
-	signal := signals.Signal{TradeSignal: tradeSignal, Pair: pair, Strategy: strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1)}
+func (dbs *DBService) AddSignal(pair string, tradeSignal string, interval string, strategy interfaces.Strategy) uint {
+	signal := signals.Signal{TradeSignal: tradeSignal, Pair: pair, Interval: interval, Strategy: strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1)}
 
 	var retSignal signals.Signal
-	dbs.DB.Where("strategy = ? AND pair = ?",
-		signal.Strategy, signal.Pair).Order("created_at DESC").Find(&retSignal)
+	dbs.DB.Where("strategy = ? AND pair = ? AND interval = ?",
+		signal.Strategy, signal.Pair, signal.Interval).Order("created_at DESC").Find(&retSignal)
 
 	if retSignal.TradeSignal == signal.TradeSignal {
 		// UPDATE SIGNAL
-		dbs.DB.Model(&signals.Signal{}).Where("updated_at > NOW() - 60 AND strategy = ? AND trade_signal = ? AND pair = ?",
-			signal.Strategy, signal.TradeSignal, signal.Pair).Update("trade_signal", signal.TradeSignal)
+		dbs.DB.Model(&signals.Signal{}).Where("updated_at > NOW() - 60 AND strategy = ? AND trade_signal = ? AND interval = ? AND pair = ?",
+			signal.Strategy, signal.TradeSignal, signal.Interval, signal.Pair).Update("trade_signal", signal.TradeSignal)
 	} else {
 		//NEW SIGNAL
 		dbs.DB.Create(&signal)

@@ -90,6 +90,7 @@ func (st *Bot) Run(c *cli.Context) {
 
 	mms := services.NewMultiMarketService(databaseService, &pairAnalysisResults, interval)
 	go mms.StartMonitor()
+	go mms.SignalAnalyzer()
 
 	// trade on pairAnalysisResults
 	trader := bot.NewBot(databaseService, &marketAnalysisService, &mms)
