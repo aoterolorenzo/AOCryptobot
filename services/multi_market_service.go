@@ -7,8 +7,6 @@ import (
 	"gitlab.com/aoterocom/AOCryptobot/helpers"
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
 	"gitlab.com/aoterocom/AOCryptobot/models/analytics"
-	"reflect"
-	"strings"
 	"time"
 )
 
@@ -17,11 +15,14 @@ type MultiMarketService struct {
 	PairAnalysisResults  []*analytics.PairAnalysis
 	ExchangeService      *interfaces.ExchangeService
 	DatabaseService      *database.DBService
+	Interval             string
 }
 
 func NewMultiMarketService(databaseService *database.DBService, pairAnalysisResults *[]*analytics.PairAnalysis, interval string) MultiMarketService {
 	mms := MultiMarketService{}
 	mms.PairAnalysisResults = *pairAnalysisResults
+	mms.Interval = interval
+	mms.DatabaseService = databaseService
 
 	for _, pairAnalysisResult := range *pairAnalysisResults {
 		if !mms.IsMonitoring(pairAnalysisResult.Pair) {
@@ -29,7 +30,6 @@ func NewMultiMarketService(databaseService *database.DBService, pairAnalysisResu
 			mms.SingleMarketServices = append(mms.SingleMarketServices, &sms)
 		}
 	}
-
 	return mms
 }
 
@@ -45,13 +45,8 @@ func (mms *MultiMarketService) StartMonitor() {
 	for {
 		for _, pairAnalysisResult := range mms.PairAnalysisResults {
 			isMonitoring := mms.IsMonitoring(pairAnalysisResult.Pair)
-			if pairAnalysisResult.TradeSignal {
-				if !isMonitoring {
-					helpers.Logger.Infoln(fmt.Sprintf("%s: Monitor started. Strategy %s",
-						pairAnalysisResult.Pair, strings.Replace(reflect.TypeOf(pairAnalysisResult.BestStrategy).String(),
-							"*strategies.", "", 1)))
-					mms.startMonitor(pairAnalysisResult.Pair)
-				}
+			if !isMonitoring {
+				mms.startMonitor(pairAnalysisResult.Pair)
 			}
 		}
 		time.Sleep(1 * time.Second)
@@ -105,4 +100,49 @@ func (mms *MultiMarketService) GetTimeSeries(pair string) *techan.TimeSeries {
 		}
 	}
 	return nil
+}
+
+func (mms *MultiMarketService) SignalAnalyzer() {
+	for {
+		for _, pairAnalysis := range mms.PairAnalysisResults {
+			if pairAnalysis == nil || len(pairAnalysis.StrategiesAnalysis) == 0 {
+				continue
+			}
+
+			for _, strategyAnalysis := range pairAnalysis.StrategiesAnalysis {
+				strategy := strategyAnalysis.Strategy.(interfaces.Strategy)
+				timeSeries := mms.GetTimeSeries(pairAnalysis.Pair)
+				// If no candles continue next
+				if len(timeSeries.Candles) < 1 || strategy == nil {
+					time.Sleep(1 * time.Second)
+					continue
+				}
+				if len(strategyAnalysis.StrategyResults) == 0 {
+					time.Sleep(1 * time.Second)
+					continue
+				}
+
+				// If not last candle continue next
+				lastCandle := timeSeries.Candles[len(timeSeries.Candles)-1]
+				if lastCandle.Period.End.Unix() < time.Now().Unix()-1 {
+					time.Sleep(1 * time.Second)
+					continue
+				}
+
+				entrySignal := strategy.ParametrizedShouldEnter(timeSeries, strategyAnalysis.StrategyResults[0].Constants)
+				exitSignal := strategy.ParametrizedShouldExit(timeSeries, strategyAnalysis.StrategyResults[0].Constants)
+
+				signal := "NEUTRAL"
+				if entrySignal == true {
+					signal = "ENTRY"
+				}
+				if exitSignal == true {
+					signal = "EXIT"
+				}
+
+				mms.DatabaseService.AddSignal(pairAnalysis.Pair, signal, mms.Interval, strategy)
+			}
+			time.Sleep(1 * time.Second)
+		}
+	}
 }

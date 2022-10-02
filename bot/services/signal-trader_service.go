@@ -267,22 +267,8 @@ func (t *BotService) TrailingStopLossCheck(pair string, entryPrice float64, time
 
 func (t *BotService) EntryCheck(pair string, strategy interfaces.Strategy,
 	timeSeries *techan.TimeSeries, constants []float64) bool {
-	entrySignal := strategy.ParametrizedShouldEnter(timeSeries, constants) && !t.tradingRecordService.HasOpenPositions(pair) &&
+	return strategy.ParametrizedShouldEnter(timeSeries, constants) && !t.tradingRecordService.HasOpenPositions(pair) &&
 		t.tradingRecordService.OpenPositionsCount() != t.maxOpenPositions && t.firstExitTriggered[pair] && !t.IsPairLocked(pair)
-
-	exitSignal := strategy.ShouldExit(timeSeries)
-	signal := "NEUTRAL"
-
-	if entrySignal == true && exitSignal == false {
-		signal = "ENTRY"
-	} else if exitSignal == true {
-		signal = "EXIT"
-	}
-
-	if t.databaseIsEnabled {
-		t.databaseService.AddSignal(pair, signal, strategy)
-	}
-	return entrySignal
 }
 
 func (t *BotService) ExitCheck(pair string, strategy interfaces.Strategy,
