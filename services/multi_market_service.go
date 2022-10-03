@@ -103,6 +103,14 @@ func (mms *MultiMarketService) GetTimeSeries(pair string) *techan.TimeSeries {
 }
 
 func (mms *MultiMarketService) SignalAnalyzer() {
+	defer func() {
+		if r := recover(); r != nil {
+			helpers.Logger.Errorln(fmt.Sprintf("Recovered. Error on SignalAnalyzer: %v", r))
+			time.Sleep(1 * time.Second)
+			mms.SignalAnalyzer()
+		}
+	}()
+
 	for {
 		for _, pairAnalysis := range mms.PairAnalysisResults {
 			if pairAnalysis == nil || len(pairAnalysis.StrategiesAnalysis) == 0 {
