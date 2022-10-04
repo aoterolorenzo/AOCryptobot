@@ -364,7 +364,7 @@ func (dbs *DBService) AddSignal(pair string, tradeSignal string, interval string
 	signal := signals.Signal{TradeSignal: tradeSignal, Pair: pair, Interval: interval, Strategy: strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1)}
 
 	var retSignal signals.Signal
-	dbs.DB.Where("strategy = ? AND pair = ? AND `interval` = ?",
+	dbs.DB.Where("strategy = ? AND pair = ? AND 'interval' = ?",
 		signal.Strategy, signal.Pair, signal.Interval).Order("created_at DESC").Find(&retSignal)
 
 	if retSignal.TradeSignal == signal.TradeSignal {
