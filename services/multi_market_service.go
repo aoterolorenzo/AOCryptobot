@@ -36,7 +36,7 @@ func NewMultiMarketService(databaseService *database.DBService, pairAnalysisResu
 func (mms *MultiMarketService) StartMonitor() {
 	defer func() {
 		if r := recover(); r != nil {
-			helpers.Logger.Errorln(fmt.Sprintf("Recovered. Error on StartMonitor: %v", r))
+			helpers.Logger.Errorln(fmt.Sprintf("Recovered. Error on StartMonitor: %+v", r))
 			time.Sleep(1 * time.Second)
 			mms.StartMonitor()
 		}
@@ -62,7 +62,7 @@ func (mms *MultiMarketService) ForceMonitor(pair string, databaseService *databa
 func (mms *MultiMarketService) startMonitor(pair string) {
 	defer func() {
 		if r := recover(); r != nil {
-			helpers.Logger.Errorln(fmt.Sprintf("Recovered. Error on startMonitor: %v", r))
+			helpers.Logger.Errorln(fmt.Sprintf("Recovered. Error on startMonitor: %+v", r))
 			time.Sleep(1 * time.Second)
 			mms.startMonitor(pair)
 		}
@@ -105,7 +105,7 @@ func (mms *MultiMarketService) GetTimeSeries(pair string) *techan.TimeSeries {
 func (mms *MultiMarketService) SignalAnalyzer() {
 	defer func() {
 		if r := recover(); r != nil {
-			helpers.Logger.Errorln(fmt.Sprintf("Recovered. Error on SignalAnalyzer: %v", r))
+			helpers.Logger.Errorln(fmt.Sprintf("Recovered. Error on SignalAnalyzer: %+v", r))
 			time.Sleep(1 * time.Second)
 			mms.SignalAnalyzer()
 		}
