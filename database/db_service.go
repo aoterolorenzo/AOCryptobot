@@ -1,7 +1,6 @@
 package database
 
 import (
-	"fmt"
 	"github.com/joho/godotenv"
 	"github.com/sdcoffey/techan"
 	database "gitlab.com/aoterocom/AOCryptobot/database/models"
@@ -368,7 +367,6 @@ func (dbs *DBService) AddSignal(pair string, tradeSignal string, interval string
 	dbs.DB.Raw("SELECT * FROM signals WHERE strategy = ? AND pair = ? AND signals.interval = ? ORDER BY created_at DESC LIMIT 1",
 		signal.Strategy, signal.Pair, signal.Interval).Scan(&retSignal)
 
-	fmt.Println(retSignal)
 	if retSignal != nil && retSignal.TradeSignal == signal.TradeSignal {
 		// UPDATE SIGNAL
 		dbs.DB.Save(retSignal)
