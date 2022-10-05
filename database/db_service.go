@@ -363,9 +363,9 @@ func (dbs *DBService) AddPairAnalysisResult(analysis analytics.PairAnalysis) uin
 func (dbs *DBService) AddSignal(pair string, tradeSignal string, interval string, strategy interfaces.Strategy) uint {
 	signal := signals.Signal{TradeSignal: tradeSignal, Pair: pair, Interval: interval, Strategy: strings.Replace(reflect.TypeOf(strategy).String(), "*strategies.", "", 1)}
 
-	var retSignal signals.Signal
-	dbs.DB.Where("strategy = ? AND pair = ? AND 'interval' = ?",
-		signal.Strategy, signal.Pair, signal.Interval).Order("created_at DESC").Find(&retSignal)
+	var retSignal *signals.Signal
+	dbs.DB.Raw("SELECT * FROM signals WHERE strategy = ? AND pair = ? AND signals.interval = ? ORDER BY created_at DESC LIMIT 1",
+		signal.Strategy, signal.Pair, signal.Interval).Scan(&retSignal)
 
 	if retSignal.TradeSignal == signal.TradeSignal {
 		// UPDATE SIGNAL
