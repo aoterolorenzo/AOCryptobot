@@ -7,6 +7,7 @@ import (
 	"gitlab.com/aoterocom/AOCryptobot/helpers"
 	"gitlab.com/aoterocom/AOCryptobot/interfaces"
 	"gitlab.com/aoterocom/AOCryptobot/models/analytics"
+	"runtime/debug"
 	"time"
 )
 
@@ -37,6 +38,7 @@ func (mms *MultiMarketService) StartMonitor() {
 	defer func() {
 		if r := recover(); r != nil {
 			helpers.Logger.Errorln(fmt.Sprintf("Recovered. Error on StartMonitor: %+v", r))
+			helpers.Logger.Errorln(fmt.Sprintf(string(debug.Stack())))
 			time.Sleep(1 * time.Second)
 			mms.StartMonitor()
 		}
@@ -63,6 +65,7 @@ func (mms *MultiMarketService) startMonitor(pair string) {
 	defer func() {
 		if r := recover(); r != nil {
 			helpers.Logger.Errorln(fmt.Sprintf("Recovered. Error on startMonitor: %+v", r))
+			helpers.Logger.Errorln(fmt.Sprintf(string(debug.Stack())))
 			time.Sleep(1 * time.Second)
 			mms.startMonitor(pair)
 		}
@@ -106,6 +109,7 @@ func (mms *MultiMarketService) SignalAnalyzer() {
 	defer func() {
 		if r := recover(); r != nil {
 			helpers.Logger.Errorln(fmt.Sprintf("Recovered. Error on SignalAnalyzer: %+v", r))
+			helpers.Logger.Errorln(fmt.Sprintf(string(debug.Stack())))
 			time.Sleep(1 * time.Second)
 			mms.SignalAnalyzer()
 		}

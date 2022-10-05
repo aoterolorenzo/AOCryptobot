@@ -12,6 +12,7 @@ import (
 	"gitlab.com/aoterocom/AOCryptobot/models"
 	"os"
 	"reflect"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"time"
@@ -231,6 +232,7 @@ func (binanceService *BinanceService) DepthMonitor(pair string, marketSnapshotsR
 	defer func() {
 		if r := recover(); r != nil {
 			helpers.Logger.Errorln(fmt.Sprintf("Recovered. Error on DepthMonitor: (pair %s): %v, ", pair, r))
+			helpers.Logger.Errorln(fmt.Sprintf(string(debug.Stack())))
 			time.Sleep(1 * time.Second)
 			binanceService.DepthMonitor(pair, marketSnapshotsRecord)
 		}
@@ -250,6 +252,7 @@ func (binanceService *BinanceService) TimeSeriesMonitor(pair, interval string, t
 	defer func() {
 		if r := recover(); r != nil {
 			helpers.Logger.Errorln(fmt.Sprintf("Recovered. Error on TimeSeriesMonitor (pair %s): %v, ", pair, r))
+			helpers.Logger.Errorln(fmt.Sprintf(string(debug.Stack())))
 			time.Sleep(1 * time.Second)
 			binanceService.TimeSeriesMonitor(pair, interval, timeSeries, active)
 		}

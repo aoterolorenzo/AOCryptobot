@@ -13,6 +13,7 @@ import (
 	"gitlab.com/aoterocom/AOCryptobot/strategies"
 	"os"
 	"reflect"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"time"
@@ -178,6 +179,7 @@ func (t *BotService) EnterIfDelayedEntryCheck(pair string, strategy interfaces.S
 	defer func() {
 		if r := recover(); r != nil {
 			helpers.Logger.Errorln(fmt.Sprintf("Recovered. Error on EnterIfDelayedEntryCheck: %+v", r))
+			helpers.Logger.Errorln(fmt.Sprintf(string(debug.Stack())))
 			time.Sleep(1 * time.Second)
 			t.EnterIfDelayedEntryCheck(pair, strategy,
 				timeSeries, constants, delay)
@@ -196,6 +198,7 @@ func (t *BotService) ExitIfDelayedExitCheck(pair string, strategy interfaces.Str
 	defer func() {
 		if r := recover(); r != nil {
 			helpers.Logger.Errorln(fmt.Sprintf("Recovered. Error on ExitIfDelayedExitCheck: %+v", r))
+			helpers.Logger.Errorln(fmt.Sprintf(string(debug.Stack())))
 			time.Sleep(1 * time.Second)
 			t.ExitIfDelayedExitCheck(pair, strategy,
 				timeSeries, constants, delay)
