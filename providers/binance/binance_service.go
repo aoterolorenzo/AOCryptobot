@@ -33,6 +33,7 @@ type BinanceService struct {
 func NewBinanceService() *BinanceService {
 	binanceService := BinanceService{}
 	binanceService.apiKey = os.Getenv("binanceAPIKey")
+	binanceService.interval = os.Getenv("interval")
 	binanceService.apiSecret = os.Getenv("binanceAPISecret")
 	binanceService.binanceClient = binance.NewClient(binanceService.apiKey, binanceService.apiSecret)
 	return &binanceService
@@ -330,7 +331,7 @@ func (binanceService *BinanceService) GetSeries(pair string, interval string, li
 	}
 
 	for _, k := range resultKlines {
-		period := techan.NewTimePeriod(time.Unix(k.OpenTime/1000, 0), time.Minute*15)
+		period := techan.NewTimePeriod(time.Unix(k.OpenTime/1000, 0), time.Duration(helpers.IntervalFromString(binanceService.interval))*time.Second)
 		candle := techan.NewCandle(period)
 		candle.OpenPrice = big.NewFromString(k.Open)
 		candle.ClosePrice = big.NewFromString(k.Close)
@@ -420,7 +421,7 @@ func (binanceService *BinanceService) ocoOrderResponseToOCOOrder(o binance.Creat
 func (binanceService *BinanceService) wsKlineHandler(event *binance.WsKlineEvent) {
 	lastCandle := binanceService.timeSeries.Candles[len(binanceService.timeSeries.Candles)-1]
 
-	period := techan.NewTimePeriod(time.Unix(event.Kline.StartTime/1000, 0), time.Minute*15)
+	period := techan.NewTimePeriod(time.Unix(event.Kline.StartTime/1000, 0), time.Duration(helpers.IntervalFromString(binanceService.interval))*time.Second)
 	candle := techan.NewCandle(period)
 	candle.OpenPrice = big.NewFromString(event.Kline.Open)
 	candle.ClosePrice = big.NewFromString(event.Kline.Close)
@@ -430,9 +431,9 @@ func (binanceService *BinanceService) wsKlineHandler(event *binance.WsKlineEvent
 	candle.Volume = big.NewFromString(event.Kline.Volume)
 	binanceService.dBService.AddOrUpdateCandle(*candle, binanceService.pair)
 
-	if lastCandle.Period != techan.NewTimePeriod(time.Unix(event.Kline.StartTime/1000, 0), time.Minute*15) {
+	if lastCandle.Period != techan.NewTimePeriod(time.Unix(event.Kline.StartTime/1000, 0), time.Duration(helpers.IntervalFromString(binanceService.interval))*time.Second) {
 		binanceService.timeSeries.AddCandle(candle)
-	} else if lastCandle.Period == techan.NewTimePeriod(time.Unix(event.Kline.StartTime/1000, 0), time.Minute*15) {
+	} else if lastCandle.Period == techan.NewTimePeriod(time.Unix(event.Kline.StartTime/1000, 0), time.Duration(helpers.IntervalFromString(binanceService.interval))*time.Second) {
 		binanceService.timeSeries.Candles[len(binanceService.timeSeries.Candles)-1] = candle
 	}
 }

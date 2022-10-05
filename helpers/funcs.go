@@ -3,6 +3,7 @@ package helpers
 import (
 	"github.com/xhit/go-str2duration/v2"
 	"math"
+	"strconv"
 	"strings"
 )
 
@@ -60,4 +61,30 @@ func StringIntervalToSeconds(interval string) float64 {
 
 func RemoveFromSlice(slice []float64, s int) []float64 {
 	return append(slice[:s], slice[s+1:]...)
+}
+
+func IntervalFromString(str string) int {
+
+	var count int
+	if strings.HasSuffix(str, "s") {
+		count, _ = strconv.Atoi(strings.Replace(str, "s", "", 1))
+		return count
+	} else if strings.HasSuffix(str, "m") {
+		count, _ = strconv.Atoi(strings.Replace(str, "m", "", 1))
+		return count * 60
+	} else if strings.HasSuffix(str, "h") {
+		count, _ = strconv.Atoi(strings.Replace(str, "h", "", 1))
+		return count * 60 * 60
+	} else if strings.HasSuffix(str, "D") {
+		count, _ = strconv.Atoi(strings.Replace(str, "D", "", 1))
+		return count * 60 * 60 * 24
+	} else if strings.HasSuffix(str, "S") {
+		count, _ = strconv.Atoi(strings.Replace(str, "S", "", 1))
+		return count * 60 * 60 * 24 * 7
+	} else if strings.HasSuffix(str, "M") {
+		count, _ = strconv.Atoi(strings.Replace(str, "M", "", 1))
+		return count * 60 * 60 * 24 * 30
+	}
+
+	return 0
 }

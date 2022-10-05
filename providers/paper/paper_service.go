@@ -18,6 +18,7 @@ import (
 type PaperService struct {
 	binanceClient *binance.Client
 	timeSeries    *techan.TimeSeries
+	interval      string
 }
 
 func NewPaperService() *PaperService {
@@ -26,6 +27,7 @@ func NewPaperService() *PaperService {
 	binanceClient := binance.NewClient(apiKey, apiSecret)
 	return &PaperService{
 		binanceClient: binanceClient,
+		interval:      os.Getenv("interval"),
 	}
 }
 
@@ -109,7 +111,7 @@ func (paperService *PaperService) TimeSeriesMonitor(pair string, interval string
 	}
 
 	for _, k := range klines {
-		period := techan.NewTimePeriod(time.Unix(k.OpenTime/1000, 0), time.Minute*15)
+		period := techan.NewTimePeriod(time.Unix(k.OpenTime/1000, 0), time.Duration(helpers.IntervalFromString(interval))*time.Second)
 		candle := techan.NewCandle(period)
 		candle.OpenPrice = big.NewFromString(k.Open)
 		candle.ClosePrice = big.NewFromString(k.Close)
@@ -168,7 +170,7 @@ func (paperService *PaperService) GetSeries(pair string, interval string, limit 
 	}
 
 	for _, k := range resultKlines {
-		period := techan.NewTimePeriod(time.Unix(k.OpenTime/1000, 0), time.Minute*15)
+		period := techan.NewTimePeriod(time.Unix(k.OpenTime/1000, 0), time.Duration(helpers.IntervalFromString(interval))*time.Second)
 		candle := techan.NewCandle(period)
 		candle.OpenPrice = big.NewFromString(k.Open)
 		candle.ClosePrice = big.NewFromString(k.Close)
@@ -220,7 +222,7 @@ func (paperService *PaperService) GetPairInfo(pair string) *models.PairInfo {
 func (paperService *PaperService) wsKlineHandler(event *binance.WsKlineEvent) {
 	lastCandle := paperService.timeSeries.Candles[len(paperService.timeSeries.Candles)-1]
 
-	period := techan.NewTimePeriod(time.Unix(event.Kline.StartTime/1000, 0), time.Minute*15)
+	period := techan.NewTimePeriod(time.Unix(event.Kline.StartTime/1000, 0), time.Duration(helpers.IntervalFromString(paperService.interval))*time.Second)
 	candle := techan.NewCandle(period)
 	candle.OpenPrice = big.NewFromString(event.Kline.Open)
 	candle.ClosePrice = big.NewFromString(event.Kline.Close)
@@ -229,9 +231,9 @@ func (paperService *PaperService) wsKlineHandler(event *binance.WsKlineEvent) {
 	candle.TradeCount = uint(event.Kline.TradeNum)
 	candle.Volume = big.NewFromString(event.Kline.Volume)
 
-	if lastCandle.Period != techan.NewTimePeriod(time.Unix(event.Kline.StartTime/1000, 0), time.Minute*15) {
+	if lastCandle.Period != techan.NewTimePeriod(time.Unix(event.Kline.StartTime/1000, 0), time.Duration(helpers.IntervalFromString(paperService.interval))*time.Second) {
 		paperService.timeSeries.AddCandle(candle)
-	} else if lastCandle.Period == techan.NewTimePeriod(time.Unix(event.Kline.StartTime/1000, 0), time.Minute*15) {
+	} else if lastCandle.Period == techan.NewTimePeriod(time.Unix(event.Kline.StartTime/1000, 0), time.Duration(helpers.IntervalFromString(paperService.interval))*time.Second) {
 		paperService.timeSeries.Candles[len(paperService.timeSeries.Candles)-1] = candle
 	}
 }
