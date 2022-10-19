@@ -118,6 +118,7 @@ func (mms *MultiMarketService) SignalAnalyzer() {
 	for {
 		for _, pairAnalysis := range mms.PairAnalysisResults {
 			if pairAnalysis == nil || len(pairAnalysis.StrategiesAnalysis) == 0 {
+				helpers.Logger.Debugln("No PairAnalysisResults or no Strategies for " + pairAnalysis.Pair)
 				continue
 			}
 
@@ -126,17 +127,12 @@ func (mms *MultiMarketService) SignalAnalyzer() {
 				timeSeries := mms.GetTimeSeries(pairAnalysis.Pair)
 				// If no candles continue next
 				if len(timeSeries.Candles) < 1 || strategy == nil {
-					time.Sleep(1 * time.Second)
+					helpers.Logger.Debugln("No enough candles or no tradeable strategy for " + pairAnalysis.Pair)
+					time.Sleep(5 * time.Second)
 					continue
 				}
 				if len(strategyAnalysis.StrategyResults) == 0 {
-					time.Sleep(1 * time.Second)
-					continue
-				}
-
-				// If not last candle continue next
-				lastCandle := timeSeries.Candles[len(timeSeries.Candles)-1]
-				if lastCandle.Period.End.Unix() < time.Now().Unix()-1 {
+					helpers.Logger.Debugln("No StrategyResults for " + pairAnalysis.Pair)
 					time.Sleep(1 * time.Second)
 					continue
 				}
