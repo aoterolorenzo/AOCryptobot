@@ -117,8 +117,13 @@ func (mms *MultiMarketService) SignalAnalyzer() {
 
 	for {
 		for _, pairAnalysis := range mms.PairAnalysisResults {
-			if pairAnalysis == nil || len(pairAnalysis.StrategiesAnalysis) == 0 {
-				helpers.Logger.Debugln("No PairAnalysisResults or no Strategies for " + pairAnalysis.Pair)
+			if pairAnalysis == nil {
+				helpers.Logger.Debugln("No Strategies for " + pairAnalysis.Pair)
+				continue
+			}
+
+			if len(pairAnalysis.StrategiesAnalysis) == 0 {
+				helpers.Logger.Debugln("No PairAnalysisResults for " + pairAnalysis.Pair)
 				continue
 			}
 
